@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <style>
+    .main{width:900px; margin:50px auto 0 auto;line-height:1.5;font-family: sans-serif;}
+    .header{font:38px sans-serif;margin-bottom:20px;}
+    .code{margin:0px 40px 10px 40px;width:960px;font-family:monospace;white-space: pre;}
+    .content{margin:20px 0 60px;}
+    #maincanvas{border:1px solid #DDD;}
+  </style>
+  <body>
+    <script src="../../dist/sheetengine.js"></script>
+    
+    <div class="main">
+      <div class="header">
+        Making sheets transparent (NO ANIMATION)
+      </div>
+      
+      <canvas id="maincanvas" width="900" height="500"></canvas>
+      
+      <div class="content">
+        Testing without setInterval animation
+      </div>
+    </div>
+
+    <script>
+      console.log('Starting...');
+      var canvasElement = document.getElementById('maincanvas');
+      sheetengine.scene.init(canvasElement, {w:900,h:500});
+      
+      // define some basesheets
+      for (var x=-1; x<=1; x++) {
+        for (var y=-1; y<=1; y++) {
+          var basesheet = new sheetengine.BaseSheet({x:x*200,y:y*200,z:0}, {alphaD:90,betaD:0,gammaD:0}, {w:200,h:200});
+          basesheet.color = '#5D7E36';
+        }
+      }
+      
+      // define a sheet that will be dimmed by the moving object
+      var staticsheet1 = new sheetengine.Sheet({x:-51,y:0,z:40}, {alphaD:0,betaD:0,gammaD:0}, {w:80,h:80});
+      staticsheet1.context.fillStyle='#5F5';
+      staticsheet1.context.fillRect(0,0,80,80);
+
+      // define a sheet that will NOT be dimmed by the moving object
+      var staticsheet2 = new sheetengine.Sheet({x:102,y:0,z:40}, {alphaD:0,betaD:0,gammaD:0}, {w:80,h:80});
+      staticsheet2.context.fillStyle='#5F5';
+      staticsheet2.context.fillRect(0,0,80,80);
+      
+      // set sheet's dimming properties
+      staticsheet2.setDimming(false, true);
+      
+
+      // define a custom object
+      var sheet1 = new sheetengine.Sheet({x:0,y:-14,z:14}, {alphaD:45,betaD:0,gammaD:0}, {w:40,h:40});
+      sheet1.context.fillStyle='#F00';
+      sheet1.context.fillRect(0,0,40,40);
+      sheet1.context.clearRect(10,10,20,20);
+
+      var sheet2 = new sheetengine.Sheet({x:0,y:14,z:14}, {alphaD:-45,betaD:0,gammaD:0}, {w:40,h:40});
+      sheet2.context.fillStyle='#FFF';
+      sheet2.context.fillRect(0,0,40,40);
+      sheet2.context.clearRect(10,10,20,20);
+
+      var obj = new sheetengine.SheetObject({x:-50,y:-50,z:0}, {alphaD:0,betaD:0,gammaD:0}, [sheet1, sheet2], {w:80,h:80,relu:40,relv:50});
+      
+      // set object's dimming properties
+      obj.setDimming(true, true);
+
+      // draw initial scene
+      console.log('About to calculate all sheets...');
+      sheetengine.calc.calculateAllSheets();
+      console.log('About to draw scene...');
+      sheetengine.drawing.drawScene(true);
+      console.log('Done!');
+      
+      // NO SETINTERVAL - just static render
+      
+    </script>
+
+  </body>
+</html>

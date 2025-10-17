@@ -17,12 +17,12 @@ import {
   clearDimmedFlags
 } from './z-ordering.js';
 
-export const calc = {};
+export const calc = {
+  allowLimitToCorners: false,
+  sheetLimits: { xmin: -150, xmax: 150, ymin: -150, ymax: 150, zmin: 0, zmax: 100 }
+};
 
 let staticsheets = null;
-
-calc.allowLimitToCorners = false;
-calc.sheetLimits = { xmin: -150, xmax: 150, ymin: -150, ymax: 150, zmin: 0, zmax: 100 };
 
 const inboundsCheckZeroThresh = 0.001;
 
@@ -774,20 +774,13 @@ export function redefineIntersections(obj) {
   }
 }
 
-// Export calc functions
-calc.checkInboundsPolygon = checkInboundsPolygon;
-calc.calculateSheetData = calculateSheetData;
-calc.limitToCorners = limitToCorners;
-calc.defineSheetParams = defineSheetParams;
-calc.calculateChangedSheets = calculateChangedSheets;
-calc.calculateAllSheets = calculateAllSheets;
-calc.deleteSheets = deleteSheets;
-
-// Export named functions
+// Export named functions directly (not assigned to calc to avoid frozen export issues)
 export {
+  checkInboundsPolygon,
   calculateSheetData,
   calculateChangedSheets,
   calculateAllSheets,
   deleteSheets,
-  defineSheetParams
+  defineSheetParams,
+  limitToCorners
 };

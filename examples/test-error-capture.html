@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    window.__firstError__ = null;
+    window.addEventListener('error', function(e) {
+      if (!window.__firstError__ && e.message.includes('Assignment')) {
+        window.__firstError__ = {
+          message: e.message,
+          filename: e.filename,
+          lineno: e.lineno,
+          colno: e.colno,
+          error: e.error ? e.error.stack : null
+        };
+        console.log('CAPTURED ERROR:', window.__firstError__);
+      }
+    });
+  </script>
+</head>
+<body>
+  <canvas id="maincanvas" width="900" height="500"></canvas>
+  <script src="../dist/sheetengine.js"></script>
+  <script>
+    console.log('sheetengine loaded');
+    console.log('Has scene:', 'scene' in sheetengine);
+    
+    var canvasElement = document.getElementById('maincanvas');
+    sheetengine.scene.init(canvasElement, {w:900,h:500});
+    
+    var basesheet = new sheetengine.BaseSheet({x:0,y:0,z:0}, {alphaD:90,betaD:0,gammaD:0}, {w:200,h:200});
+    basesheet.color = '#5D7E36';
+    
+    sheetengine.calc.calculateAllSheets();
+    sheetengine.drawing.drawScene(true);
+    
+    console.log('Done');
+    console.log('First error captured:', window.__firstError__);
+  </script>
+</body>
+</html>

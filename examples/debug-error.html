@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Error Debug</title>
+  <script>
+    window.CAPTURED_ERROR = null;
+    window.onerror = function(message, source, lineno, colno, error) {
+      if (!window.CAPTURED_ERROR) {
+        window.CAPTURED_ERROR = {
+          message: message,
+          source: source,
+          lineno: lineno,
+          colno: colno,
+          stack: error ? error.stack : 'no stack'
+        };
+        console.log('CAPTURED:', window.CAPTURED_ERROR);
+      }
+      return false; // Let normal error handling continue
+    };
+  </script>
+</head>
+<body>
+  <h1>Error Debug Page</h1>
+  <canvas id="maincanvas" width="900" height="500"></canvas>
+  
+  <script src="../../dist/sheetengine.js"></script>
+  
+  <script>
+    console.log('Starting test...');
+    try {
+      sheetengine.scene.init(document.getElementById('maincanvas'), {w:900, h:500});
+      
+      var basesheet = new sheetengine.BaseSheet({x:0,y:0,z:0}, {alphaD:90,betaD:0,gammaD:0}, {w:200,h:200});
+      basesheet.color = '#5D7E36';
+      
+      sheetengine.calc.calculateAllSheets();
+      sheetengine.drawing.drawScene(true);
+      
+      console.log('Test completed successfully!');
+    } catch(e) {
+      console.error('Test failed:', e);
+      console.error('Stack:', e.stack);
+    }
+    
+    setTimeout(() => {
+      console.log('Final captured error:', window.CAPTURED_ERROR);
+    }, 1000);
+  </script>
+</body>
+</html>

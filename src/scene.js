@@ -13,7 +13,7 @@ import * as objhelpers from './objhelpers.js';
 import { BaseSheet } from './BaseSheet.js';
 import { Sheet } from './Sheet.js';
 
-export const scene = {};
+export let scene = {};
 
 // Module-level variables
 let startsheets = [];
@@ -444,6 +444,16 @@ scene.getYards = getYards;
 scene.getNewYards = getNewYards;
 scene.getYardFromPos = getYardFromPos;
 scene.translateBackground = translateBackground;
+
+// Add all public functions to the scene object
+scene.init = init;
+scene.initScene = initScene;
+scene.moveCenter = moveCenter;
+scene.setCenter = setCenter;
+scene.addYards = addYards;
+scene.getYards = getYards;
+scene.getNewYards = getNewYards;
+scene.removeYard = removeYard;
 
 // Export named functions
 export {

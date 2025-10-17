@@ -16,7 +16,7 @@ import * as intersections from './intersections.js';
 import * as zOrdering from './z-ordering.js';
 import * as calc from './calc.js';
 import { redefineIntersections } from './calc.js';
-import * as scene from './scene.js';
+import { scene as sceneObject, init as sceneInit, initScene, moveCenter, setCenter, addYards, getYards, getNewYards, removeYard, translateBackground } from './scene.js';
 import * as objhelpers from './objhelpers.js';
 import { BaseSheet } from './BaseSheet.js';
 import { Sheet } from './Sheet.js';
@@ -46,17 +46,7 @@ const sheetengine = {
     deleteSheets: calc.deleteSheets,
     defineSheetParams: calc.defineSheetParams
   },
-  scene: {
-    init: scene.init,
-    initScene: scene.initScene,
-    moveCenter: scene.moveCenter,
-    setCenter: scene.setCenter,
-    addYards: scene.addYards,
-    getYards: scene.getYards,
-    getNewYards: scene.getNewYards,
-    removeYard: scene.removeYard,
-    translateBackground: scene.translateBackground
-  },
+  scene: sceneObject,
   objhelpers: {
     defineObject: objhelpers.defineObject,
     defineAppObjects: objhelpers.defineAppObjects,
@@ -78,7 +68,7 @@ const sheetengine = {
 // Export for ES6 modules
 export default sheetengine;
 
-// Export individual components for tree-shaking
+// Export individual components for tree-shaking  
 export {
   state,
   internal,
@@ -89,8 +79,8 @@ export {
   intersections,
   zOrdering,
   calc,
-  scene,
   objhelpers,
+  // Note: scene is exported via default only to avoid freezing
   BaseSheet,
   Sheet,
   SheetObject,

@@ -6,6 +6,7 @@ import { state, internal } from './core.js';
 import * as geometry from './geometry.js';
 import * as shadows from './shadows.js';
 import * as drawing from './drawing.js';
+import * as calc from './calc.js';
 
 export class Sheet {
   constructor(centerp, rot, size) {
@@ -41,12 +42,49 @@ export class Sheet {
     this.compositecanvas = drawing.createCanvas(this.width, this.height);
     this.compositecontext = this.compositecanvas.getContext('2d');
 
-    // These will be set by calc module when integrated
-    if (window.calc) {
-      window.calc.defineSheetParams(this);
-      window.calc.limitToCorners(this);
-      window.calc.calculateSheetData(this);
+    // Initialize sheet parameters inline
+    this.p0orig = { x: -this.width / 2, y: 0, z: this.height / 2 };
+    this.p1orig = { x: 1, y: 0, z: 0 };
+    this.p2orig = { x: 0, y: 0, z: -1 };
+    this.normalporig = { x: 0, y: 1, z: 0 };
+
+    if (!this.objectsheet) {
+      const alpha = this.rot.alphaD * Math.PI / 180;
+      const beta = this.rot.betaD * Math.PI / 180;
+      const gamma = this.rot.gammaD * Math.PI / 180;
+
+      this.p0 = this.p0start = geometry.rotatePoint(this.p0orig, alpha, beta, gamma);
+      this.p1 = this.p1start = geometry.rotatePoint(this.p1orig, alpha, beta, gamma);
+      this.p2 = this.p2start = geometry.rotatePoint(this.p2orig, alpha, beta, gamma);
+      this.normalp = this.normalpstart = geometry.rotatePoint(this.normalporig, alpha, beta, gamma);
     }
+
+    this.maxdiag = Math.ceil(Math.sqrt(this.width * this.width + this.height * this.height) / 2);
+
+    // Calculate corners
+    const scalew = this.width / 2;
+    const scaleh = this.height / 2;
+    this.udif = { x: this.p1.x * scalew, y: this.p1.y * scalew, z: this.p1.z * scalew };
+    this.vdif = { x: this.p2.x * scaleh, y: this.p2.y * scaleh, z: this.p2.z * scaleh };
+    
+    const cp = this.centerp;
+    const ud = this.udif;
+    const vd = this.vdif;
+    this.corners = [];
+    this.corners[0] = { x: -ud.x - vd.x + cp.x, y: -ud.y - vd.y + cp.y, z: -ud.z - vd.z + cp.z };
+    this.corners[1] = { x: +ud.x - vd.x + cp.x, y: +ud.y - vd.y + cp.y, z: +ud.z - vd.z + cp.z };
+    this.corners[2] = { x: +ud.x + vd.x + cp.x, y: +ud.y + vd.y + cp.y, z: +ud.z + vd.z + cp.z };
+    this.corners[3] = { x: -ud.x + vd.x + cp.x, y: -ud.y + vd.y + cp.y, z: -ud.z + vd.z + cp.z };
+    
+    // Calculate A1 (base matrix inverse)
+    this.A1 = geometry.getBaseMatrixInverse(this.p1, this.p2, this.normalp);
+
+    // Calculate sheet data if transforms are available
+    if (state.canvasCenter) {
+      calc.calculateSheetData(this);
+    }
+    
+    // Calculate shade for the sheet
     shadows.calculateSheetShade(this);
 
     this.index = state.sheets.length;

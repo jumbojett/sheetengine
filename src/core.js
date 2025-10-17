@@ -18,7 +18,19 @@ export const state = {
   drawObjectContour: false,
   boundingBoxMaxsheetDistance: 150,
   objectsintersect: false,
-  debug: false
+  debug: false,
+  // Properties that get added dynamically - must be initialized to allow freezing
+  sheetsbeingdeleted: false,
+  orderedPolygons: null,
+  backgroundcanvas: null,
+  backgroundcontext: null,
+  backgroundtranslate: null,
+  temppartcanvas: null,
+  temppartcontext: null,
+  temppartshadowcanvas: null,
+  temppartshadowcontext: null,
+  imgCount: 0,
+  appobjects: null
 };
 
 export const internal = {
