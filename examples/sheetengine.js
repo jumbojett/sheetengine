@@ -1,2 +1,3970 @@
-/*! sheetengine v1.2.0 sheetengine.codeplex.com | sheetengine.codeplex.com/license */
-var sheetengine=(function(){var E={sheets:[],basesheets:[],polygons:[],objects:[],currentSheet:-1,hoverSheet:-1,canvas:null,context:null,canvasCenter:{u:250,v:260},viewSource:{x:-1,y:-1,z:-Math.SQRT1_2},tempCanvasSize:{w:115,h:115},backgroundColor:"#FFF",drawObjectContour:false,boundingBoxMaxsheetDistance:150,objectsintersect:false,debug:false};var p=[];var S={};var aJ=null;var aT={};E.shadows=aT;aT.baseshadowCanvas=null;aT.baseshadowContext=null;aT.baseShadowCenter={u:212,v:2*106};aT.lightSource={x:1,y:-3,z:-10};aT.lightSourcep1={x:1,y:-3,z:1};aT.lightSourcep2={x:-33,y:11,z:0};aT.shadowAlpha=0.3;aT.shadeAlpha=0.3;aT.drawShadows=true;function r(bH){var bM=bH;var by=aT.lightSource;var bz={x:bM.centerp.x,y:bM.centerp.y,z:bM.centerp.z};var bL={x:bz.x+bM.p0.x,y:bz.y+bM.p0.y,z:bz.z+bM.p0.z};var bK={x:bz.x+bM.p1.x,y:bz.y+bM.p1.y,z:bz.z+bM.p1.z};var bJ={x:bz.x+bM.p2.x,y:bz.y+bM.p2.y,z:bz.z+bM.p2.z};var bA=bz.z/-by.z;var bF=bL.z/-by.z;var bD=bK.z/-by.z;var bC=bJ.z/-by.z;var bI={x:bz.x+by.x*bA,y:bz.y+by.y*bA,z:bz.z+by.z*bA};var bG={x:bL.x+by.x*bF-bI.x,y:bL.y+by.y*bF-bI.y,z:bL.z+by.z*bF-bI.z};var bE={x:bK.x+by.x*bD-bI.x,y:bK.y+by.y*bD-bI.y,z:bK.z+by.z*bD-bI.z};var bB={x:bJ.x+by.x*bC-bI.x,y:bJ.y+by.y*bC-bI.y,z:bJ.z+by.z*bC-bI.z};bM.baseShadoweData=bt(bI,bG,bE,bB,u.transformPoint,u.transformPointz,aT.baseShadowCenter,bM.corners);bM.baseShadoweData.translatex-=Z.center.u;bM.baseShadoweData.translatey-=Z.center.v}function e(bz,bG){for(var bC=0;bC<E.sheets.length;bC++){var bE=E.sheets[bC];if(bE.dirty){continue}if(bE.hidden){continue}if(bz){bE.shadowdirty=false}else{if(bE.shadowdirty){continue}}for(var bB=0;bB<bE.polygons.length;bB++){var bF=bE.polygons[bB];var bD=bz?bF.prevshadowconstraints:bF.shadowconstraints;if(bD==null){bE.shadowdirty=true;break}for(var bA=0;bA<bD.length;bA++){var by=E.polygons[bD[bA]].sheetindex;if(bG.indexOf(by)!=-1){bE.shadowdirty=true;break}}if(bE.shadowdirty){break}}}}function a8(bB,bD,bz,by){if(!aT.drawShadows){return}bB.clearRect(0,0,bD.w,bD.h);for(var bC=0;bC<E.sheets.length;bC++){var bE=E.sheets[bC];if(bE.hidden){continue}if(!bE.castshadows){continue}if(by){var bA=bE.data;if(bA.centerpuv.u<by.minu||bA.centerpuv.u>by.maxu||bA.centerpuv.v<by.minv||bA.centerpuv.v>by.maxv){continue}}bE.baseShadoweData.translatex+=bz.u;bE.baseShadoweData.translatey+=bz.v;t.drawRect(bE.baseShadoweData,bB,ak,bE.baseshadowcanvas,false);bE.baseShadoweData.translatex-=bz.u;bE.baseShadoweData.translatey-=bz.v}}function L(){E.context.save();E.context.globalAlpha=aT.shadowAlpha;E.context.drawImage(aT.baseshadowCanvas,E.canvasCenter.u-Z.tilesize.x,E.canvasCenter.v-2*Z.tilesize.y);E.context.restore()}function s(bG){if(bG.hidden){return}var bH=!bG.shaded&&aT.drawShadows&&bG.allowshadows;if(bH){bG.shadowtempcontext.clearRect(0,0,bG.width,bG.height);bG.shadowData=[];for(var bA=0;bA<bG.polygons.length;bA++){var bJ=bG.polygons[bA];var bE=bJ.shadowconstraints;var bB=[];for(var by=0;by<bE.length;by++){var bz=E.polygons[bE[by]].sheetindex;if(bB.indexOf(bz)!=-1){continue}bB.push(bz);var bF=E.sheets[bz];if(bF.hidden){continue}if(!bF.castshadows){continue}bG.shadowtempcontext.save();bG.shadowtempcontext.beginPath();for(var bD=0;bD<bJ.points.length;bD++){bG.shadowtempcontext.lineTo(bJ.pointscanvasuv[bD].u,bJ.pointscanvasuv[bD].v)}bG.shadowtempcontext.closePath();bG.shadowtempcontext.clip();if(bG.shadowData[bF.index]==null){bG.shadowData[bF.index]=aP(bG,bF)}var bC=bG.shadowData[bF.index];bG.shadowtempcontext.transform(bC.ta,bC.tb,bC.tc,bC.td,bC.translatex,bC.translatey);bG.shadowtempcontext.drawImage(bF.shadowcanvas,0,0);bG.shadowtempcontext.restore()}}}bG.compositecontext.save();bG.compositecontext.drawImage(bG.canvas,0,0);if(bG.shaded){bG.compositecontext.globalCompositeOperation="source-over";bG.compositecontext.globalAlpha=aT.shadeAlpha;bG.compositecontext.drawImage(bG.shadowcanvas,0,0)}else{var bI=0;if(bG.shadealpha>bI){bG.compositecontext.globalCompositeOperation="source-over";bG.compositecontext.globalAlpha=bG.shadealpha;bG.compositecontext.drawImage(bG.shadowcanvas,0,0)}else{bG.compositecontext.globalCompositeOperation="source-atop";bG.compositecontext.globalAlpha=(bI-bG.shadealpha*6);bG.compositecontext.fillStyle="#FFF";bG.compositecontext.fillRect(0,0,bG.width,bG.height)}}if(bH){bG.compositecontext.globalAlpha=aT.shadowAlpha-bG.shadealpha;bG.compositecontext.globalCompositeOperation="source-atop";bG.compositecontext.drawImage(bG.shadowtempcanvas,0,0)}bG.compositecontext.restore()}function ao(by){for(var bA=0;bA<E.sheets.length;bA++){var bz=E.sheets[bA];if(bz.shadowdirty||bz.dirty||by){s(bz)}}}function aP(bE,bI){var bL=bI;var bO=aT.lightSource;var bR={x:bL.centerp.x,y:bL.centerp.y,z:bL.centerp.z};var bC={x:bL.centerp.x+bL.p0.x,y:bL.centerp.y+bL.p0.y,z:bL.centerp.z+bL.p0.z};var bA={x:bL.centerp.x+bL.p1.x,y:bL.centerp.y+bL.p1.y,z:bL.centerp.z+bL.p1.z};var by={x:bL.centerp.x+bL.p2.x,y:bL.centerp.y+bL.p2.y,z:bL.centerp.z+bL.p2.z};var bF=bf(bE.normalp,bE.centerp,bR,bO);var bJ=bf(bE.normalp,bE.centerp,bC,bO);var bH=bf(bE.normalp,bE.centerp,bA,bO);var bG=bf(bE.normalp,bE.centerp,by,bO);var bB={x:bR.x+bO.x*bF,y:bR.y+bO.y*bF,z:bR.z+bO.z*bF};var bN={x:bC.x+bO.x*bJ-bB.x,y:bC.y+bO.y*bJ-bB.y,z:bC.z+bO.z*bJ-bB.z};var bD={x:bA.x+bO.x*bH-bB.x,y:bA.y+bO.y*bH-bB.y,z:bA.z+bO.z*bH-bB.z};var bP={x:by.x+bO.x*bG-bB.x,y:by.y+bO.y*bG-bB.y,z:by.z+bO.z*bG-bB.z};var bK=bt(bB,bN,bD,bP,u.transformPoint,null,E.canvasCenter,null);var bz=a1.getBaseMatrixInverse({x:bE.data.ta,y:bE.data.tb,z:0},{x:bE.data.tc,y:bE.data.td,z:0},{x:bE.data.translatex,y:bE.data.translatey,z:1});var bM=aD(bz.b1,bz.b2,bz.b3,{x:bK.ta,y:bK.tb,z:0},{x:bK.tc,y:bK.td,z:0},{x:bK.translatex,y:bK.translatey,z:1});var bQ={translatex:bM.c3.x,translatey:bM.c3.y,ta:bM.c1.x,tb:bM.c1.y,tc:bM.c2.x,td:bM.c2.y};return bQ}function F(bE,bD){var bG=bD;var bz=aT.lightSource;var bF={x:bE.centerp.x-(bz.x*100),y:bE.centerp.y-(bz.y*100),z:bE.centerp.z-(bz.z*100)};var by={x:bE.centerp.x-(bG.x*100),y:bE.centerp.y-(bG.y*100),z:bE.centerp.z-(bG.z*100)};var bA=bE.normalp.x*(bF.x-bE.centerp.x)+bE.normalp.y*(bF.y-bE.centerp.y)+bE.normalp.z*(bF.z-bE.centerp.z);var bB=-bE.normalp.x*(by.x-bE.centerp.x)-bE.normalp.y*(by.y-bE.centerp.y)-bE.normalp.z*(by.z-bE.centerp.z);var bC=bA<0;var bH=bB<0;return(bC&&bH)||(!bC&&!bH)}function ai(bA){if(!bA.allowshadows){bA.shaded=false;bA.shadealpha=0;return}var by=aT.lightSource;var bE=bA.normalp;var bD=3;var bB=a1.vectorMagnitude(bg(by,bE));var bC=a1.vectorMagnitude(by)*a1.vectorMagnitude(bE);var bz=Math.asin(bB/bC)/(Math.PI*bD);bA.shaded=F(bA,E.viewSource);bA.shadealpha=bz-0.05}function av(by,bz){if(!bz){bz={u:0,v:0}}by.save();by.globalAlpha=aT.shadowAlpha;by.drawImage(aT.baseshadowCanvas,bz.u,bz.v);by.restore()}aT.calculateSheetBaseShadow=r;aT.initBaseRectShadow=a8;aT.drawBaseRectShadow=L;aT.calculateSheetsShadows=ao;aT.calculateSheetShade=ai;var t={};E.drawing=t;t.drawBaseRect=null;t.drawBeforeSheets=null;t.drawAfterSheets=null;t.useClipCorrection=false;t.dimmedAlpha=0.2;t.allowContourDrawing=true;t.hoveredSheetColor="#F80";t.selectedSheetColor="#00F";t.selectrectlinewidth=2;function aU(by,bA){var bz=document.createElement("canvas");bz.width=by;bz.height=bA;return bz}function aj(){E.context.clearRect(0,0,E.canvas.width,E.canvas.height);if(t.drawBaseRect){t.drawBaseRect()}if(aT.drawShadows){aT.initBaseRectShadow(aT.baseshadowContext,{w:aT.baseshadowCanvas.width,h:aT.baseshadowCanvas.height},{u:0,v:0});aT.drawBaseRectShadow()}if(t.drawBeforeSheets){t.drawBeforeSheets()}t.drawSheets(E.context);if(t.drawAfterSheets){t.drawAfterSheets()}}function X(bG,by,bA,bz,bN,bC){var bM=k(bG.p1uv.u,1000);var bL=k(bG.p1uv.v,1000);var bK=k(bG.p2uv.u,1000);var bJ=k(bG.p2uv.v,1000);if((bM==0&&bK==0)||(bK==0&&bJ==0)||(bM==0&&bL==0)||(bL==0&&bJ==0)||(bM+bL==0&&bK+bJ==0)){if(bN&&t.allowContourDrawing){o(bG,by,0)}return}by.save();if(bC!=null){var bH=true;for(var bI=0;bI<4;bI++){var bK=bG.cornersuv[bI];var bB=false;for(var bD=0;bD<bC.points.length;bD++){var bE=bC.data.pointsuv[bD];if(bK.u==bE.u&&bK.v==bE.v){bB=true;break}}if(!bB){bH=false;break}}if(!bH){by.beginPath();for(var bD=0;bD<bC.points.length;bD++){var bE=bC.data.pointsuv[bD];if(t.useClipCorrection){var bF=bC.data.avguv;var bP=(bE.u-bF.u)*0.03;var bO=(bE.v-bF.v)*0.03;by.lineTo(bE.u+bP,bE.v+bO)}else{by.lineTo(bE.u,bE.v)}}by.closePath();by.clip()}}by.transform(bG.ta,bG.tb,bG.tc,bG.td,bG.translatex,bG.translatey);bA(by,bz);by.beginPath();by.restore()}function Q(bz,by){bz.drawImage(by,0,0)}function ak(bz,by){bz.drawImage(by,0,0)}function o(by,bz,bA){bz.save();bz.globalAlpha=1;switch(bA){case 0:bz.strokeStyle="#000";break;case 1:bz.strokeStyle="#00F";bz.globalAlpha=0.5;break;case 2:bz.strokeStyle="#F80";bz.globalAlpha=0.5;break;case 3:bz.strokeStyle="#00F";break}bz.lineWidth=t.selectrectlinewidth;bz.beginPath();bz.moveTo(by.cornersuv[0].u,by.cornersuv[0].v);bz.lineTo(by.cornersuv[1].u,by.cornersuv[1].v);bz.lineTo(by.cornersuv[2].u,by.cornersuv[2].v);bz.lineTo(by.cornersuv[3].u,by.cornersuv[3].v);bz.lineTo(by.cornersuv[0].u,by.cornersuv[0].v);bz.closePath();bz.stroke();bz.restore()}function aC(by){by.baseshadowcontext.save();by.baseshadowcontext.clearRect(0,0,by.width,by.height);by.baseshadowcontext.drawImage(by.canvas,0,0);by.baseshadowcontext.globalCompositeOperation="source-in";by.baseshadowcontext.fillStyle="#000";by.baseshadowcontext.fillRect(0,0,by.width,by.height);by.baseshadowcontext.restore();by.shadowcontext.save();by.shadowcontext.clearRect(0,0,by.width,by.height);by.shadowcontext.drawImage(by.canvas,0,0);by.shadowcontext.globalCompositeOperation="source-in";by.shadowcontext.fillStyle="#000";by.shadowcontext.fillRect(0,0,by.width,by.height);by.shadowcontext.restore()}function a9(bD,bF,bC,by){var bG=E.hoverSheet!=-1?E.sheets[E.hoverSheet]:null;var bz=E.hoverSheet==bD.index||(bG!=null&&bD.group!=null&&bD.group==bG.group)||(bG!=null&&bD.objectsheet&&bD.object==bG.object);var bB=E.currentSheet==bD.index;var bE=bD.inSelection;if(bz||bB||bE){var bA=1;if(bE||bB){bA=2}J(bC,by,bA,bD,bF)}}function J(by,bC,bz,bB,bE){bC.save();bC.globalAlpha=1;switch(bz){case 1:bC.strokeStyle=t.hoveredSheetColor;break;case 2:bC.strokeStyle=t.selectedSheetColor;break}bC.lineWidth=2;bC.beginPath();for(var bA=0;bA<bE.points.length;bA++){var bD=bA==bE.points.length-1?0:bA+1;bC.moveTo(bE.data.pointsuv[bA].u,bE.data.pointsuv[bA].v);var bF=G(bE.data.pointsuv[bA],bE.data.pointsuv[bD],by.cornersuv);if(bF){bC.lineTo(bE.data.pointsuv[bD].u,bE.data.pointsuv[bD].v)}}bC.closePath();bC.stroke();bC.restore()}function G(bA,bz,by){return aE(bA,bz,by[0],by[1])||aE(bA,bz,by[1],by[2])||aE(bA,bz,by[2],by[3])||aE(bA,bz,by[3],by[0])}function aE(bN,bL,bF,bD){var bC=bN.u-bF.u;var bA=bL.u-bF.u;var by=bD.u-bF.u;var bO=bN.v-bF.v;var bM=bL.v-bF.v;var bK=bD.v-bF.v;var bI=(bC/by);var bH=(bO/bK);var bG=(bA/by);var bE=(bM/bK);var bB=0.1;var bz=2;var bJ=(Math.abs(bI-bH)<bB&&Math.abs(bG-bE)<bB)||(Math.abs(by)<bz&&Math.abs(bA)<bz&Math.abs(bC)<bz)||(Math.abs(bK)<bz&&Math.abs(bM)<bz&&Math.abs(bO)<bz);return bJ}function bb(bD,by){if(E.sheets.length==0){return}for(var bC=0;bC<E.orderedPolygons.length;bC++){var bB=E.polygons[E.orderedPolygons[bC]];var bA=E.sheets[bB.sheetindex];if(by){var bz=bA.data;if(bz.centerpuv.u<by.minu||bz.centerpuv.u>by.maxu||bz.centerpuv.v<by.minv||bz.centerpuv.v>by.maxv){continue}}if(bA.hidden){continue}if(bA.dimmed){bD.save();bD.globalAlpha=t.dimmedAlpha}t.drawRect(bA.data,bD,Q,bA.compositecanvas,true,bB);if(bA.dimmed){bD.restore()}a9(bA,bB,bA.data,bD)}}function ba(bz){var by=u.transformPoint(bz);return{u:by.u+E.canvasCenter.u-Z.center.u,v:by.v+E.canvasCenter.v-Z.center.v}}function d(bK){var bI=bK.viewPort;var bA=bK.targetContext;var bB=bK.targetBaseShadowContext;var bD=bK.targetBaseShadowCanvas;if(!bA){bA=E.temppartcontext;bB=E.temppartshadowcontext;bD=E.temppartshadowcanvas}bA.fillStyle=E.backgroundColor;bA.fillRect(0,0,bI.w,bI.h);var bH=bI.u+E.canvasCenter.u;var bG=bI.v+E.canvasCenter.v;bA.save();bA.translate(-bH,-bG);bo(bA);var bz=E.boundingBoxMaxsheetDistance;var by=bI.u-bz;var bJ=bI.v-bz;var bF=bI.u+bI.w+bz;var bE=bI.v+bI.h+bz;var bC={u:-bH+Z.center.u+E.canvasCenter.u-aT.baseShadowCenter.u,v:-bG+Z.center.v+E.canvasCenter.v-aT.baseShadowCenter.v};a8(bB,{w:bI.w,h:bI.h},bC,{minu:by,maxu:bF,minv:bJ,maxv:bE});bA.save();bA.globalAlpha=aT.shadowAlpha;bA.drawImage(bD,bH,bG);bA.restore();bb(bA,{minu:by,maxu:bF,minv:bJ,maxv:bE});bA.restore()}function aN(bG){if(bG){if(E.backgroundcanvas){E.backgroundcontext.clearRect(0,0,E.backgroundcanvas.width,E.backgroundcanvas.height);E.backgroundcontext.save();E.backgroundcontext.translate(-E.canvasCenter.u+aT.baseShadowCenter.u,-E.canvasCenter.v+aT.baseShadowCenter.v);bo(E.backgroundcontext);E.backgroundcontext.restore();var bH={u:Z.center.u,v:Z.center.v};aT.initBaseRectShadow(aT.baseshadowContext,{w:aT.baseshadowCanvas.width,h:aT.baseshadowCanvas.height},bH,null);av(E.backgroundcontext,{u:E.backgroundtranslate.u,v:E.backgroundtranslate.v});E.backgroundcontext.save();E.backgroundcontext.translate(-E.canvasCenter.u+aT.baseShadowCenter.u,-E.canvasCenter.v+aT.baseShadowCenter.v);t.drawSheets(E.backgroundcontext,null);E.backgroundcontext.restore()}else{E.context.clearRect(0,0,E.canvas.width,E.canvas.height);bo(E.context);var bH={u:Z.center.u,v:Z.center.v};aT.initBaseRectShadow(aT.baseshadowContext,{w:aT.baseshadowCanvas.width,h:aT.baseshadowCanvas.height},bH,null);av(E.context);t.drawSheets(E.context,null)}if(E.drawObjectContour){for(var bE=0;bE<E.objects.length;bE++){var bD=E.objects[bE];bD.canvasdirty=true;bD.draw()}}}else{for(var bE=0;bE<E.sheets.length;bE++){var bL=E.sheets[bE];var bB=bL.dimmed!=bL.dimmedprev;bL.dimmedprev=bL.dimmed;if(bB){var bI=Math.ceil(bL.data.umax-bL.data.umin);var bF=Math.ceil(bL.data.vmax-bL.data.vmin);var bK=bL.data.umin-E.canvasCenter.u;var bJ=bL.data.vmin-E.canvasCenter.v;d({viewPort:{u:bK,v:bJ,w:bI,h:bF}});var bA=E.backgroundcanvas?E.backgroundcanvas:E.canvas;var by=E.backgroundcanvas?E.backgroundcontext:E.context;bK+=bA.width/2;bJ+=bA.height/2;bI-=1;bF-=1;by.drawImage(E.temppartcanvas,0,0,bI,bF,bK,bJ,bI,bF)}}for(var bE=0;bE<E.objects.length;bE++){var bD=E.objects[bE];bD.draw()}}if(E.backgroundcanvas){E.context.clearRect(0,0,E.canvas.width,E.canvas.height);var bC=-Z.center.u-E.backgroundcanvas.width/2+E.canvas.width/2;var bz=-Z.center.v-E.backgroundcanvas.height/2+E.canvas.height/2;bC+=E.backgroundtranslate.u;bz+=E.backgroundtranslate.v;E.context.drawImage(E.backgroundcanvas,bC,bz)}}function bo(bz){for(var by=0;by<E.basesheets.length;by++){var bA=E.basesheets[by];t.drawRect(bA.data,bz,function(bB,bC){bB.fillStyle=bA.color;bB.fillRect(0,0,bA.width,bA.height)},null,false)}}t.createCanvas=aU;t.redraw=aj;t.drawRect=X;t.redrawSheetCanvases=aC;t.drawSheets=bb;t.getPointuv=ba;t.drawScene=aN;var ah={};E.intersections=ah;ah.intersections=true;var az=[{dist:50,numpoints:4},{dist:20,numpoints:3},{dist:10,numpoints:2},{dist:0,numpoints:1}];function K(bB,bA,bF,bD){var bH=bF;var bG={x:bD.x-bF.x,y:bD.y-bF.y,z:bD.z-bF.z};var by={x:bA.x-bH.x,y:bA.y-bH.y,z:bA.z-bH.z};var bE=bg(by,bB);var bC=bg(bG,bB);var bI=a1.vectorMagnitude(bE)/a1.vectorMagnitude(bC);var bz=bC.x*bI+bC.y*bI+bC.z*bI-bE.x-bE.y-bE.z;if(Math.round(bz)!=0){bI=-bI}return{p:{x:bH.x+bI*bG.x,y:bH.y+bI*bG.y,z:bH.z+bI*bG.z},inside:bI>=0&&bI<=1,t:bI}}function aR(bz,by){return Math.round(bz.x)==Math.round(by.x)&&Math.round(bz.y)==Math.round(by.y)&&Math.round(bz.z)==Math.round(by.z)}function bn(bF,bB,bA){var bJ=[];var bI=null;var bG=null;var bD=false;for(var bE=0;bE<bF.length;bE++){var bC=bE==bF.length-1?0:bE+1;var bK=false;if((bJ.length==0)||(!aR(bJ[bJ.length-1],bF[bE]))){bJ[bJ.length]=bF[bE];bK=true}var bL=K(bB,bA,bF[bE],bF[bC]);if(bL.inside){var by=aR(bJ[bJ.length-1],bL.p);if(!by){if(bI==null){bI=bJ.length}else{if(bG==null){bG=bJ.length}}bJ[bJ.length]=bL.p}if((by)&&(bK)){if(bI==null){bI=bJ.length-1}else{if(bG==null){bG=bJ.length-1}}}}}if(bG==null){return null}var bz=[];bz[0]=[];bz[1]=[];var bH=bI;for(;;){bz[0][bz[0].length]=a1.clonePoint(bJ[bH]);if(bH==bG){break}bH--;if(bH<0){bH=bJ.length-1}}bH=bI;for(;;){bz[1][bz[1].length]=a1.clonePoint(bJ[bH]);if(bH==bG){break}bH++;if(bH>bJ.length-1){bH=0}}return bz}function aX(by,bD,bB){for(var bA=0;bA<by.length;bA++){var bz=bA==by.length-1?0:bA+1;var bC=K(bD,bB,by[bA],by[bz]);if(bC.inside){return true}}return false}function aA(bK,bJ){var bL=bK.maxdiag+bJ.maxdiag;var bA=Math.sqrt(((bK.centerp.x-bJ.centerp.x)*(bK.centerp.x-bJ.centerp.x))+((bK.centerp.y-bJ.centerp.y)*(bK.centerp.y-bJ.centerp.y))+((bK.centerp.z-bJ.centerp.z)*(bK.centerp.z-bJ.centerp.z)));if(bA>bL){return null}var bF=bK.normalp.x*bJ.normalp.x+bK.normalp.y*bJ.normalp.y+bK.normalp.z*bJ.normalp.z;if(bF==1){return null}var bH=bK.normalp.x*bK.normalp.x+bK.normalp.y*bK.normalp.y+bK.normalp.z*bK.normalp.z;var bI=bJ.normalp.x*bJ.normalp.x+bJ.normalp.y*bJ.normalp.y+bJ.normalp.z*bJ.normalp.z;var bC=bg(bK.normalp,bJ.normalp);var bz=(bK.normalp.x*bK.centerp.x+bK.normalp.y*bK.centerp.y+bK.normalp.z*bK.centerp.z);var by=(bJ.normalp.x*bJ.centerp.x+bJ.normalp.y*bJ.centerp.y+bJ.normalp.z*bJ.centerp.z);var bG=bH*bI-bF*bF;var bE=(bz*bI-by*bF)/bG;var bD=(by*bH-bz*bF)/bG;var bB={x:bE*bK.normalp.x+bD*bJ.normalp.x,y:bE*bK.normalp.y+bD*bJ.normalp.y,z:bE*bK.normalp.z+bD*bJ.normalp.z};return{n:bC,p:ad(bB,10000)}}function aS(bC,bB){var by=aA(bC,bB);bC.intersectionParams[bB.index]={line:by};bB.intersectionParams[bC.index]={line:by};if(by==null){return false}var bA=aX(bC.corners,by.n,by.p);var bz=aX(bB.corners,by.n,by.p);bC.intersectionParams[bB.index].insideThis=bA;bC.intersectionParams[bB.index].insideOther=bz;bB.intersectionParams[bC.index].insideThis=bz;bB.intersectionParams[bC.index].insideOther=bA;return bA&&bz}function aB(bH,bG){if(bH.hidden){return}if(!bG){bG=E.sheets}for(var bK=0;bK<bG.length;bK++){var bF=bG[bK];if(bF.index==bH.index){continue}if(bF.hidden){continue}var bJ=bH.intersectionParams[bF.index];var bL=bJ==null?aA(bH,bF):bJ.line;if(bL==null){continue}var bA=null;var bD=false;var bz=null;var by=false;var bC=false;if(bH.polygons.length==1){bA=bn(bH.corners,bL.n,bL.p);bC=!(bA==null);bD=true}else{bC=bJ==null?aX(bH.corners,bL.n,bL.p):bJ.insideThis}if(!bC){continue}bC=bJ==null?aX(bF.corners,bL.n,bL.p):bJ.insideOther;if(!bC){continue}var bB=[];for(var bE=0;bE<bH.polygons.length;bE++){var bI=null;if(bD){bI=bA;bD=false}else{bI=bn(bH.polygons[bE].points,bL.n,bL.p)}if(bI==null){bB[bB.length]=bH.polygons[bE]}else{bB[bB.length]={points:bI[0]};bB[bB.length]={points:bI[1]}}}bH.polygons=bB;bH.intersectors.push(bF.index)}}function v(by){var bB=[];for(var bA=0;bA<by.length;bA++){var bz=by[bA];if(bz.points.length==2){continue}bB.push(bz)}return bB}function aG(bD,bI,bN){var bP=bD;if(bI){bP.polygons=[];bP.polygons[0]={points:bP.corners};bP.intersectors=[];if(ah.intersections){aB(bP,bN)}bP.polygons=v(bP.polygons)}for(var bJ=0;bJ<bP.polygons.length;bJ++){var bF=bP.polygons[bJ];var bA=10000,bC=-10000,bE=10000,bG=-10000,bQ=10000,bU=-10000;bF.pointscanvasuv=[];bF.data={umin:bA,umax:bC,vmin:bE,vmax:bG,zmin:bQ,zmax:bU,pointsuv:[]};bF.shData={umin:bA,umax:bC,vmin:bE,vmax:bG,zmin:bQ,zmax:bU,pointsuv:[]};var bK={u:0,v:0};for(var bS=0;bS<bF.points.length;bS++){var bB=bF.points[bS];bF.pointscanvasuv[bS]=a(bP,bB);bF.data.pointsuv[bS]=u.transformPointuvz(bB,u.transformPointz,E.canvasCenter);bK.u+=bF.data.pointsuv[bS].u;bK.v+=bF.data.pointsuv[bS].v;var bH=a1.getCoordsInBase(aT.shadowBaseMatrixInverse,bB);bF.shData.pointsuv[bS]={u:bH.x,v:bH.y,z:bH.z};aO(bF.data,bS);aO(bF.shData,bS)}bK.u/=bF.points.length;bK.v/=bF.points.length;bF.data.avguv={u:bK.u,v:bK.v};bF.midpoints=[];bF.data.midpointsuv=[];bF.shData.midpointsuv=[];for(var bS=0;bS<bF.points.length;bS++){var bR=bS==bF.points.length-1?0:bS+1;var bM=aq(bF.points[bS],bF.points[bR]);var bL=N(bM)+1;for(var bO=1;bO<bL;bO++){var bV=bO;var bT=bL-bV;bF.midpoints[bF.midpoints.length]=aI(bF.points[bS],bF.points[bR],bV,bT,bL)}var bz=bF.data.pointsuv[bS];var by=bF.data.pointsuv[bR];for(var bO=1;bO<bL;bO++){var bV=bO;var bT=bL-bV;bF.data.midpointsuv[bF.data.midpointsuv.length]=bs(bz,by,bV,bT,bL)}var bz=bF.shData.pointsuv[bS];var by=bF.shData.pointsuv[bR];for(var bO=1;bO<bL;bO++){var bV=bO;var bT=bL-bV;bF.shData.midpointsuv[bF.shData.midpointsuv.length]=bs(bz,by,bV,bT,bL)}}bF.sheetindex=bP.index;bF.index=E.polygons.length;bF.constraints=[];bF.shadowconstraints=[];E.polygons.push(bF)}}function aO(by,bz){if(by.pointsuv[bz].u<by.umin){by.umin=by.pointsuv[bz].u}if(by.pointsuv[bz].u>by.umax){by.umax=by.pointsuv[bz].u}if(by.pointsuv[bz].v<by.vmin){by.vmin=by.pointsuv[bz].v}if(by.pointsuv[bz].v>by.vmax){by.vmax=by.pointsuv[bz].v}if(by.pointsuv[bz].z<by.zmin){by.zmin=by.pointsuv[bz].z}if(by.pointsuv[bz].z>by.zmax){by.zmax=by.pointsuv[bz].z}}function N(bz){for(var by=0;by<az.length;by++){if(bz>az[by].dist){return az[by].numpoints}}return az[az.length-1].numpoints}function a(bz,bB){var by=bz.A1;var bC=bz.corners[0];var bA={x:bB.x-bC.x,y:bB.y-bC.y,z:bB.z-bC.z};return{u:bA.x*by.b1.x+bA.y*by.b2.x+bA.z*by.b3.x,v:bA.x*by.b1.y+bA.y*by.b2.y+bA.z*by.b3.y}}function bh(by){I(by,0);I(by,1)}function I(bA,bB){if(!bB){bA.constraints=[]}for(var bz=0;bz<E.polygons.length;bz++){var by=E.polygons[bz];if(by.sheetindex==bA.sheetindex){continue}if(E.sheets[by.sheetindex].hidden||E.sheets[bA.sheetindex].hidden){continue}W(bA,by,bB)}}function ay(bz,by){W(bz,by,0);W(bz,by,1)}function W(bF,bC,bG){var bA=bG?bF.shData:bF.data;var bB=bG?bC.shData:bC.data;var bD=bG?aT.lightSource:E.viewSource;var bE=E.sheets[bF.sheetindex];var by=E.sheets[bC.sheetindex];if(bE.hidden||by.hidden){return}var bz=f(bC,bF,by,bE,bB,bA,bD,bG);if(!bz){return}if(!bG){bF.constraints.push(bC.index);if(by.dimSheets&&!bE.dimmingDisabled){if(by.intersectors.indexOf(bE.index)==-1){bE.dimmed=1}}}else{bC.shadowconstraints.push(bF.index)}}function a6(){var bG={};var bD=[];for(var bE=0;bE<E.polygons.length;bE++){if(E.sheets[E.polygons[bE].sheetindex].hidden){continue}bD.push(bE)}for(;;){var bz=[];var bF=[];for(var bE=0;bE<bD.length;bE++){var bA=E.polygons[bD[bE]].constraints;var bB=true;for(var bC=0;bC<bA.length;bC++){var bI="k"+bA[bC];if(typeof(bG[bI])==="undefined"){bB=false;break}}if(bB){bF.push(bD[bE])}else{bz.push(bD[bE])}}for(var bE=0;bE<bF.length;bE++){var bI="k"+bF[bE];bG[bI]=bF[bE]}var by=bD.length==bz.length;bD=bz;if(bD.length==0){break}if(by){var bJ=-10000;for(var bE=0;bE<bD.length;bE++){if(E.polygons[bD[bE]].data.zmax>bJ){maxidx=bE;bJ=E.polygons[bD[bE]].data.zmax}}var bI="k"+bD[maxidx];bG[bI]=bD[maxidx];bD.splice(maxidx,1);if(bD.length==0){break}}}var bH=[];for(var bI in bG){bH.push(bG[bI])}return bH}function f(bH,bG,bC,bF,bA,bz,bE,bI){if(bA.umin>=bz.umax||bA.umax<=bz.umin||bA.vmin>=bz.vmax||bA.vmax<=bz.vmin){return false}if(bz.zmin>bA.zmax){return false}var by=0.3;if(!bI&&(bC.objectsheet||bF.objectsheet)&&(bC.object!=bF.object)){by=5}for(var bB=0;bB<bA.pointsuv.length;bB++){var bJ=bf(bF.normalp,bF.centerp,bH.points[bB],bE);if(bJ<-by){var bD=ar.checkInboundsPolygon(bz.pointsuv,bA.pointsuv[bB].u,bA.pointsuv[bB].v);if(bD.inbounds){return true}}}for(var bB=0;bB<bA.midpointsuv.length;bB++){var bJ=bf(bF.normalp,bF.centerp,bH.midpoints[bB],bE);if(bJ<-by){var bD=ar.checkInboundsPolygon(bz.pointsuv,bA.midpointsuv[bB].u,bA.midpointsuv[bB].v);if(bD.inbounds){return true}}}for(var bB=0;bB<bz.pointsuv.length;bB++){var bJ=bf(bC.normalp,bC.centerp,bG.points[bB],bE);if(bJ>by){var bD=ar.checkInboundsPolygon(bA.pointsuv,bz.pointsuv[bB].u,bz.pointsuv[bB].v);if(bD.inbounds){return true}}}for(var bB=0;bB<bz.midpointsuv.length;bB++){var bJ=bf(bC.normalp,bC.centerp,bG.midpoints[bB],bE);if(bJ>by){var bD=ar.checkInboundsPolygon(bA.pointsuv,bz.midpointsuv[bB].u,bz.midpointsuv[bB].v);if(bD.inbounds){return true}}}return false}function ac(){var bD=[];for(var bA=0;bA<E.sheets.length;bA++){var bC=E.sheets[bA];if(bC.dimSheets&&!bC.hidden){for(var bz=0;bz<bC.polygons.length;bz++){bD.push(bC.polygons[bz].index)}}}if(bD.length>0){for(var bA=0;bA<E.sheets.length;bA++){var bC=E.sheets[bA];if(bC.dimmed==0){continue}var bB=false;for(var bz=0;bz<bC.polygons.length;bz++){var by=bC.polygons[bz];var bF=by.constraints;for(var bE=0;bE<bF.length;bE++){if(bD.indexOf(bF[bE])!=-1){bB=true;break}}}if(!bB){bC.dimmed=0}}}}function an(by,bA){if(!bA){return}var bz=bA.indexOf(by);if(bz!=-1){bA.splice(bz,1)}}function aM(bB,by,bA){if(!bA){return}var bz=bA.indexOf(bB);if(bz!=-1){bA[bz]=by}}var ar={};E.calc=ar;function ag(){for(var bB=0;bB<E.sheets.length;bB++){E.sheets[bB].intersectionParams=[]}for(var bB=0;bB<E.sheets.length;bB++){var bH=E.sheets[bB];if(!bH.dirty){continue}if(!E.objectsintersect&&bH.objectsheet&&!bH.object.intersectionsenabled){continue}if(bH.intersectors!=null){for(var bz=0;bz<bH.intersectors.length;bz++){var bE=bH.intersectors[bz];E.sheets[bE].madedirty=true}}for(var bz=0;bz<E.sheets.length;bz++){if(bz==bB){continue}var bA=E.sheets[bz];if(bA.hidden){continue}if(bA.madedirty){continue}if(!E.objectsintersect&&bH.objectsheet&&!bH.object.intersectionsenabled){continue}if(!E.objectsintersect&&bA.objectsheet&&!bA.object.intersectionsenabled){continue}if(aS(bH,bA)){bA.madedirty=true}if(bA.intersectors!=null){if(bA.intersectors.indexOf(bB)!=-1){bA.madedirty=true}}}}var bD=[];var bG=[];var by=[];for(var bB=0;bB<E.sheets.length;bB++){var bC=E.sheets[bB];if(E.objectsintersect){if(bC.dirty||bC.madedirty){bG.push(bB);by.push(bB)}}else{var bI=bC.objectsheet&&(bC.object.intersectionsredefine||bC.object.intersectionsrecalc)&&!bC.object.intersectionsenabled;if(bC.dirty||bC.madedirty||bI){bG.push(bB);var bF=bC.objectsheet&&!bC.object.intersectionsenabled;if(!bF){by.push(bB)}}}if(bC.dirty){bD.push(bB)}}return{dirtySheets:bG,movedSheets:bD,dirtySheetsRedefinePolygons:by}}function bq(bD){if(E.polygons==null){E.polygons=[]}var by=[];for(var bz=0;bz<E.polygons.length;bz++){var bB=E.polygons[bz];var bE=bD.indexOf(bB.sheetindex);if(bE!=-1){for(var bA=0;bA<E.polygons.length;bA++){var bC=E.polygons[bA];an(bB.index,bC.constraints);an(bB.index,bC.shadowconstraints);an(bB.index,bC.prevshadowconstraints)}}else{by[by.length]=E.polygons[bz]}}E.polygons=by;for(var bz=0;bz<E.polygons.length;bz++){if(E.polygons[bz].index!=bz){for(var bA=0;bA<E.polygons.length;bA++){var bC=E.polygons[bA];aM(E.polygons[bz].index,bz,bC.constraints);aM(E.polygons[bz].index,bz,bC.shadowconstraints);aM(E.polygons[bz].index,bz,bC.prevshadowconstraints)}E.polygons[bz].index=bz}}}function al(by){for(var bA=by;bA<E.polygons.length;bA++){var bC=E.polygons[bA];bh(bC);for(var bz=0;bz<by;bz++){var bD=E.polygons[bz];var bB=E.sheets[bD.sheetindex];if(bB.hidden){continue}ay(bD,bC)}}}function a7(){for(var bz=0;bz<E.polygons.length;bz++){E.polygons[bz].prevshadowconstraints=[];for(var by=0;by<E.polygons[bz].shadowconstraints.length;by++){E.polygons[bz].prevshadowconstraints[E.polygons[bz].prevshadowconstraints.length]=E.polygons[bz].shadowconstraints[by]}}}function bc(){E.orderedPolygons=a6()}function a3(){if(aJ!=null){return aJ}var by=[];for(var bz=0;bz<E.sheets.length;bz++){var bA=E.sheets[bz];if(!bA.objectsheet||bA.object.intersectionsenabled){by.push(bA)}}aJ=by;return aJ}function aH(){var bN=+new Date;var bU=ag();var bY=bU.dirtySheets;var by=bU.movedSheets;var bL=bU.dirtySheetsRedefinePolygons;var b1=+new Date;var bM=+new Date;for(var bT=0;bT<E.sheets.length;bT++){var bG=E.sheets[bT];if(bG.canvasdirty){bG.refreshCanvas()}}e(true,by);var b0=+new Date;var bK=+new Date;bq(bY);var bz=E.polygons.length;var bZ=+new Date;var bJ=+new Date;if(E.objectsintersect){var bP=E.sheets;for(var bI=0;bI<bL.length;bI++){aG(E.sheets[bL[bI]],true,bP)}}else{var bP=a3();for(var bI=0;bI<bL.length;bI++){aG(E.sheets[bL[bI]],true,bP)}for(var bI=0;bI<E.objects.length;bI++){var bD=E.objects[bI];if(bD.intersectionsenabled){continue}if(bD.intersectionsredefine){B(bD)}else{if(bD.intersectionsrecalc){for(var bT=0;bT<bD.sheets.length;bT++){aG(bD.sheets[bT],false,bD.sheets)}}}bD.intersectionsredefine=false;bD.intersectionsrecalc=false}}var bX=+new Date;var bH=+new Date;al(bz);var bW=+new Date;var bF=+new Date;ac();var bV=+new Date;var bE=+new Date;e(false,by);var bS=+new Date;var bC=+new Date;a7();var bR=+new Date;var bB=+new Date;aT.calculateSheetsShadows(false);var bQ=+new Date;var bA=+new Date;bc();var bO=+new Date;for(var bT=0;bT<E.sheets.length;bT++){E.sheets[bT].dirty=false;E.sheets[bT].madedirty=false}a5();if(E.debug){console.log((b1-bN)+" - "+(b0-bM)+" - "+(bZ-bK)+" - "+(bX-bJ)+" - "+(bW-bH)+" - "+(bV-bF)+" - "+(bS-bE)+" - "+(bR-bC)+" - "+(bQ-bB)+" - "+(bO-bA))}}function bw(){for(var bA=0;bA<E.sheets.length;bA++){var bB=E.sheets[bA];bB.dimmed=0;bB.intersectionParams=[];if(bB.canvasdirty){bB.refreshCanvas()}}E.polygons=[];aJ=null;var bz=E.objectsintersect?E.sheets:a3();for(var by=0;by<bz.length;by++){aG(bz[by],true,bz)}if(!E.objectsintersect){for(var by=0;by<E.objects.length;by++){var bC=E.objects[by];if(bC.intersectionsenabled){continue}if(bC.intersectionsredefine){B(bC)}else{for(var bA=0;bA<bC.sheets.length;bA++){aG(bC.sheets[bA],true,bC.sheets)}}bC.intersectionsredefine=false;bC.intersectionsrecalc=false}}for(var bA=0;bA<E.polygons.length;bA++){bh(E.polygons[bA])}a7();aT.calculateSheetsShadows(true);bc();for(var bA=0;bA<E.sheets.length;bA++){var bB=E.sheets[bA];bB.dirty=false;bB.madedirty=false}a5()}function a5(){if(!E.sheetsbeingdeleted){return}var bL=[];var bz=[];for(var bJ=0;bJ<E.polygons.length;bJ++){var bD=E.polygons[bJ];var bS=E.sheets[bD.sheetindex];if(!bS.deleting){bL.push(bD)}else{bz.push(bJ)}}E.polygons=bL;var bH=[];for(var bJ=0;bJ<E.orderedPolygons.length;bJ++){var bK=E.orderedPolygons[bJ];if(bz.indexOf(bK)==-1){bH.push(bK)}}E.orderedPolygons=bH;for(var bJ=0;bJ<E.polygons.length;bJ++){var bD=E.polygons[bJ];var bB=[];for(var bQ=0;bQ<bD.constraints.length;bQ++){var bK=bD.constraints[bQ];if(bz.indexOf(bK)==-1){bB.push(bK)}}bD.constraints=bB;var bC=[];for(var bQ=0;bQ<bD.shadowconstraints.length;bQ++){var bK=bD.shadowconstraints[bQ];if(bz.indexOf(bK)==-1){bC.push(bK)}}bD.shadowconstraints=bC;var bC=[];for(var bQ=0;bQ<bD.prevshadowconstraints.length;bQ++){var bK=bD.prevshadowconstraints[bQ];if(bz.indexOf(bK)==-1){bC.push(bK)}}bD.prevshadowconstraints=bC}var bO=[];var bF=[];for(var bI=0;bI<E.sheets.length;bI++){var bA=E.sheets[bI];if(!bA.deleting){bO.push(bA)}else{bF.push(bI)}}E.sheets=bO;for(var bI=0;bI<E.sheets.length;bI++){var bA=E.sheets[bI];if(!bA.intersectors){continue}var bG=[];for(var bE=0;bE<bA.intersectors.length;bE++){var by=bA.intersectors[bE];if(bF.indexOf(by)==-1){bG.push(by)}}bA.intersectors=bG}for(var bN=0;bN<E.sheets.length;bN++){var bR=E.sheets[bN].index;E.sheets[bN].index=bN;if(bR!=bN){for(var bM=0;bM<E.polygons.length;bM++){var bD=E.polygons[bM];if(bD.sheetindex==bR){bD.sheetindex=bN}}for(var bI=0;bI<E.sheets.length;bI++){var bA=E.sheets[bI];aM(bR,bN,bA.intersectors)}}}for(var bM=0;bM<E.polygons.length;bM++){var bR=E.polygons[bM].index;if(bR!=bM){aM(bR,bM,E.orderedPolygons);for(var bN=0;bN<E.polygons.length;bN++){var bP=E.polygons[bN];aM(bR,bM,bP.constraints);aM(bR,bM,bP.shadowconstraints);aM(bR,bM,bP.prevshadowconstraints)}E.polygons[bM].index=bM}}E.sheetsbeingdeleted=false;aJ=null}function y(bz){var by=E.objects.indexOf(bz);if(by!=-1){E.objects.splice(by,1)}}ar.allowLimitToCorners=false;ar.sheetLimits={xmin:-150,xmax:150,ymin:-150,ymax:150,zmin:0,zmax:100};var w=0.001;function C(bF,bD,bB){var bz=[];var bA=true;var by=true;var bG=true;for(var bE=0;bE<bF.length;bE++){var bC=bE==bF.length-1?0:bE+1;bz[bz.length]=bD*bF[bC].v-bF[bC].u*bB-bD*bF[bE].v+bF[bE].u*bB+bF[bC].u*bF[bE].v-bF[bE].u*bF[bC].v;if((bz[bz.length-1])>w){by=false;bG=false}if((bz[bz.length-1])<-w){bA=false;bG=false}}return{inbounds:(by||bA)&&!bG,areas:bz,allzero:bG}}function bv(by){var bz=by.width/2;var bA=by.height/2;by.udif={x:by.p1.x*bz,y:by.p1.y*bz,z:by.p1.z*bz};by.vdif={x:by.p2.x*bA,y:by.p2.y*bA,z:by.p2.z*bA}}function aV(by){var bz=by.centerp;var bC=by.p0;var bB=by.p1;var bA=by.p2;bv(by);by.corners=af(bz,by.udif,by.vdif);by.A1=a1.getBaseMatrixInverse(by.p1,by.p2,by.normalp);by.data=bt(bz,bC,bB,bA,u.transformPoint,u.transformPointz,E.canvasCenter,by.corners);if(aT.drawShadows){aT.calculateSheetBaseShadow(by)}by.dirty=true}function bt(bX,bQ,bU,bZ,bP,by,bN,bS){var bT=bP(bX);var bE={x:bQ.x,y:bQ.y,z:bQ.z};var bR={x:bU.x,y:bU.y,z:bU.z};var bD={x:bZ.x,y:bZ.y,z:bZ.z};var bB=bP(bE);var bA=bP(bR);var bz=bP(bD);var bI=bN.u+bB.u+bT.u;var bH=bN.v+bB.v+bT.v;var bO=bA.u;var bM=bA.v;var bL=bz.u;var bK=bz.v;if(bS==null){return{p0uv:bB,p1uv:bA,p2uv:bz,translatex:bI,translatey:bH,ta:bO,tb:bM,tc:bL,td:bK,centerpuv:bT}}var bW=[];bW[0]=u.transformPointuvz(bS[0],by,bN);bW[1]=u.transformPointuvz(bS[1],by,bN);bW[2]=u.transformPointuvz(bS[2],by,bN);bW[3]=u.transformPointuvz(bS[3],by,bN);var bF=Math.max(bW[0].u,bW[1].u,bW[2].u,bW[3].u);var bC=Math.min(bW[0].u,bW[1].u,bW[2].u,bW[3].u);var bJ=Math.max(bW[0].v,bW[1].v,bW[2].v,bW[3].v);var bG=Math.min(bW[0].v,bW[1].v,bW[2].v,bW[3].v);var bY=Math.max(bW[0].z,bW[1].z,bW[2].z,bW[3].z);var bV=Math.min(bW[0].z,bW[1].z,bW[2].z,bW[3].z);return{p0uv:bB,p1uv:bA,p2uv:bz,translatex:bI,translatey:bH,ta:bO,tb:bM,tc:bL,td:bK,centerpuv:bT,cornersuv:bW,umax:bF,umin:bC,vmax:bJ,vmin:bG,zmax:bY,zmin:bV}}function af(bB,bA,bz){var by=[];by[0]={x:-bA.x-bz.x+bB.x,y:-bA.y-bz.y+bB.y,z:-bA.z-bz.z+bB.z};by[1]={x:+bA.x-bz.x+bB.x,y:+bA.y-bz.y+bB.y,z:+bA.z-bz.z+bB.z};by[2]={x:+bA.x+bz.x+bB.x,y:+bA.y+bz.y+bB.y,z:+bA.z+bz.z+bB.z};by[3]={x:-bA.x+bz.x+bB.x,y:-bA.y+bz.y+bB.y,z:-bA.z+bz.z+bB.z};return by}function bj(bz){bv(bz);bz.corners=af(bz.centerp,bz.udif,bz.vdif);if(!ar.allowLimitToCorners){return}bz.xsnap=bz.ysnap=bz.zsnap=bz.xexactsnap=bz.yexactsnap=bz.zexactsnap=bz.xminsnap=bz.xmaxsnap=bz.yminsnap=bz.ymaxsnap=bz.zminsnap=bz.zmaxsnap=false;for(var by=0;by<4;by++){x(bz,bz.corners[by],by)}}function x(bA,bC,bz){var bB=bA.udif;var by=bA.vdif;if(bC.x<=ar.sheetLimits.xmin){if(bC.x==ar.sheetLimits.xmin&&!bA.xsnap){bA.xexactsnap=true}bC.x=ar.sheetLimits.xmin;bA.xsnap=true;bA.xminsnap=true}if(bC.x>=ar.sheetLimits.xmax){if(bC.x==ar.sheetLimits.xmax&&!bA.xsnap){bA.xexactsnap=true}bC.x=ar.sheetLimits.xmax;bA.xsnap=true;bA.xmaxsnap=true}if(bC.y<=ar.sheetLimits.ymin){if(bC.y==ar.sheetLimits.ymin&&!bA.ysnap){bA.yexactsnap=true}bC.y=ar.sheetLimits.ymin;bA.ysnap=true;bA.yminsnap=true}if(bC.y>=ar.sheetLimits.ymax){if(bC.y==ar.sheetLimits.ymax&&!bA.ysnap){bA.yexactsnap=true}bC.y=ar.sheetLimits.ymax;bA.ysnap=true;bA.ymaxsnap=true}if(bC.z<=ar.sheetLimits.zmin){if(bC.z==ar.sheetLimits.zmin&&!bA.zsnap){bA.zexactsnap=true}bC.z=ar.sheetLimits.zmin;bA.zsnap=true;bA.zminsnap=true}if(bC.z>=ar.sheetLimits.zmax){if(bC.z==ar.sheetLimits.zmax&&!bA.zsnap){bA.zexactsnap=true}bC.z=ar.sheetLimits.zmax;bA.zsnap=true;bA.zmaxsnap=true}if(bz==0){bA.centerp={x:bC.x+bB.x+by.x,y:bC.y+bB.y+by.y,z:bC.z+bB.z+by.z}}if(bz==1){bA.centerp={x:bC.x-bB.x+by.x,y:bC.y-bB.y+by.y,z:bC.z-bB.z+by.z}}if(bz==2){bA.centerp={x:bC.x-bB.x-by.x,y:bC.y-bB.y-by.y,z:bC.z-bB.z-by.z}}if(bz==3){bA.centerp={x:bC.x+bB.x-by.x,y:bC.y+bB.y-by.y,z:bC.z+bB.z-by.z}}bA.corners=af(bA.centerp,bB,by)}function A(by){by.p0orig={x:-by.width/2,y:0,z:by.height/2};by.p1orig={x:1,y:0,z:0};by.p2orig={x:0,y:0,z:-1};by.normalporig={x:0,y:1,z:0};if(!by.objectsheet){alpha=by.rot.alphaD*Math.PI/180;beta=by.rot.betaD*Math.PI/180;gamma=by.rot.gammaD*Math.PI/180;by.p0=by.p0start=a1.rotatePoint(by.p0orig,alpha,beta,gamma);by.p1=by.p1start=a1.rotatePoint(by.p1orig,alpha,beta,gamma);by.p2=by.p2start=a1.rotatePoint(by.p2orig,alpha,beta,gamma);by.normalp=by.normalpstart=a1.rotatePoint(by.normalporig,alpha,beta,gamma)}by.maxdiag=Math.ceil(Math.sqrt(by.width*by.width+by.height*by.height)/2)}ar.checkInboundsPolygon=C;ar.calculateSheetData=aV;ar.limitToCorners=bj;ar.defineSheetParams=A;ar.calculateChangedSheets=aH;ar.calculateAllSheets=bw;var Z={};E.scene=Z;Z.yardcenterstart={yardx:0,yardy:0};Z.yardcenter={yardx:0,yardy:0};Z.center={x:0,y:0,u:0,v:0};Z.tilewidth=300;Z.tilesize={x:212,y:106};function aL(by,bz){t.allowContourDrawing=false;E.sheets=[];E.basesheets=[];E.polygons=[];E.objects=[];p=[];S={};aJ=null;E.canvas=by;E.context=E.canvas.getContext("2d");E.canvasCenter={u:E.canvas.width/2,v:E.canvas.height/2};aT.baseshadowCanvas=t.createCanvas(E.canvas.width,E.canvas.height);if(bz){aT.baseshadowCanvas.width=bz.w;aT.baseshadowCanvas.height=bz.h;E.backgroundcanvas=t.createCanvas(bz.w,bz.h);E.backgroundcontext=E.backgroundcanvas.getContext("2d");E.backgroundtranslate={u:0,v:0};E.temppartcanvas=t.createCanvas(E.tempCanvasSize.w,E.tempCanvasSize.h);E.temppartcontext=E.temppartcanvas.getContext("2d");E.temppartshadowcanvas=t.createCanvas(E.tempCanvasSize.w,E.tempCanvasSize.h);E.temppartshadowcontext=E.temppartshadowcanvas.getContext("2d")}aT.baseshadowContext=aT.baseshadowCanvas.getContext("2d");aT.baseShadowCenter={u:aT.baseshadowCanvas.width/2,v:aT.baseshadowCanvas.height/2}}function ab(bL,bD){var bN=[];var bI=[];if(bL){for(var bK=0;bK<bL.length;bK++){var bG=bL[bK];var bF={x:(bG.x-Z.yardcenterstart.yardx)*Z.tilewidth,y:(bG.y-Z.yardcenterstart.yardy)*Z.tilewidth,z:0};var bC=new E.BaseSheet(bF,{alphaD:-90,betaD:0,gammaD:0},{w:Z.tilewidth,h:Z.tilewidth});bC.color=bG.baserectcolor;var bE;if(bG.sheets){bE=n(bG.sheets,bF);bN=bN.concat(bE)}else{bE=[]}var by=bG.objects;var bB=[];if(by){for(var bJ=0;bJ<by.length;bJ++){var bA=by[bJ];var bM=aK.defineObject(bA.name);if(!bM){continue}bM.id="x"+bG.x+"y"+bG.y+"i"+bJ;bB.push(bM);bI.push(bM);bM.setPosition(a1.addPoint(bA.centerp,bF));bM.oldcenterp=c(bM.centerp);bM.setOrientation(bA.rot);bN=bN.concat(bM.sheets)}}var bH={sheets:bE,basesheet:bC,x:bG.x,y:bG.y,objects:bB};var bO="x"+bG.x+"y"+bG.y;S[bO]=bH}}p=bN;if(bN.length==0){bD([],[]);return}E.imgCount=0;for(var bK=0;bK<bN.length;bK++){var bP=new Image();var bz=bN[bK].canvas.getContext("2d");bP.onload=U(bN[bK],bz,bP,bN.length,function(){bD(bN,bI)});bP.src=bN[bK].canvasdata;bN[bK].canvasdata=null}}function n(by,bD){var bC=[];if(by==null){return bC}for(var bA=0;bA<by.length;bA++){var bB=by[bA];var bz=new E.Sheet(a1.addPoint(bB.centerp,bD),bB.rot,{w:bB.width,h:bB.height});bz.canvasdata=bB.canvas;bC.push(bz)}return bC}function U(bA,bz,by,bB,bC){return function(){bz.drawImage(by,0,0);bA.canvasChanged();E.imgCount++;if(E.imgCount==bB){bC()}}}function aQ(by,bB){if(!aT.drawShadows){return}var bB=bB?bB:E.sheets;for(var bz=0;bz<bB.length;bz++){var bA=bB[bz];bA.baseShadoweData.translatex-=by.u;bA.baseShadoweData.translatey-=by.v}}function T(bz){ar.calculateAllSheets();var by=u.transformPoint(bz);Z.center={x:bz.x,y:bz.y,u:by.u,v:by.v};aQ(Z.center)}function V(bz,by){if(!by){if(!bz.z){by=u.transformPoint({x:bz.x,y:bz.y,z:0})}else{by=u.transformPointz(bz)}}if(!bz){bz=ae(by)}Z.center.x+=bz.x;Z.center.y+=bz.y;Z.center.u+=by.u;Z.center.v+=by.v;aQ(by)}function bp(bz,by){if(!by){if(!bz.z){by=u.transformPoint({x:bz.x,y:bz.y,z:0})}else{by=u.transformPointz(bz)}}if(!bz){bz=ae(by)}Z.center.x=bz.x;Z.center.y=bz.y;var bA={u:by.u-Z.center.u,v:by.v-Z.center.v};Z.center.u=by.u;Z.center.v=by.v;aQ(bA)}function at(){var bC;var by=/\+/g;var bA=/([^&=]+)=?([^&]*)/g;var bD=function(bE){return decodeURIComponent(bE.replace(by," "))};var bB=window.location.search.substring(1);var bz={};while(bC=bA.exec(bB)){bz[bD(bC[1])]=bD(bC[2])}return bz}function bx(){var by=Z.getUrlParams();return{yardcenter:{yardx:parseInt(by.x),yardy:parseInt(by.y)}}}function be(by,bz){$.ajax({url:by,cache:false,dataType:"json",success:bz})}function aw(bz,by,bB,bC,bD){Z.yardcenterstart={yardx:by.yardx,yardy:by.yardy};var bA=bz+"/yard?x="+by.yardx+"&y="+by.yardy+"&levelsize="+bB+"&appid="+bC+"&appobjects=1";be(bA,function(bE){if(bE){if(bE.center){Z.yardcenterstart={yardx:bE.center.x,yardy:bE.center.y};Z.yardcenter={yardx:bE.center.x,yardy:bE.center.y};Z.level=bE.level}aK.defineAppObjects(bE.appobjects);E.objects=[];ab(bE.yards,function(bF,bG){bD()})}else{bD()}})}function a4(bF,by,bB,bL,bM){var bJ=Z.yardcenter;Z.yardcenter={yardx:by.yardx,yardy:by.yardy};var bN=Z.yardcenter;var bE={x1:bJ.yardx-bB,x2:bJ.yardx+bB,y1:bJ.yardy-bB,y2:bJ.yardy+bB};var bG={x1:bN.yardx-bB,x2:bN.yardx+bB,y1:bN.yardy-bB,y2:bN.yardy+bB};var bA=[];for(var bI=bE.x1;bI<=bE.x2;bI++){for(var bH=bE.y1;bH<=bE.y2;bH++){if(bI<bG.x1||bI>bG.x2||bH<bG.y1||bH>bG.y2){bA.push({x:bI,y:bH})}}}var bD=[];for(var bI=bG.x1;bI<=bG.x2;bI++){for(var bH=bG.y1;bH<=bG.y2;bH++){if(bI<bE.x1||bI>bE.x2||bH<bE.y1||bH>bE.y2){bD.push({x:bI,y:bH})}}}var bK="";for(var bC=0;bC<bD.length;bC++){bK+=bD[bC].x+","+bD[bC].y;if(bC<bD.length-1){bK+=";"}}var bz=bF+"/yard?x="+Z.yardcenterstart.yardx+"&y="+Z.yardcenterstart.yardy+"&yards="+bK+"&appid="+bL+"&appobjects=0";be(bz,function(bO){var bP={x:bJ.yardx*Z.tilewidth,y:bJ.yardy*Z.tilewidth,z:0};var bS={x:bN.yardx*Z.tilewidth,y:bN.yardy*Z.tilewidth,z:0};Z.translateBackground(bP,bS);if(bO){ab(bO.yards,function(bT,bV){var bU={sheets:[]};var bW={objects:[]};a2(bT,bU,bW,bA);bM(bT,bV,bU.sheets,bW.objects)})}else{var bQ={sheets:[]};var bR={objects:[]};a2(null,bQ,bR,bA);bM([],[],bQ.sheets,bR.objects)}})}function R(bA){for(var bD=0;bD<bA.sheets.length;bD++){var bC=bA.sheets[bD];bC.destroy()}var bz=E.basesheets.indexOf(bA.basesheet);if(bz!=-1){E.basesheets.splice(bz,1)}for(var bF=0;bF<bA.objects.length;bF++){var bE=bA.objects[bF];var by=E.objects.indexOf(bE);if(by!=-1){E.objects.splice(by,1)}bE.destroy()}delete S["x"+bA.x+"y"+bA.y];for(var bB=0;bB<E.sheets.length;bB++){E.sheets[bB].index=bB}}function a2(by,bC,bF,bD){if(by){}for(var bB=0;bB<bD.length;bB++){var bE=bD[bB];var bA="x"+bE.x+"y"+bE.y;var bz=S[bA];if(!bz){continue}bC.sheets=bC.sheets.concat(bz.sheets);bF.objects=bF.objects.concat(bz.objects);R(bz)}}function bk(bA){var bz=Math.round(bA.x/Z.tilewidth);var by=Math.round(bA.y/Z.tilewidth);return{relyardx:bz,relyardy:by,yardx:bz+Z.yardcenterstart.yardx,yardy:by+Z.yardcenterstart.yardy}}function H(by,bz){if(typeof(by.z)=="undefined"){by.z=0}if(typeof(bz.z)=="undefined"){bz.z=0}var bC=u.transformPoint(by);var bD=u.transformPoint(bz);var bB=bD.u-bC.u;var bA=bD.v-bC.v;E.backgroundcontext.translate(-bB,-bA);aT.baseshadowContext.translate(-bB,-bA);E.backgroundtranslate.u+=bB;E.backgroundtranslate.v+=bA;E.backgroundcontext.clearRect(E.backgroundtranslate.u,E.backgroundtranslate.v,E.backgroundcanvas.width,E.backgroundcanvas.height);aT.baseshadowContext.clearRect(E.backgroundtranslate.u,E.backgroundtranslate.v,E.backgroundcanvas.width,E.backgroundcanvas.height)}Z.init=aL;Z.initScene=T;Z.moveCenter=V;Z.setCenter=bp;Z.getUrlParams=at;Z.getUrlLoadInfo=bx;Z.getYards=aw;Z.getNewYards=a4;Z.getYardFromPos=bk;Z.translateBackground=H;var a1={};E.geometry=a1;function D(bD,bB,bz){var bE=bD.x*(bz.z*bB.y-bB.z*bz.y)-bD.y*(bz.z*bB.x-bB.z*bz.x)+bD.z*(bz.y*bB.x-bB.y*bz.x);var bC={x:(bz.z*bB.y-bB.z*bz.y)/bE,y:(bD.z*bz.y-bz.z*bD.y)/bE,z:(bB.z*bD.y-bD.z*bB.y)/bE};var bA={x:(bB.z*bz.x-bz.z*bB.x)/bE,y:(bz.z*bD.x-bD.z*bz.x)/bE,z:(bD.z*bB.x-bB.z*bD.x)/bE};var by={x:(bz.y*bB.x-bB.y*bz.x)/bE,y:(bD.y*bz.x-bz.y*bD.x)/bE,z:(bB.y*bD.x-bD.y*bB.x)/bE};return{b1:bC,b2:bA,b3:by}}function bg(bz,by){return{x:(bz.z*by.y)-(bz.y*by.z),y:-(bz.z*by.x)+(bz.x*by.z),z:(bz.y*by.x)-(bz.x*by.y)}}function q(by){return Math.sqrt(by.x*by.x+by.y*by.y+by.z*by.z)}function k(by,bz){return Math.round(by*bz)/bz}function ad(by,bz){return{x:k(by.x,bz),y:k(by.y,bz),z:k(by.z,bz)}}function bf(bB,bz,bA,by){return(bB.x*bz.x+bB.y*bz.y+bB.z*bz.z-bB.x*bA.x-bB.y*bA.y-bB.z*bA.z)/(bB.x*by.x+bB.y*by.y+bB.z*by.z)}function aD(bA,bz,by,bG,bF,bE){var bD={x:bA.x*bG.x+bz.x*bG.y+by.x*bG.z,y:bA.y*bG.x+bz.y*bG.y+by.y*bG.z,z:bA.z*bG.x+bz.z*bG.y+by.z*bG.z};var bC={x:bA.x*bF.x+bz.x*bF.y+by.x*bF.z,y:bA.y*bF.x+bz.y*bF.y+by.y*bF.z,z:bA.z*bF.x+bz.z*bF.y+by.z*bF.z};var bB={x:bA.x*bE.x+bz.x*bE.y+by.x*bE.z,y:bA.y*bE.x+bz.y*bE.y+by.y*bE.z,z:bA.z*bE.x+bz.z*bE.y+by.z*bE.z};return{c1:bD,c2:bC,c3:bB}}function bu(bz,bA){var by=bz.b1.x*bA.x+bz.b2.x*bA.y+bz.b3.x*bA.z;var bC=bz.b1.y*bA.x+bz.b2.y*bA.y+bz.b3.y*bA.z;var bB=bz.b1.z*bA.x+bz.b2.z*bA.y+bz.b3.z*bA.z;return{x:by,y:bC,z:bB}}function aF(bz,bB,by,bA){return{x:bz.x*bB.x+bz.y*by.x+bz.z*bA.x,y:bz.x*bB.y+bz.y*by.y+bz.z*bA.y,z:bz.x*bB.z+bz.y*by.z+bz.z*bA.z}}function j(bz,by){return{x:bz.x+by.x,y:bz.y+by.y,z:bz.z+by.z}}function m(bz,by){return{x:bz.x-by.x,y:bz.y-by.y,z:bz.z-by.z}}function aI(bC,bB,bA,bz,by){return{x:(bC.x*bA+bB.x*bz)/by,y:(bC.y*bA+bB.y*bz)/by,z:(bC.z*bA+bB.z*bz)/by}}function bs(bC,bB,bA,bz,by){return{u:(bC.u*bA+bB.u*bz)/by,v:(bC.v*bA+bB.v*bz)/by}}function aq(bz,by){return Math.abs(bz.x-by.x)+Math.abs(bz.y-by.y)+Math.abs(bz.z-by.z)}function i(bz,by){return a1.vectorMagnitude({x:by.x-bz.x,y:by.y-bz.y,z:by.z-bz.z})}function c(by){return{x:by.x,y:by.y,z:by.z}}function h(bz){var by=Math.max(Math.abs(bz.x),Math.max(Math.abs(bz.y),Math.abs(bz.z)));return{x:bz.x/by,y:bz.y/by,z:bz.z/by}}function au(bz,bE,bA,bK){var bF=Math.sin(bE);var bJ=Math.cos(bE);var bC=Math.sin(bA);var bD=Math.cos(bA);var by=Math.sin(bK);var bB=Math.cos(bK);var bI=bz.x*bD*bB+bz.y*bD*by-bz.z*bC;var bH=bz.x*(-bJ*by+bF*bC*bB)+bz.y*(bJ*bB+bF*bC*by)+bz.z*bF*bD;var bG=bz.x*(bF*by+bJ*bC*bB)+bz.y*(-bF*bB+bJ*bC*by)+bz.z*bJ*bD;return{x:bI,y:bH,z:bG}}function bl(bH,bG,bI){var bA=0;var bF=0;var bz=0;nz=bH.x;ny=bH.y;nx=bH.z;lz=bG.x;ly=bG.y;lx=bG.z;mz=bI.x;my=bI.y;mx=bI.z;if(ly==0&&lx==0){if(lz==1){bF=-Math.PI/2;bA=0;bz=Math.atan2(ny,nx)}else{bF=Math.PI/2;bA=0;bz=Math.atan2(mx,my)}}else{bA=Math.atan2(ly,lx);var bE=Math.sin(bA);var bB=Math.cos(bA);bF=Math.atan2(-lz,bE*ly+bB*lx);bz=Math.atan2(bE*nx-bB*ny,-bE*mx+bB*my)}bA=bA+Math.PI;bF=-bF;bz=bz+Math.PI;if(bA==2*Math.PI){bA=0}if(bz==2*Math.PI){bz=0}if(bF<0){bF=2*Math.PI+bF}if(bF==2*Math.PI){bF=0}var by=Math.round(180/Math.PI*bA);var bC=Math.round(180/Math.PI*bF);var bD=Math.round(180/Math.PI*bz);return{alpha:bA,beta:bF,gamma:bz,alphaD:by,betaD:bC,gammaD:bD}}function O(bD,bA,bC){var bB=Math.cos(bC);var by=Math.sin(bC);var bE=bD.x*bA.x+bD.y*bA.y+bD.z*bA.z;var bz={x:bA.y*bD.z-bD.y*bA.z,y:-bA.x*bD.z+bD.x*bA.z,z:bA.x*bD.y-bD.x*bA.y};prot={x:bD.x*bB+bz.x*by+bA.x*(bE)*(1-bB),y:bD.y*bB+bz.y*by+bA.y*(bE)*(1-bB),z:bD.z*bB+bz.z*by+bA.z*(bE)*(1-bB)};return prot}function aW(bB,bD,bz,bA){var by={x:bB.x-bD.x,y:bB.y-bD.y,z:bB.z-bD.z};var bC=a1.rotateAroundAxis(by,bz,bA);return{x:bC.x+bD.x,y:bC.y+bD.y,z:bC.z+bD.z}}function z(bD,by,bA,bF,bB,bC){var bz={x:bD.x+by.x,y:bD.y+by.y,z:bD.z+by.z};var bE=a1.rotateAroundArbitraryAxis(bz,bF,bB,bC);return{x:bE.x-bA.x,y:bE.y-bA.y,z:bE.z-bA.z}}a1.getBaseMatrixInverse=D;a1.vectorMagnitude=q;a1.getCoordsInBase=bu;a1.getPointInBase=aF;a1.addPoint=j;a1.subPoint=m;a1.pointDist=i;a1.clonePoint=c;a1.normalPoint=h;a1.rotatePoint=au;a1.inverseRPY=bl;a1.rotateAroundAxis=O;a1.rotateAroundArbitraryAxis=aW;a1.rotateAroundArbitraryAxisp=z;var u={};E.transforms=u;var a0=Math.SQRT1_2;var aZ=Math.SQRT1_2/2;function aa(bA){var bz=(bA.x-bA.y)*a0;var by=(bA.x+bA.y)*aZ-bA.z;return{u:bz,v:by}}function b(bA){var bz=(bA.x-bA.y)*a0;var by=(bA.x+bA.y)*aZ-bA.z;var bB=-(bA.x+bA.y);return{u:bz,v:by,z:bB}}function bi(bB,bz,by){var bA=bz(bB);return{u:by.u+bA.u,v:by.v+bA.v}}function bm(bB,bz,by){var bA=bz(bB);return{u:by.u+bA.u,v:by.v+bA.v,z:bA.z}}function aY(bB){var bA=Math.SQRT1_2;var bz=bA/2;var by=((bB.u-E.canvasCenter.u)/bA+(bB.v-E.canvasCenter.v)/bz)/2;var bC=(bB.v-E.canvasCenter.v)/bz-by;return{x:Math.floor(by),y:Math.floor(bC),z:null}}function ae(bB){var bA=Math.SQRT1_2;var bz=bA/2;var by=((bB.u)/bA+(bB.v)/bz)/2;var bC=(bB.v)/bz-by;return{x:by,y:bC,z:null}}u.transformPoint=aa;u.transformPointz=b;u.transformPointuv=bi;u.transformPointuvz=bm;u.inverseTransformPoint=aY;var aK={};E.objhelpers=aK;function ap(bF,by){var bC=Math.floor(by.u-bF.canvasSize.relu);var bA=Math.floor(by.v-bF.canvasSize.relv);var bz=bF.canvasSize.w;var bE=bF.canvasSize.h;d({viewPort:{u:bC,v:bA,w:bz,h:bE}});var bB=E.backgroundcanvas?E.backgroundcanvas:E.canvas;var bD=E.backgroundcanvas?E.backgroundcontext:E.context;bC+=bB.width/2;bA+=bB.height/2;bz-=1;bE-=1;if(E.drawObjectContour){E.temppartcontext.strokeStyle="#FFF";E.temppartcontext.strokeRect(0,0,bz,bE)}bD.drawImage(E.temppartcanvas,0,0,bz,bE,bC,bA,bz,bE)}function br(bA){E.appobjects={};for(var by=0;by<bA.length;by++){var bz=bA[by];E.appobjects[bz.name]=bz}}function l(bz){var bE=E.appobjects[bz];if(!bE){return null}var bD=[];for(var bA=0;bA<bE.sheets.length;bA++){var bB=new E.Sheet(bE.sheets[bA].centerp,bE.sheets[bA].rot,{w:bE.sheets[bA].width,h:bE.sheets[bA].height});bB.canvasdata=bE.sheets[bA].canvas;bD.push(bB)}var by=bE.canvasSize;var bC=new E.SheetObject({x:0,y:0,z:0},{alphaD:0,betaD:0,gammaD:0},bD,by,bE.intersectionsenabled);for(var bA=0;bA<bD.length;bA++){bD[bA].objecttypehidden=bE.hidden}bC.name=bz;return bC}function P(by){return by/Math.PI*180}function ax(by){return by/180*Math.PI}function am(by){var bz={alpha:by.alpha,beta:by.beta,gamma:by.gamma,alphaD:by.alphaD,betaD:by.betaD,gammaD:by.gammaD};if(typeof(bz.alpha)==="undefined"){bz.alpha=ax(bz.alphaD)}if(typeof(bz.beta)==="undefined"){bz.beta=ax(bz.betaD)}if(typeof(bz.gamma)==="undefined"){bz.gamma=ax(bz.gammaD)}if(typeof(bz.alphaD)==="undefined"){bz.alphaD=P(bz.alpha)}if(typeof(bz.betaD)==="undefined"){bz.betaD=P(bz.beta)}if(typeof(bz.gammaD)==="undefined"){bz.gammaD=P(bz.gamma)}return bz}function Y(bz,bA){var by=[];by[0]=a1.rotatePoint(bA[0],bz.alpha,bz.beta,bz.gamma);by[1]=a1.rotatePoint(bA[1],bz.alpha,bz.beta,bz.gamma);by[2]=a1.rotatePoint(bA[2],bz.alpha,bz.beta,bz.gamma);return by}function g(bz,bC){var bA=document.createElement("img");var bB=document.createElement("canvas");bB.width=16;bB.height=16;var by=bB.getContext("2d");bA.onload=function(){by.drawImage(bA,0,0);bC(bB.toDataURL())};bA.src=bz}function M(){if(E.currentSheet==-1){return{name:"my object",thumbnail:"",hidden:false,canvasSize:{w:0,h:0,relu:0,relv:0},sheets:{}}}var bI=E.sheets[E.currentSheet];var bK=bI.group;var bC=[];if(typeof(bK)!=="undefined"&&bK!==null){for(var bz=0;bz<E.sheets.length;bz++){var bM=E.sheets[bz];if(bM.group!=bK){continue}bC.push({centerp:bM.centerp,rot:{alphaD:bM.rot.alphaD,betaD:bM.rot.betaD,gammaD:bM.rot.gammaD},width:bM.width,height:bM.height,canvas:bM.canvas.toDataURL()})}}else{var bM=bI;bC.push({centerp:bM.centerp,rot:{alphaD:bM.rot.alphaD,betaD:bM.rot.betaD,gammaD:bM.rot.gammaD},width:bM.width,height:bM.height,canvas:bM.canvas.toDataURL()})}var by=0;for(var bz=0;bz<bC.length;bz++){var bG=bC[bz];var bA=bG.width/2;var bF=bG.height/2;var bH=Math.sqrt(bA*bA+bF*bF)+i(bG.centerp,{x:0,y:0,z:0});if(bH>by){by=bH}}var bJ=Math.round(by*2);var bB=bJ;var bE=Math.round(by);var bD=Math.round(by);var bL={w:bJ,h:bB,relu:bE,relv:bD};return{name:"my object",thumbnail:"",hidden:false,intersectionsenabled:true,canvasSize:bL,sheets:bC}}function bd(){var by=M();return JSON.stringify(by)}function B(bD){for(var bE=0;bE<bD.sheets.length;bE++){aG(bD.sheets[bE],true,bD.sheets)}for(var bE=0;bE<bD.sheets.length;bE++){var bI=bD.sheets[bE];bI.startpolygons=[];var bB=E.geometry.getBaseMatrixInverse(bI.p1start,bI.p2start,bI.normalpstart);for(var bC=0;bC<bI.polygons.length;bC++){var by=bI.polygons[bC];var bH=[];var bF=[];for(var bA=0;bA<by.points.length;bA++){var bz=a1.subPoint(by.points[bA],bD.centerp);bz=a1.rotatePoint(bz,-bD.rot.alpha,-bD.rot.beta,-bD.rot.gamma);bH.push(bz);var bG=E.geometry.getCoordsInBase(bB,bz);bF.push(bG)}bI.startpolygons.push({points:bH,relpoints:bF});bI.startpolygonscenterp=a1.clonePoint(bI.startcenterp)}}}aK.fillRot=am;aK.defineAppObjects=br;aK.defineObject=l;aK.getThumbnailString=g;aK.getCurrentSheetsObject=M;aK.getCurrentSheetsObjectStr=bd;E.BaseSheet=function(bB,bz,bA){var by=aK.fillRot(bz);this.width=bA.w;this.height=bA.h;this.centerp=a1.clonePoint(bB);this.rot={alphaD:by.alphaD,betaD:by.betaD,gammaD:by.gammaD};ar.defineSheetParams(this);ar.limitToCorners(this);ar.calculateSheetData(this);aT.calculateSheetShade(this);E.basesheets.push(this)};E.BaseSheet.prototype.destroy=function(){var by=E.basesheets.indexOf(this);if(by!=-1){E.basesheets.splice(by,1)}};E.Sheet=function(bB,bz,bA){var by=aK.fillRot(bz);this.width=bA.w;this.height=bA.h;this.centerp=a1.clonePoint(bB);this.rot={alphaD:by.alphaD,betaD:by.betaD,gammaD:by.gammaD};this.objectsheet=false;this.skipDensityMap=false;this.dimSheets=false;this.dimmingDisabled=false;this.hidden=false;this.dirty=false;this.canvasdirty=true;this.dimmed=0;this.dimmedprev=0;this.castshadows=true;this.allowshadows=true;this.canvas=t.createCanvas(this.width,this.height);this.context=this.canvas.getContext("2d");this.shadowcanvas=t.createCanvas(this.width,this.height);this.shadowcontext=this.shadowcanvas.getContext("2d");this.shadowtempcanvas=t.createCanvas(this.width,this.height);this.shadowtempcontext=this.shadowtempcanvas.getContext("2d");this.baseshadowcanvas=t.createCanvas(this.width,this.height);this.baseshadowcontext=this.baseshadowcanvas.getContext("2d");this.compositecanvas=t.createCanvas(this.width,this.height);this.compositecontext=this.compositecanvas.getContext("2d");ar.defineSheetParams(this);ar.limitToCorners(this);ar.calculateSheetData(this);aT.calculateSheetShade(this);this.index=E.sheets.length;E.sheets.push(this);aJ=null};E.Sheet.prototype.canvasChanged=function(){this.canvasdirty=true;if(this.objectsheet){this.object.canvasdirty=true;this.object.intersectionsrecalc=true}this.dirty=true};E.Sheet.prototype.destroy=function(){this.hidden=true;this.dirty=true;this.deleting=true;E.sheetsbeingdeleted=true};E.Sheet.prototype.refreshCanvas=function(){if(!this.canvasdirty){return}this.compositecontext.clearRect(0,0,this.width,this.height);t.redrawSheetCanvases(this);this.canvasdirty=false};E.Sheet.prototype.setShadows=function(bz,by){this.castshadows=bz;if(this.allowshadows!=by){this.allowshadows=by;aT.calculateSheetShade(this)}this.dirty=true};E.Sheet.prototype.setDimming=function(bz,by){this.dimSheets=bz;this.dimmingDisabled=by;this.dirty=true};E.SheetObject=function(bP,bF,bC,bA,bO){for(var bM=0;bM<bC.length;bM++){var bH=bC[bM];bH.objectsheet=true;bH.object=this;bH.startcenterp={x:bH.centerp.x,y:bH.centerp.y,z:bH.centerp.z};bH.rotcenterp={x:bH.centerp.x,y:bH.centerp.y,z:bH.centerp.z};bH.centerp.x+=bP.x;bH.centerp.y+=bP.y;bH.centerp.z+=bP.z;bH.intersectionParams=[];ar.calculateSheetData(bH)}this.intersectionsenabled=bO?true:false;if(!E.objectsintersect&&!this.intersectionsenabled){for(var bM=0;bM<bC.length;bM++){aG(bC[bM],true,bC)}for(var bM=0;bM<bC.length;bM++){var bH=bC[bM];var bE=[];var bz=E.geometry.getBaseMatrixInverse(bH.p1start,bH.p2start,bH.normalpstart);for(var bJ=0;bJ<bH.polygons.length;bJ++){var bD=bH.polygons[bJ];var bL=[];var by=[];for(var bI=0;bI<bD.points.length;bI++){var bK=a1.subPoint(bD.points[bI],bP);bL.push(bK);var bB=E.geometry.getCoordsInBase(bz,bK);by.push(bB)}bE.push({points:bL,relpoints:by})}bH.startpolygons=bE;bH.startpolygonscenterp=a1.clonePoint(bH.startcenterp)}}this.centerp=bP;this.rot=aK.fillRot(bF);this.rotvectorstart=[{x:1,y:0,z:0},{x:0,y:0,z:-1},{x:0,y:1,z:0}];this.rotvector=Y(this.rot,this.rotvectorstart);this.sheets=bC;this.hidden=false;this.intersectionsredefine=false;this.intersectionsrecalc=false;this.canvasSize=bA;if(bA.w>E.tempCanvasSize.w||bA.h>E.tempCanvasSize.h){var bG=Math.max(bA.w,E.tempCanvasSize.w);var bN=Math.max(bA.h,E.tempCanvasSize.h);E.tempCanvasSize={w:bG,h:bN};E.temppartcanvas.width=bG;E.temppartcanvas.height=bN;E.temppartshadowcanvas.width=bG;E.temppartshadowcanvas.height=bN}this.oldcenterp=c(this.centerp);this.centerpuv=u.transformPoint(this.centerp);this.centerpuvrel=u.transformPointuvz(this.centerp,u.transformPointz,E.canvasCenter);this.oldcenterpuv=u.transformPoint(this.oldcenterp);this.setOrientation(this.rot);E.objects.push(this)};E.SheetObject.prototype.setDimming=function(bB,by){for(var bz=0;bz<this.sheets.length;bz++){var bA=this.sheets[bz];bA.dimSheets=bB;bA.dimmingDisabled=by;bA.dirty=true}this.intersectionsrecalc=true;this.canvasdirty=true};E.SheetObject.prototype.setShadows=function(bB,bA){for(var by=0;by<this.sheets.length;by++){var bz=this.sheets[by];bz.setShadows(bB,bA)}this.intersectionsrecalc=true;this.canvasdirty=true};E.SheetObject.prototype.setCollision=function(by){for(var bz=0;bz<this.sheets.length;bz++){var bA=this.sheets[bz];bA.skipDensityMap=!by}};E.SheetObject.prototype.destroy=function(){this.hide();for(var bz=0;bz<this.sheets.length;bz++){var by=this.sheets[bz];by.deleting=true}E.sheetsbeingdeleted=true;this.deleting=true};E.SheetObject.prototype.setPosition=function(by){this.move(by,true)};E.SheetObject.prototype.move=function(bC,bA){this.oldcenterp=c(this.centerp);if(bA){this.centerp.x=bC.x;this.centerp.y=bC.y;this.centerp.z=bC.z}else{this.centerp.x+=bC.x;this.centerp.y+=bC.y;this.centerp.z+=bC.z}var bF=this.centerp.x-this.oldcenterp.x;var bE=this.centerp.y-this.oldcenterp.y;var bD=this.centerp.z-this.oldcenterp.z;for(var bH=0;bH<this.sheets.length;bH++){var bI=this.sheets[bH];bI.centerp.x=bI.rotcenterp.x+this.centerp.x;bI.centerp.y=bI.rotcenterp.y+this.centerp.y;bI.centerp.z=bI.rotcenterp.z+this.centerp.z;ar.calculateSheetData(bI);if(bI.polygons&&!E.objectsintersect&&!this.intersectionsenabled){for(var bG=0;bG<bI.polygons.length;bG++){var by=bI.polygons[bG];for(var bz=0;bz<by.points.length;bz++){var bB=by.points[bz];bB.x+=bF;bB.y+=bE;bB.z+=bD}}}}this.centerpuv=u.transformPoint(this.centerp);this.centerpuvrel=u.transformPointuvz(this.centerp,u.transformPointz,E.canvasCenter);this.oldcenterpuv=u.transformPoint(this.oldcenterp);this.intersectionsrecalc=true;this.canvasdirty=true};E.SheetObject.prototype.rotateBase=function(by,bz){this.rotate(by,bz,true)};E.SheetObject.prototype.rotate=function(bC,bD,bA){if(bA){this.rotvector[0]=a1.rotateAroundAxis(this.rotvectorstart[0],bC,bD);this.rotvector[1]=a1.rotateAroundAxis(this.rotvectorstart[1],bC,bD);this.rotvector[2]=a1.rotateAroundAxis(this.rotvectorstart[2],bC,bD)}else{this.rotvector[0]=a1.rotateAroundAxis(this.rotvector[0],bC,bD);this.rotvector[1]=a1.rotateAroundAxis(this.rotvector[1],bC,bD);this.rotvector[2]=a1.rotateAroundAxis(this.rotvector[2],bC,bD)}this.rot=a1.inverseRPY(this.rotvector[0],this.rotvector[1],this.rotvector[2]);for(var bF=0;bF<this.sheets.length;bF++){var bH=this.sheets[bF];if(bA){bH.p0=a1.rotateAroundAxis(bH.p0start,bC,bD);bH.p1=a1.rotateAroundAxis(bH.p1start,bC,bD);bH.p2=a1.rotateAroundAxis(bH.p2start,bC,bD);bH.normalp=a1.rotateAroundAxis(bH.normalpstart,bC,bD);bH.rotcenterp=a1.rotateAroundAxis(bH.startcenterp,bC,bD);if(bH.startpolygons&&!E.objectsintersect&&!this.intersectionsenabled){bH.polygons=[];for(var bE=0;bE<bH.startpolygons.length;bE++){var by={points:[]};bH.polygons.push(by);var bG=bH.startpolygons[bE];for(var bz=0;bz<bG.points.length;bz++){var bB=a1.rotateAroundAxis(bG.points[bz],bC,bD);by.points.push(a1.addPoint(bB,this.centerp))}}}}else{bH.p0=a1.rotateAroundAxis(bH.p0,bC,bD);bH.p1=a1.rotateAroundAxis(bH.p1,bC,bD);bH.p2=a1.rotateAroundAxis(bH.p2,bC,bD);bH.normalp=a1.rotateAroundAxis(bH.normalp,bC,bD);bH.rotcenterp=a1.rotateAroundAxis(bH.rotcenterp,bC,bD);if(bH.polygons&&!E.objectsintersect&&!this.intersectionsenabled){for(var bE=0;bE<bH.polygons.length;bE++){var by=bH.polygons[bE];for(var bz=0;bz<by.points.length;bz++){var bB=a1.subPoint(by.points[bz],this.centerp);bB=a1.rotateAroundAxis(bB,bC,bD);by.points[bz]=a1.addPoint(bB,this.centerp)}}}}bH.centerp.x=bH.rotcenterp.x+this.centerp.x;bH.centerp.y=bH.rotcenterp.y+this.centerp.y;bH.centerp.z=bH.rotcenterp.z+this.centerp.z;ar.calculateSheetData(bH);aT.calculateSheetShade(bH)}this.intersectionsrecalc=true;this.canvasdirty=true};E.SheetObject.prototype.setOrientation=function(bz){this.rot=aK.fillRot(bz);this.rotvector=Y(this.rot,this.rotvectorstart);for(var bB=0;bB<this.sheets.length;bB++){var bC=this.sheets[bB];bC.p0=a1.rotatePoint(bC.p0start,this.rot.alpha,this.rot.beta,this.rot.gamma);bC.p1=a1.rotatePoint(bC.p1start,this.rot.alpha,this.rot.beta,this.rot.gamma);bC.p2=a1.rotatePoint(bC.p2start,this.rot.alpha,this.rot.beta,this.rot.gamma);bC.normalp=a1.rotatePoint(bC.normalpstart,this.rot.alpha,this.rot.beta,this.rot.gamma);bC.rotcenterp=a1.rotatePoint(bC.startcenterp,this.rot.alpha,this.rot.beta,this.rot.gamma);bC.centerp.x=bC.rotcenterp.x+this.centerp.x;bC.centerp.y=bC.rotcenterp.y+this.centerp.y;bC.centerp.z=bC.rotcenterp.z+this.centerp.z;ar.calculateSheetData(bC);aT.calculateSheetShade(bC);if(bC.startpolygons&&!E.objectsintersect&&!this.intersectionsenabled){bC.polygons=[];for(var bA=0;bA<bC.startpolygons.length;bA++){var bE={points:[]};bC.polygons.push(bE);var bD=bC.startpolygons[bA];for(var bF=0;bF<bD.points.length;bF++){var by=a1.rotatePoint(bD.points[bF],this.rot.alpha,this.rot.beta,this.rot.gamma);bE.points.push(a1.addPoint(by,this.centerp))}}}}this.intersectionsrecalc=true;this.canvasdirty=true};E.SheetObject.prototype.setSheetPos=function(bG,bD,bJ){var bK=bG;var bE=aK.fillRot(bJ);bK.startcenterp=bD;bK.p0start=a1.rotatePoint(bK.p0orig,bE.alpha,bE.beta,bE.gamma);bK.p1start=a1.rotatePoint(bK.p1orig,bE.alpha,bE.beta,bE.gamma);bK.p2start=a1.rotatePoint(bK.p2orig,bE.alpha,bE.beta,bE.gamma);bK.normalpstart=a1.rotatePoint(bK.normalporig,bE.alpha,bE.beta,bE.gamma);if(bK.startpolygons&&!E.objectsintersect&&!this.intersectionsenabled){var bH=a1.subPoint(bD,bK.startpolygonscenterp);for(var bC=0;bC<bK.startpolygons.length;bC++){var bF=bK.startpolygons[bC];for(var bA=0;bA<bF.points.length;bA++){var bI=bF.relpoints[bA];bF.points[bA]=a1.getPointInBase(bI,bK.p1start,bK.p2start,bK.normalpstart);bF.points[bA]=a1.addPoint(bF.points[bA],bH)}}}var bz=this.rot;bK.p0=a1.rotatePoint(bK.p0start,bz.alpha,bz.beta,bz.gamma);bK.p1=a1.rotatePoint(bK.p1start,bz.alpha,bz.beta,bz.gamma);bK.p2=a1.rotatePoint(bK.p2start,bz.alpha,bz.beta,bz.gamma);bK.normalp=a1.rotatePoint(bK.normalpstart,bz.alpha,bz.beta,bz.gamma);bK.rotcenterp=a1.rotatePoint(bK.startcenterp,bz.alpha,bz.beta,bz.gamma);bK.centerp.x=bK.rotcenterp.x+this.centerp.x;bK.centerp.y=bK.rotcenterp.y+this.centerp.y;bK.centerp.z=bK.rotcenterp.z+this.centerp.z;ar.calculateSheetData(bK);aT.calculateSheetShade(bK);if(bK.startpolygons&&!E.objectsintersect&&!this.intersectionsenabled){bK.polygons=[];for(var bC=0;bC<bK.startpolygons.length;bC++){var by={points:[]};bK.polygons.push(by);var bF=bK.startpolygons[bC];for(var bA=0;bA<bF.points.length;bA++){var bB=a1.rotatePoint(bF.points[bA],this.rot.alpha,this.rot.beta,this.rot.gamma);by.points.push(a1.addPoint(bB,this.centerp))}}}this.intersectionsrecalc=true;this.canvasdirty=true};E.SheetObject.prototype.rotateSheet=function(bE,bG,bF,bB){var bH=bE;if(bH.startpolygons&&!E.objectsintersect&&!this.intersectionsenabled){for(var bC=0;bC<bH.startpolygons.length;bC++){var bD=bH.startpolygons[bC];for(var bz=0;bz<bD.points.length;bz++){bD.points[bz]=a1.rotateAroundArbitraryAxis(bD.points[bz],bG,bF,bB)}}}bH.p0start=a1.rotateAroundAxis(bH.p0start,bF,bB);bH.p1start=a1.rotateAroundAxis(bH.p1start,bF,bB);bH.p2start=a1.rotateAroundAxis(bH.p2start,bF,bB);bH.normalpstart=a1.rotateAroundAxis(bH.normalpstart,bF,bB);bH.startcenterp=a1.rotateAroundArbitraryAxis(bH.startcenterp,bG,bF,bB);bG=a1.rotatePoint(bG,this.rot.alpha,this.rot.beta,this.rot.gamma);bF=a1.rotatePoint(bF,this.rot.alpha,this.rot.beta,this.rot.gamma);bH.p0=a1.rotateAroundAxis(bH.p0,bF,bB);bH.p1=a1.rotateAroundAxis(bH.p1,bF,bB);bH.p2=a1.rotateAroundAxis(bH.p2,bF,bB);bH.normalp=a1.rotateAroundAxis(bH.normalp,bF,bB);bH.rotcenterp=a1.rotateAroundArbitraryAxis(bH.rotcenterp,bG,bF,bB);bH.centerp.x=bH.rotcenterp.x+this.centerp.x;bH.centerp.y=bH.rotcenterp.y+this.centerp.y;bH.centerp.z=bH.rotcenterp.z+this.centerp.z;ar.calculateSheetData(bH);aT.calculateSheetShade(bH);if(bH.startpolygons&&bH.polygons&&!E.objectsintersect&&!this.intersectionsenabled){bH.polygons=[];for(var bC=0;bC<bH.startpolygons.length;bC++){var by={points:[]};bH.polygons.push(by);var bD=bH.startpolygons[bC];for(var bz=0;bz<bD.points.length;bz++){var bA=a1.rotatePoint(bD.points[bz],this.rot.alpha,this.rot.beta,this.rot.gamma);by.points.push(a1.addPoint(bA,this.centerp))}}}this.intersectionsrecalc=true;this.canvasdirty=true};E.SheetObject.prototype.redefineIntersections=function(){this.intersectionsredefine=true};E.SheetObject.prototype.show=function(){for(var by=0;by<this.sheets.length;by++){this.sheets[by].hidden=false;this.sheets[by].dirty=true}this.hidden=false;this.intersectionsrecalc=true;this.canvasdirty=true};E.SheetObject.prototype.hide=function(){for(var by=0;by<this.sheets.length;by++){this.sheets[by].hidden=true;this.sheets[by].dirty=true}this.hidden=true;this.intersectionsrecalc=true;this.canvasdirty=true};E.SheetObject.prototype.getString=function(){var bB=[];for(var bz=0;bz<this.sheets.length;bz++){var bA=this.sheets[bz];bB.push({centerp:bA.centerp,rot:{alphaD:bA.rot.alphaD,betaD:bA.rot.betaD,gammaD:bA.rot.gammaD},width:bA.width,height:bA.height,canvas:bA.canvas.toDataURL()})}var by={name:"my object",thumbnail:"",hidden:false,intersectionsenabled:this.intersectionsenabled,canvasSize:this.canvasSize,sheets:bB};return JSON.stringify(by)};E.SheetObject.prototype.draw=function(){if(!this.canvasdirty){return}var bH=this.centerpuv;var bI=this.oldcenterpuv;var bA=Math.ceil(Math.abs(bH.u-bI.u)+this.canvasSize.w);var by=Math.ceil(Math.abs(bH.v-bI.v)+this.canvasSize.h);var bD=(bA<E.temppartcanvas.width&&by<E.temppartcanvas.height);if(bD){var bG=Math.floor(Math.min(bH.u,bI.u)-this.canvasSize.relu);var bF=Math.floor(Math.min(bH.v,bI.v)-this.canvasSize.relv);var bE=bA;var bC=by;d({viewPort:{u:bG,v:bF,w:bE,h:bC}});var bB=E.backgroundcanvas?E.backgroundcanvas:E.canvas;var bz=E.backgroundcanvas?E.backgroundcontext:E.context;bG+=bB.width/2;bF+=bB.height/2;bE-=1;bC-=1;bz.drawImage(E.temppartcanvas,0,0,bE,bC,bG,bF,bE,bC);if(E.drawObjectContour){bz.strokeStyle="#FFF";bz.strokeRect(bH.u-this.canvasSize.relu+bB.width/2,bH.v-this.canvasSize.relv+bB.height/2,this.canvasSize.w,this.canvasSize.h)}}else{ap(this,bI);ap(this,bH)}this.canvasdirty=false;if(this.deleting){y(this)}};E.DensityMap=function(by){this.map={};this.granularity=by};E.DensityMap.prototype.get=function(bB){var bA=this.map;var bz=this.granularity;var by=Math.round(bB.x/bz);var bD=Math.round(bB.y/bz);var bC=Math.round(bB.z/bz);if(bA["x"+by+"y"+bD+"z"+bC]){return bA["x"+by+"y"+bD+"z"+bC]}return 0};E.DensityMap.prototype.put=function(bB){var bA=this.map;var bz=this.granularity;var by=Math.round(bB.x/bz);var bD=Math.round(bB.y/bz);var bC=Math.floor(bB.z/bz);this.add("x"+by+"y"+bD+"z"+bC);this.add("x"+(by+1)+"y"+(bD)+"z"+(bC));this.add("x"+(by)+"y"+(bD+1)+"z"+(bC));this.add("x"+(by-1)+"y"+(bD)+"z"+(bC));this.add("x"+(by)+"y"+(bD-1)+"z"+(bC))};E.DensityMap.prototype.remove=function(bB){var bA=this.map;var bz=this.granularity;var by=Math.round(bB.x/bz);var bD=Math.round(bB.y/bz);var bC=Math.floor(bB.z/bz);this.sub("x"+by+"y"+bD+"z"+bC);this.sub("x"+(by+1)+"y"+(bD)+"z"+(bC));this.sub("x"+(by)+"y"+(bD+1)+"z"+(bC));this.sub("x"+(by-1)+"y"+(bD)+"z"+(bC));this.sub("x"+(by)+"y"+(bD-1)+"z"+(bC))};E.DensityMap.prototype.add=function(bz){var by=this.map;if(!by[bz]){by[bz]=1}else{by[bz]=by[bz]+1}};E.DensityMap.prototype.sub=function(bz){var by=this.map;if(!by[bz]||by[bz]==0){return}else{by[bz]=by[bz]-1}};E.DensityMap.prototype.addSheet=function(by){this.processSheet(by,this.put)};E.DensityMap.prototype.removeSheet=function(by){this.processSheet(by,this.remove)};E.DensityMap.prototype.processSheet=function(bC,bK){var bA=this.granularity;var bI=bC;if(bI.skipDensityMap){return}var bz=Math.round(bI.width/bA);var by=Math.round(bI.height/bA);var bN={x:(bI.corners[1].x-bI.corners[0].x)/bz,y:(bI.corners[1].y-bI.corners[0].y)/bz,z:(bI.corners[1].z-bI.corners[0].z)/bz};var bP={x:(bI.corners[3].x-bI.corners[0].x)/by,y:(bI.corners[3].y-bI.corners[0].y)/by,z:(bI.corners[3].z-bI.corners[0].z)/by};var bH=bI.canvas.width;var bM=bI.canvas.height;var bO=bI.context.getImageData(0,0,bH,bM).data;var bD=a1.clonePoint(a1.addPoint(bI.corners[0],{x:(bN.x+bP.x)/2,y:(bN.y+bP.y)/2,z:(bN.z+bP.z)/2}));for(var bF=0;bF<by;bF++){actpx=a1.clonePoint(bD);for(var bG=0;bG<bz;bG++){var bL=Math.round(bG*bA+bA/2);var bJ=Math.round(bF*bA+bA/2);var bE=(bL+bH*bJ)*4;var bB=bO[bE+3];if(bB!=0){bK.call(this,actpx)}actpx=a1.addPoint(actpx,bN)}bD=a1.addPoint(bD,bP)}};E.DensityMap.prototype.addSheets=function(bz){for(var by=0;by<bz.length;by++){this.addSheet(bz[by])}};E.DensityMap.prototype.removeSheets=function(bz){for(var by=0;by<bz.length;by++){this.removeSheet(bz[by])}};E.DensityMap.prototype.getTargetHeight=function(bB,bz){var by=bB.z+bz;for(var bC=by;bC>0;bC--){var bA=this.get({x:bB.x,y:bB.y,z:bC});if(bA){return bC}}return 0};E.DensityMap.prototype.getTargetPoint=function(bD,by,bE,bz){var bF=true;var bB=false;var bA={x:bD.x+by.x,y:bD.y+by.y,z:bD.z+by.z};var bC=this.getTargetHeight({x:bA.x,y:bA.y,z:bA.z},bE);if(bC>=bA.z){if(bC-bA.z<bz){bB=true;bA.z=bC}else{by.x=0;by.y=0;bA={x:bD.x,y:bD.y,z:bD.z+by.z};var bC=this.getTargetHeight({x:bA.x,y:bA.y,z:bA.z},bE);if(bC>=bA.z){bB=true;if(bC-bA.z<bz){bA.z=bC}else{bF=false;bA.z=bC}}}}return{allowMove:bF,targetp:bA,movex:by.x,movey:by.y,stopFall:bB}};aT.shadowBaseMatrixInverse=a1.getBaseMatrixInverse(aT.lightSourcep1,aT.lightSourcep2,aT.lightSource);return E})();if(typeof(exports)!=="undefined"&&exports!==null){exports=module.exports=sheetengine};
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.sheetengine = {}));
+})(this, (function (exports) { 'use strict';
+
+  /**
+   * Core state management for SheetEngine
+   */
+
+  const state = {
+    sheets: [],
+    basesheets: [],
+    polygons: [],
+    objects: [],
+    currentSheet: -1,
+    hoverSheet: -1,
+    canvas: null,
+    context: null,
+    canvasCenter: { u: 250, v: 260 },
+    viewSource: { x: -1, y: -1, z: -Math.SQRT1_2 },
+    tempCanvasSize: { w: 115, h: 115 },
+    backgroundColor: '#FFF',
+    drawObjectContour: false,
+    boundingBoxMaxsheetDistance: 150,
+    objectsintersect: false,
+    debug: false
+  };
+
+  const internal = {
+    startsheets: [],
+    loadedyards: {},
+    staticsheets: null
+  };
+
+  /**
+   * Geometry helper functions for 3D math operations
+   */
+
+  function getBaseMatrixInverse(u, v, w) {
+    const det = u.x * (w.z * v.y - v.z * w.y) - u.y * (w.z * v.x - v.z * w.x) + u.z * (w.y * v.x - v.y * w.x);
+    const b1 = { x: (w.z * v.y - v.z * w.y) / det, y: (u.z * w.y - w.z * u.y) / det, z: (v.z * u.y - u.z * v.y) / det };
+    const b2 = { x: (v.z * w.x - w.z * v.x) / det, y: (w.z * u.x - u.z * w.x) / det, z: (u.z * v.x - v.z * u.x) / det };
+    const b3 = { x: (w.y * v.x - v.y * w.x) / det, y: (u.y * w.x - w.y * u.x) / det, z: (v.y * u.x - u.y * v.x) / det };
+    return { b1, b2, b3 };
+  }
+
+  function crossProduct(v1, v2) {
+    return {
+      x: v1.z * v2.y - v1.y * v2.z,
+      y: -(v1.z * v2.x) + v1.x * v2.z,
+      z: v1.y * v2.x - v1.x * v2.y
+    };
+  }
+
+  function vectorMagnitude(v) {
+    return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+  }
+
+  function round2digits$1(a, digits) {
+    return Math.round(a * digits) / digits;
+  }
+
+  function roundVector2digits(v, digits) {
+    return {
+      x: round2digits$1(v.x, digits),
+      y: round2digits$1(v.y, digits),
+      z: round2digits$1(v.z, digits)
+    };
+  }
+
+  function getTForSheetLineCrossing$1(normalp, centerp, p, l) {
+    return (
+      (normalp.x * centerp.x + normalp.y * centerp.y + normalp.z * centerp.z -
+        normalp.x * p.x - normalp.y * p.y - normalp.z * p.z) /
+      (normalp.x * l.x + normalp.y * l.y + normalp.z * l.z)
+    );
+  }
+
+  function multiplyMatrices(a1, a2, a3, b1, b2, b3) {
+    const c1 = {
+      x: a1.x * b1.x + a2.x * b1.y + a3.x * b1.z,
+      y: a1.y * b1.x + a2.y * b1.y + a3.y * b1.z,
+      z: a1.z * b1.x + a2.z * b1.y + a3.z * b1.z
+    };
+    const c2 = {
+      x: a1.x * b2.x + a2.x * b2.y + a3.x * b2.z,
+      y: a1.y * b2.x + a2.y * b2.y + a3.y * b2.z,
+      z: a1.z * b2.x + a2.z * b2.y + a3.z * b2.z
+    };
+    const c3 = {
+      x: a1.x * b3.x + a2.x * b3.y + a3.x * b3.z,
+      y: a1.y * b3.x + a2.y * b3.y + a3.y * b3.z,
+      z: a1.z * b3.x + a2.z * b3.y + a3.z * b3.z
+    };
+    return { c1, c2, c3 };
+  }
+
+  function getCoordsInBase(b, p) {
+    const x = b.b1.x * p.x + b.b2.x * p.y + b.b3.x * p.z;
+    const y = b.b1.y * p.x + b.b2.y * p.y + b.b3.y * p.z;
+    const z = b.b1.z * p.x + b.b2.z * p.y + b.b3.z * p.z;
+    return { x, y, z };
+  }
+
+  function getPointInBase(p, p1, p2, normalp) {
+    return {
+      x: p.x * p1.x + p.y * p2.x + p.z * normalp.x,
+      y: p.x * p1.y + p.y * p2.y + p.z * normalp.y,
+      z: p.x * p1.z + p.y * p2.z + p.z * normalp.z
+    };
+  }
+
+  function addPoint(p1, p2) {
+    return { x: p1.x + p2.x, y: p1.y + p2.y, z: p1.z + p2.z };
+  }
+
+  function subPoint(p1, p2) {
+    return { x: p1.x - p2.x, y: p1.y - p2.y, z: p1.z - p2.z };
+  }
+
+  function avgPoints(p1, p2, ratio1, ratio2, sum) {
+    return {
+      x: (p1.x * ratio1 + p2.x * ratio2) / sum,
+      y: (p1.y * ratio1 + p2.y * ratio2) / sum,
+      z: (p1.z * ratio1 + p2.z * ratio2) / sum
+    };
+  }
+
+  function avgPointsuv(p1, p2, ratio1, ratio2, sum) {
+    return {
+      u: (p1.u * ratio1 + p2.u * ratio2) / sum,
+      v: (p1.v * ratio1 + p2.v * ratio2) / sum
+    };
+  }
+
+  function roughPointDist(p1, p2) {
+    return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y) + Math.abs(p1.z - p2.z);
+  }
+
+  function pointDist(p1, p2) {
+    return vectorMagnitude({ x: p2.x - p1.x, y: p2.y - p1.y, z: p2.z - p1.z });
+  }
+
+  function clonePoint(p) {
+    return { x: p.x, y: p.y, z: p.z };
+  }
+
+  function normalPoint(p) {
+    const max = Math.max(Math.abs(p.x), Math.max(Math.abs(p.y), Math.abs(p.z)));
+    return { x: p.x / max, y: p.y / max, z: p.z / max };
+  }
+
+  function rotatePoint(p, phi, theta, omega) {
+    const sphi = Math.sin(phi);
+    const cphi = Math.cos(phi);
+    const stheta = Math.sin(theta);
+    const ctheta = Math.cos(theta);
+    const somega = Math.sin(omega);
+    const comega = Math.cos(omega);
+    const x = p.x * ctheta * comega + p.y * ctheta * somega - p.z * stheta;
+    const y = p.x * (-cphi * somega + sphi * stheta * comega) + p.y * (cphi * comega + sphi * stheta * somega) + p.z * sphi * ctheta;
+    const z = p.x * (sphi * somega + cphi * stheta * comega) + p.y * (-sphi * comega + cphi * stheta * somega) + p.z * cphi * ctheta;
+    return { x, y, z };
+  }
+
+  function inverseRPY(p1, p2, normalp) {
+    let alpha = 0;
+    let beta = 0;
+    let gamma = 0;
+
+    p1.x;
+    const ny = p1.y;
+    const nx = p1.z;
+    const lz = p2.x;
+    const ly = p2.y;
+    const lx = p2.z;
+    normalp.x;
+    const my = normalp.y;
+    const mx = normalp.z;
+
+    if (ly === 0 && lx === 0) {
+      if (lz === 1) {
+        beta = -Math.PI / 2;
+        alpha = 0;
+        gamma = Math.atan2(ny, nx);
+      } else {
+        beta = Math.PI / 2;
+        alpha = 0;
+        gamma = Math.atan2(mx, my);
+      }
+    } else {
+      alpha = Math.atan2(ly, lx);
+      const sa = Math.sin(alpha);
+      const ca = Math.cos(alpha);
+      beta = Math.atan2(-lz, sa * ly + ca * lx);
+      gamma = Math.atan2(sa * nx - ca * ny, -sa * mx + ca * my);
+    }
+
+    alpha = alpha + Math.PI;
+    beta = -beta;
+    gamma = gamma + Math.PI;
+
+    if (alpha === 2 * Math.PI) alpha = 0;
+    if (gamma === 2 * Math.PI) gamma = 0;
+    if (beta < 0) beta = 2 * Math.PI + beta;
+    if (beta === 2 * Math.PI) beta = 0;
+
+    const alphaD = Math.round((180 / Math.PI) * alpha);
+    const betaD = Math.round((180 / Math.PI) * beta);
+    const gammaD = Math.round((180 / Math.PI) * gamma);
+
+    return { alpha, beta, gamma, alphaD, betaD, gammaD };
+  }
+
+  function rotateAroundAxis(p, t, phi) {
+    const cphi = Math.cos(phi);
+    const sphi = Math.sin(phi);
+    const tp = p.x * t.x + p.y * t.y + p.z * t.z;
+    const txp = { x: t.y * p.z - p.y * t.z, y: -t.x * p.z + p.x * t.z, z: t.x * p.y - p.x * t.y };
+
+    return {
+      x: p.x * cphi + txp.x * sphi + t.x * tp * (1 - cphi),
+      y: p.y * cphi + txp.y * sphi + t.y * tp * (1 - cphi),
+      z: p.z * cphi + txp.z * sphi + t.z * tp * (1 - cphi)
+    };
+  }
+
+  function rotateAroundArbitraryAxis(p, tp, tv, phi) {
+    const temp = { x: p.x - tp.x, y: p.y - tp.y, z: p.z - tp.z };
+    const rottemp = rotateAroundAxis(temp, tv, phi);
+    return { x: rottemp.x + tp.x, y: rottemp.y + tp.y, z: rottemp.z + tp.z };
+  }
+
+  function rotateAroundArbitraryAxisp(p, center, newcenter, tp, tv, phi) {
+    const temp = { x: p.x + center.x, y: p.y + center.y, z: p.z + center.z };
+    const rottemp = rotateAroundArbitraryAxis(temp, tp, tv, phi);
+    return { x: rottemp.x - newcenter.x, y: rottemp.y - newcenter.y, z: rottemp.z - newcenter.z };
+  }
+
+  var geometry = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    addPoint: addPoint,
+    avgPoints: avgPoints,
+    avgPointsuv: avgPointsuv,
+    clonePoint: clonePoint,
+    crossProduct: crossProduct,
+    getBaseMatrixInverse: getBaseMatrixInverse,
+    getCoordsInBase: getCoordsInBase,
+    getPointInBase: getPointInBase,
+    getTForSheetLineCrossing: getTForSheetLineCrossing$1,
+    inverseRPY: inverseRPY,
+    multiplyMatrices: multiplyMatrices,
+    normalPoint: normalPoint,
+    pointDist: pointDist,
+    rotateAroundArbitraryAxis: rotateAroundArbitraryAxis,
+    rotateAroundArbitraryAxisp: rotateAroundArbitraryAxisp,
+    rotateAroundAxis: rotateAroundAxis,
+    rotatePoint: rotatePoint,
+    roughPointDist: roughPointDist,
+    round2digits: round2digits$1,
+    roundVector2digits: roundVector2digits,
+    subPoint: subPoint,
+    vectorMagnitude: vectorMagnitude
+  });
+
+  /**
+   * Coordinate transformation functions for isometric projection
+   */
+
+
+  const su = Math.SQRT1_2;
+  const sv = Math.SQRT1_2 / 2;
+
+  function transformPoint(p) {
+    const u = (p.x - p.y) * su;
+    const v = (p.x + p.y) * sv - p.z;
+    return { u, v };
+  }
+
+  function transformPointz(p) {
+    const u = (p.x - p.y) * su;
+    const v = (p.x + p.y) * sv - p.z;
+    const z = -(p.x + p.y);
+    return { u, v, z };
+  }
+
+  function transformPointuv(p, transformFunc, canvasCenter) {
+    const puv = transformFunc(p);
+    return { u: canvasCenter.u + puv.u, v: canvasCenter.v + puv.v };
+  }
+
+  function transformPointuvz(p, transformFunc, canvasCenter) {
+    const puv = transformFunc(p);
+    return { u: canvasCenter.u + puv.u, v: canvasCenter.v + puv.v, z: puv.z };
+  }
+
+  function inverseTransformPoint(p) {
+    const su = Math.SQRT1_2;
+    const sv = su / 2;
+
+    const x = ((p.u - state.canvasCenter.u) / su + (p.v - state.canvasCenter.v) / sv) / 2;
+    const y = (p.v - state.canvasCenter.v) / sv - x;
+    return { x: Math.floor(x), y: Math.floor(y), z: null };
+  }
+
+  function inverseTransformPointSimple(p) {
+    const su = Math.SQRT1_2;
+    const sv = su / 2;
+
+    const x = (p.u / su + p.v / sv) / 2;
+    const y = p.v / sv - x;
+    return { x, y, z: null };
+  }
+
+  var transforms = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    inverseTransformPoint: inverseTransformPoint,
+    inverseTransformPointSimple: inverseTransformPointSimple,
+    transformPoint: transformPoint,
+    transformPointuv: transformPointuv,
+    transformPointuvz: transformPointuvz,
+    transformPointz: transformPointz
+  });
+
+  /**
+   * Shadow calculation and rendering system
+   */
+
+
+  const config$2 = {
+    baseshadowCanvas: null,
+    baseshadowContext: null,
+    baseShadowCenter: { u: 212, v: 2 * 106 },
+    lightSource: { x: 1, y: -3, z: -10 },
+    lightSourcep1: { x: 1, y: -3, z: 1 },
+    lightSourcep2: { x: -33, y: 11, z: 0 },
+    shadowAlpha: 0.3,
+    shadeAlpha: 0.3,
+    drawShadows: true,
+    shadowBaseMatrixInverse: null
+  };
+
+  function calculateSheetBaseShadow(sheet) {
+    const s = sheet;
+    const l = config$2.lightSource;
+    const centerp = { x: s.centerp.x, y: s.centerp.y, z: s.centerp.z };
+    const p0 = { x: centerp.x + s.p0.x, y: centerp.y + s.p0.y, z: centerp.z + s.p0.z };
+    const p1 = { x: centerp.x + s.p1.x, y: centerp.y + s.p1.y, z: centerp.z + s.p1.z };
+    const p2 = { x: centerp.x + s.p2.x, y: centerp.y + s.p2.y, z: centerp.z + s.p2.z };
+
+    const tc = centerp.z / -l.z;
+    const t0 = p0.z / -l.z;
+    const t1 = p1.z / -l.z;
+    const t2 = p2.z / -l.z;
+
+    const centerpsect = { x: centerp.x + l.x * tc, y: centerp.y + l.y * tc, z: centerp.z + l.z * tc };
+    const p0sect = { x: p0.x + l.x * t0 - centerpsect.x, y: p0.y + l.y * t0 - centerpsect.y, z: p0.z + l.z * t0 - centerpsect.z };
+    const p1sect = { x: p1.x + l.x * t1 - centerpsect.x, y: p1.y + l.y * t1 - centerpsect.y, z: p1.z + l.z * t1 - centerpsect.z };
+    const p2sect = { x: p2.x + l.x * t2 - centerpsect.x, y: p2.y + l.y * t2 - centerpsect.y, z: p2.z + l.z * t2 - centerpsect.z };
+
+    // Import calculateSheetDataSingle from calc module when available
+    s.baseShadoweData = calculateSheetDataSingle$1(centerpsect, p0sect, p1sect, p2sect, transformPoint, transformPointz, config$2.baseShadowCenter, s.corners);
+
+    // Adjust for scene center when available
+    if (window.scene) {
+      s.baseShadoweData.translatex -= window.scene.center.u;
+      s.baseShadoweData.translatey -= window.scene.center.v;
+    }
+  }
+
+  function calculateSheetDataSingle$1(centerp, p0rot, p1rot, p2rot, transformFunction, transformFunctionz, canvasCenter, corners) {
+    const centerpuv = transformFunction(centerp);
+    const p0rotScale = { x: p0rot.x, y: p0rot.y, z: p0rot.z };
+    const p1rotScale = { x: p1rot.x, y: p1rot.y, z: p1rot.z };
+    const p2rotScale = { x: p2rot.x, y: p2rot.y, z: p2rot.z };
+
+    const p0 = transformFunction(p0rotScale);
+    const p1 = transformFunction(p1rotScale);
+    const p2 = transformFunction(p2rotScale);
+
+    const translatex = canvasCenter.u + p0.u + centerpuv.u;
+    const translatey = canvasCenter.v + p0.v + centerpuv.v;
+    const ta = p1.u;
+    const tb = p1.v;
+    const tc = p2.u;
+    const td = p2.v;
+
+    if (corners == null)
+      return { p0uv: p0, p1uv: p1, p2uv: p2, translatex, translatey, ta, tb, tc, td, centerpuv };
+
+    const c = [];
+    c[0] = transformPointuvz(corners[0], transformFunctionz, canvasCenter);
+    c[1] = transformPointuvz(corners[1], transformFunctionz, canvasCenter);
+    c[2] = transformPointuvz(corners[2], transformFunctionz, canvasCenter);
+    c[3] = transformPointuvz(corners[3], transformFunctionz, canvasCenter);
+
+    const umax = Math.max(c[0].u, c[1].u, c[2].u, c[3].u);
+    const umin = Math.min(c[0].u, c[1].u, c[2].u, c[3].u);
+    const vmax = Math.max(c[0].v, c[1].v, c[2].v, c[3].v);
+    const vmin = Math.min(c[0].v, c[1].v, c[2].v, c[3].v);
+    const zmax = Math.max(c[0].z, c[1].z, c[2].z, c[3].z);
+    const zmin = Math.min(c[0].z, c[1].z, c[2].z, c[3].z);
+
+    return { p0uv: p0, p1uv: p1, p2uv: p2, translatex, translatey, ta, tb, tc, td, centerpuv, cornersuv: c, umax, umin, vmax, vmin, zmax, zmin };
+  }
+
+  function checkDirtyShadowConstraint(prev, dirtySheets) {
+    for (let i = 0; i < state.sheets.length; i++) {
+      const sheet = state.sheets[i];
+
+      if (sheet.dirty) continue;
+      if (sheet.hidden) continue;
+
+      if (prev)
+        sheet.shadowdirty = false;
+      else {
+        if (sheet.shadowdirty) continue;
+      }
+
+      for (let j = 0; j < sheet.polygons.length; j++) {
+        const sheetpoly = sheet.polygons[j];
+        const shadowconstraints = prev ? sheetpoly.prevshadowconstraints : sheetpoly.shadowconstraints;
+        if (shadowconstraints == null) {
+          sheet.shadowdirty = true;
+          break;
+        }
+        for (let k = 0; k < shadowconstraints.length; k++) {
+          const sheetconstraint = state.polygons[shadowconstraints[k]].sheetindex;
+          if (dirtySheets.indexOf(sheetconstraint) != -1) {
+            sheet.shadowdirty = true;
+            break;
+          }
+        }
+        if (sheet.shadowdirty) break;
+      }
+    }
+  }
+
+  function initBaseRectShadow(ctx, size, rel, viewport, drawing) {
+    if (!config$2.drawShadows) return;
+
+    ctx.clearRect(0, 0, size.w, size.h);
+
+    for (let i = 0; i < state.sheets.length; i++) {
+      const s = state.sheets[i];
+      if (s.hidden) continue;
+      if (!s.castshadows) continue;
+
+      if (viewport) {
+        const sheetdata = s.data;
+        if (sheetdata.centerpuv.u < viewport.minu || sheetdata.centerpuv.u > viewport.maxu ||
+            sheetdata.centerpuv.v < viewport.minv || sheetdata.centerpuv.v > viewport.maxv)
+          continue;
+      }
+
+      s.baseShadoweData.translatex += rel.u;
+      s.baseShadoweData.translatey += rel.v;
+      drawing.drawRect(s.baseShadoweData, ctx, drawBaseShadowTexture, s.baseshadowcanvas, false);
+      s.baseShadoweData.translatex -= rel.u;
+      s.baseShadoweData.translatey -= rel.v;
+    }
+  }
+
+  function drawBaseShadowTexture(context, canvas) {
+    context.drawImage(canvas, 0, 0);
+  }
+
+  function drawBaseRectShadow() {
+    state.context.save();
+    state.context.globalAlpha = config$2.shadowAlpha;
+    if (window.scene) {
+      state.context.drawImage(config$2.baseshadowCanvas, state.canvasCenter.u - window.scene.tilesize.x, state.canvasCenter.v - 2 * window.scene.tilesize.y);
+    }
+    state.context.restore();
+  }
+
+  function drawSheetShadow(sheet) {
+    if (sheet.hidden) return;
+
+    const drawshadows = !sheet.shaded && config$2.drawShadows && sheet.allowshadows;
+
+    if (drawshadows) {
+      sheet.shadowtempcontext.clearRect(0, 0, sheet.width, sheet.height);
+      sheet.shadowData = [];
+
+      for (let j = 0; j < sheet.polygons.length; j++) {
+        const sheetpoly = sheet.polygons[j];
+        const shadowconstraints = sheetpoly.shadowconstraints;
+
+        const sheetsconstraints = [];
+        for (let k = 0; k < shadowconstraints.length; k++) {
+          const shadowcaster = state.polygons[shadowconstraints[k]].sheetindex;
+
+          if (sheetsconstraints.indexOf(shadowcaster) != -1) continue;
+          sheetsconstraints.push(shadowcaster);
+
+          const shadowcastersheet = state.sheets[shadowcaster];
+          if (shadowcastersheet.hidden) continue;
+          if (!shadowcastersheet.castshadows) continue;
+
+          sheet.shadowtempcontext.save();
+
+          sheet.shadowtempcontext.beginPath();
+          for (let pi = 0; pi < sheetpoly.points.length; pi++) {
+            sheet.shadowtempcontext.lineTo(sheetpoly.pointscanvasuv[pi].u, sheetpoly.pointscanvasuv[pi].v);
+          }
+          sheet.shadowtempcontext.closePath();
+          sheet.shadowtempcontext.clip();
+
+          if (sheet.shadowData[shadowcastersheet.index] == null)
+            sheet.shadowData[shadowcastersheet.index] = calculateShadowData(sheet, shadowcastersheet);
+
+          const sheetData = sheet.shadowData[shadowcastersheet.index];
+          sheet.shadowtempcontext.transform(sheetData.ta, sheetData.tb, sheetData.tc, sheetData.td, sheetData.translatex, sheetData.translatey);
+          sheet.shadowtempcontext.drawImage(shadowcastersheet.shadowcanvas, 0, 0);
+          sheet.shadowtempcontext.restore();
+        }
+      }
+    }
+
+    sheet.compositecontext.save();
+    sheet.compositecontext.drawImage(sheet.canvas, 0, 0);
+
+    if (sheet.shaded) {
+      sheet.compositecontext.globalCompositeOperation = 'source-over';
+      sheet.compositecontext.globalAlpha = config$2.shadeAlpha;
+      sheet.compositecontext.drawImage(sheet.shadowcanvas, 0, 0);
+    } else {
+      const shadeThresh = 0;
+      if (sheet.shadealpha > shadeThresh) {
+        sheet.compositecontext.globalCompositeOperation = 'source-over';
+        sheet.compositecontext.globalAlpha = sheet.shadealpha;
+        sheet.compositecontext.drawImage(sheet.shadowcanvas, 0, 0);
+      } else {
+        sheet.compositecontext.globalCompositeOperation = 'source-atop';
+        sheet.compositecontext.globalAlpha = (shadeThresh - sheet.shadealpha * 6);
+        sheet.compositecontext.fillStyle = '#FFF';
+        sheet.compositecontext.fillRect(0, 0, sheet.width, sheet.height);
+      }
+    }
+
+    if (drawshadows) {
+      sheet.compositecontext.globalAlpha = config$2.shadowAlpha - sheet.shadealpha;
+      sheet.compositecontext.globalCompositeOperation = 'source-atop';
+      sheet.compositecontext.drawImage(sheet.shadowtempcanvas, 0, 0);
+    }
+    sheet.compositecontext.restore();
+  }
+
+  function calculateSheetsShadows(calculateAll) {
+    for (let i = 0; i < state.sheets.length; i++) {
+      const sheet = state.sheets[i];
+      if (sheet.shadowdirty || sheet.dirty || calculateAll)
+        drawSheetShadow(sheet);
+    }
+  }
+
+  function calculateShadowData(sheet, shadowcaster) {
+    const s = shadowcaster;
+    const l = config$2.lightSource;
+
+    const centerp = { x: s.centerp.x, y: s.centerp.y, z: s.centerp.z };
+    const p0 = { x: s.centerp.x + s.p0.x, y: s.centerp.y + s.p0.y, z: s.centerp.z + s.p0.z };
+    const p1 = { x: s.centerp.x + s.p1.x, y: s.centerp.y + s.p1.y, z: s.centerp.z + s.p1.z };
+    const p2 = { x: s.centerp.x + s.p2.x, y: s.centerp.y + s.p2.y, z: s.centerp.z + s.p2.z };
+
+    const tc = getTForSheetLineCrossing(sheet.normalp, sheet.centerp, centerp, l);
+    const t0 = getTForSheetLineCrossing(sheet.normalp, sheet.centerp, p0, l);
+    const t1 = getTForSheetLineCrossing(sheet.normalp, sheet.centerp, p1, l);
+    const t2 = getTForSheetLineCrossing(sheet.normalp, sheet.centerp, p2, l);
+
+    const centerpsect = { x: centerp.x + l.x * tc, y: centerp.y + l.y * tc, z: centerp.z + l.z * tc };
+    const p0sect = { x: p0.x + l.x * t0 - centerpsect.x, y: p0.y + l.y * t0 - centerpsect.y, z: p0.z + l.z * t0 - centerpsect.z };
+    const p1sect = { x: p1.x + l.x * t1 - centerpsect.x, y: p1.y + l.y * t1 - centerpsect.y, z: p1.z + l.z * t1 - centerpsect.z };
+    const p2sect = { x: p2.x + l.x * t2 - centerpsect.x, y: p2.y + l.y * t2 - centerpsect.y, z: p2.z + l.z * t2 - centerpsect.z };
+
+    const eData = calculateSheetDataSingle$1(centerpsect, p0sect, p1sect, p2sect, transformPoint, null, state.canvasCenter, null);
+
+    const A1 = getBaseMatrixInverse({ x: sheet.data.ta, y: sheet.data.tb, z: 0 }, { x: sheet.data.tc, y: sheet.data.td, z: 0 }, { x: sheet.data.translatex, y: sheet.data.translatey, z: 1 });
+    const C = multiplyMatrices(A1.b1, A1.b2, A1.b3, { x: eData.ta, y: eData.tb, z: 0 }, { x: eData.tc, y: eData.td, z: 0 }, { x: eData.translatex, y: eData.translatey, z: 1 });
+
+    const sheetData = { translatex: C.c3.x, translatey: C.c3.y, ta: C.c1.x, tb: C.c1.y, tc: C.c2.x, td: C.c2.y };
+    return sheetData;
+  }
+
+  function getTForSheetLineCrossing(normalp, centerp, p, l) {
+    return (
+      (normalp.x * centerp.x + normalp.y * centerp.y + normalp.z * centerp.z -
+        normalp.x * p.x - normalp.y * p.y - normalp.z * p.z) /
+      (normalp.x * l.x + normalp.y * l.y + normalp.z * l.z)
+    );
+  }
+
+  function isSheetDark(sheet, viewSource) {
+    const v = viewSource;
+    const l = config$2.lightSource;
+
+    const lightPoint = { x: sheet.centerp.x - (l.x * 100), y: sheet.centerp.y - (l.y * 100), z: sheet.centerp.z - (l.z * 100) };
+    const viewPoint = { x: sheet.centerp.x - (v.x * 100), y: sheet.centerp.y - (v.y * 100), z: sheet.centerp.z - (v.z * 100) };
+
+    const nrr0 = sheet.normalp.x * (lightPoint.x - sheet.centerp.x) + sheet.normalp.y * (lightPoint.y - sheet.centerp.y) + sheet.normalp.z * (lightPoint.z - sheet.centerp.z);
+    const nrr02 = -sheet.normalp.x * (viewPoint.x - sheet.centerp.x) - sheet.normalp.y * (viewPoint.y - sheet.centerp.y) - sheet.normalp.z * (viewPoint.z - sheet.centerp.z);
+
+    const backToLightSource = nrr0 < 0;
+    const backToViewSource = nrr02 < 0;
+    return (backToLightSource && backToViewSource) || (!backToLightSource && !backToViewSource);
+  }
+
+  function calculateSheetShade(sheet) {
+    if (!sheet.allowshadows) {
+      sheet.shaded = false;
+      sheet.shadealpha = 0;
+      return;
+    }
+
+    const l = config$2.lightSource;
+    const n = sheet.normalp;
+    const scale = 3;
+
+    const axb = vectorMagnitude(crossProduct(l, n));
+    const ab = vectorMagnitude(l) * vectorMagnitude(n);
+    const t = Math.asin(axb / ab) / (Math.PI * scale);
+
+    sheet.shaded = isSheetDark(sheet, state.viewSource);
+    sheet.shadealpha = t - 0.05;
+  }
+
+  function drawBaseRectShadows(context, offset) {
+    if (!offset) offset = { u: 0, v: 0 };
+    context.save();
+    context.globalAlpha = config$2.shadowAlpha;
+    context.drawImage(config$2.baseshadowCanvas, offset.u, offset.v);
+    context.restore();
+  }
+
+  // Initialize shadow base matrix inverse
+  config$2.shadowBaseMatrixInverse = getBaseMatrixInverse(config$2.lightSourcep1, config$2.lightSourcep2, config$2.lightSource);
+
+  var shadows = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    calculateSheetBaseShadow: calculateSheetBaseShadow,
+    calculateSheetShade: calculateSheetShade,
+    calculateSheetsShadows: calculateSheetsShadows,
+    checkDirtyShadowConstraint: checkDirtyShadowConstraint,
+    config: config$2,
+    drawBaseRectShadow: drawBaseRectShadow,
+    drawBaseRectShadows: drawBaseRectShadows,
+    drawSheetShadow: drawSheetShadow,
+    initBaseRectShadow: initBaseRectShadow
+  });
+
+  /**
+   * Canvas drawing utilities and rendering functions
+   */
+
+
+  const config$1 = {
+    drawBaseRect: null,
+    drawBeforeSheets: null,
+    drawAfterSheets: null,
+    useClipCorrection: false,
+    dimmedAlpha: 0.2,
+    allowContourDrawing: true,
+    hoveredSheetColor: '#F80',
+    selectedSheetColor: '#00F',
+    selectrectlinewidth: 2
+  };
+
+  function createCanvas(w, h) {
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    return canvas;
+  }
+
+  function redraw() {
+    state.context.clearRect(0, 0, state.canvas.width, state.canvas.height);
+    if (config$1.drawBaseRect)
+      config$1.drawBaseRect();
+    if (config$2.drawShadows) {
+      initBaseRectShadow(config$2.baseshadowContext, { w: config$2.baseshadowCanvas.width, h: config$2.baseshadowCanvas.height }, { u: 0, v: 0 });
+      drawBaseRectShadow();
+    }
+    if (config$1.drawBeforeSheets)
+      config$1.drawBeforeSheets();
+    drawSheets(state.context);
+    if (config$1.drawAfterSheets)
+      config$1.drawAfterSheets();
+  }
+
+  function round2digits(a, digits) {
+    return Math.round(a * digits) / digits;
+  }
+
+  function drawRect(sheetdata, context, drawFunction, canvas, allowContourDrawing, poly) {
+    const a = round2digits(sheetdata.p1uv.u, 1000);
+    const b = round2digits(sheetdata.p1uv.v, 1000);
+    const c = round2digits(sheetdata.p2uv.u, 1000);
+    const d = round2digits(sheetdata.p2uv.v, 1000);
+
+    if ((a == 0 && c == 0) || (c == 0 && d == 0) || (a == 0 && b == 0) || (b == 0 && d == 0) || (a + b == 0 && c + d == 0)) {
+      if (allowContourDrawing && config$1.allowContourDrawing)
+        drawSelectRect(sheetdata, context, 0);
+      return;
+    }
+
+    context.save();
+    if (poly != null) {
+      let allcornersincluded = true;
+      for (let i = 0; i < 4; i++) {
+        const c = sheetdata.cornersuv[i];
+        let cornerincluded = false;
+        for (let polyi = 0; polyi < poly.points.length; polyi++) {
+          const p = poly.data.pointsuv[polyi];
+          if (c.u == p.u && c.v == p.v) {
+            cornerincluded = true;
+            break;
+          }
+        }
+        if (!cornerincluded) {
+          allcornersincluded = false;
+          break;
+        }
+      }
+      if (!allcornersincluded) {
+        context.beginPath();
+        for (let polyi = 0; polyi < poly.points.length; polyi++) {
+          const p = poly.data.pointsuv[polyi];
+          if (config$1.useClipCorrection) {
+            const avg = poly.data.avguv;
+            const corru = (p.u - avg.u) * 0.03;
+            const corrv = (p.v - avg.v) * 0.03;
+            context.lineTo(p.u + corru, p.v + corrv);
+          } else {
+            context.lineTo(p.u, p.v);
+          }
+        }
+        context.closePath();
+        context.clip();
+      }
+    }
+    context.transform(sheetdata.ta, sheetdata.tb, sheetdata.tc, sheetdata.td, sheetdata.translatex, sheetdata.translatey);
+    drawFunction(context, canvas);
+    context.beginPath();
+    context.restore();
+  }
+
+  function drawTexture(context, canvas) {
+    context.drawImage(canvas, 0, 0);
+  }
+
+  function drawSelectRect(sheetdata, context, selected) {
+    context.save();
+
+    context.globalAlpha = 1;
+    switch (selected) {
+      case 0:
+        context.strokeStyle = '#000';
+        break;
+      case 1:
+        context.strokeStyle = '#00F';
+        context.globalAlpha = 0.5;
+        break;
+      case 2:
+        context.strokeStyle = '#F80';
+        context.globalAlpha = 0.5;
+        break;
+      case 3:
+        context.strokeStyle = '#00F';
+        break;
+    }
+    context.lineWidth = config$1.selectrectlinewidth;
+
+    context.beginPath();
+    context.moveTo(sheetdata.cornersuv[0].u, sheetdata.cornersuv[0].v);
+    context.lineTo(sheetdata.cornersuv[1].u, sheetdata.cornersuv[1].v);
+    context.lineTo(sheetdata.cornersuv[2].u, sheetdata.cornersuv[2].v);
+    context.lineTo(sheetdata.cornersuv[3].u, sheetdata.cornersuv[3].v);
+    context.lineTo(sheetdata.cornersuv[0].u, sheetdata.cornersuv[0].v);
+    context.closePath();
+    context.stroke();
+
+    context.restore();
+  }
+
+  function redrawSheetCanvases(sheet) {
+    sheet.baseshadowcontext.save();
+    sheet.baseshadowcontext.clearRect(0, 0, sheet.width, sheet.height);
+    sheet.baseshadowcontext.drawImage(sheet.canvas, 0, 0);
+    sheet.baseshadowcontext.globalCompositeOperation = 'source-in';
+    sheet.baseshadowcontext.fillStyle = '#000';
+    sheet.baseshadowcontext.fillRect(0, 0, sheet.width, sheet.height);
+    sheet.baseshadowcontext.restore();
+
+    sheet.shadowcontext.save();
+    sheet.shadowcontext.clearRect(0, 0, sheet.width, sheet.height);
+    sheet.shadowcontext.drawImage(sheet.canvas, 0, 0);
+    sheet.shadowcontext.globalCompositeOperation = 'source-in';
+    sheet.shadowcontext.fillStyle = '#000';
+    sheet.shadowcontext.fillRect(0, 0, sheet.width, sheet.height);
+    sheet.shadowcontext.restore();
+  }
+
+  function drawSheetSelection(sheet, polygon, sheetData, context) {
+    const hoverSheet = state.hoverSheet != -1 ? state.sheets[state.hoverSheet] : null;
+    const hovered = state.hoverSheet == sheet.index || (hoverSheet != null && sheet.group != null && sheet.group == hoverSheet.group) || (hoverSheet != null && sheet.objectsheet && sheet.object == hoverSheet.object);
+    const selected = state.currentSheet == sheet.index;
+    const inSelection = sheet.inSelection;
+    if (hovered || selected || inSelection) {
+      const color = (inSelection || selected) ? 2 : 1;
+      drawSelectPoly(sheetData, context, color, sheet, polygon);
+    }
+  }
+
+  function drawSelectPoly(sheetdata, context, color, sheet, poly) {
+    context.save();
+
+    context.globalAlpha = 1;
+    switch (color) {
+      case 1:
+        context.strokeStyle = config$1.hoveredSheetColor;
+        break;
+      case 2:
+        context.strokeStyle = config$1.selectedSheetColor;
+        break;
+    }
+    context.lineWidth = 2;
+
+    context.beginPath();
+    for (let j = 0; j < poly.points.length; j++) {
+      const next = j == poly.points.length - 1 ? 0 : j + 1;
+      context.moveTo(poly.data.pointsuv[j].u, poly.data.pointsuv[j].v);
+      const inframe = pointsInFrame(poly.data.pointsuv[j], poly.data.pointsuv[next], sheetdata.cornersuv);
+
+      if (inframe) {
+        context.lineTo(poly.data.pointsuv[next].u, poly.data.pointsuv[next].v);
+      }
+    }
+
+    context.closePath();
+    context.stroke();
+
+    context.restore();
+  }
+
+  function pointsInFrame(p1, p2, cornersuv) {
+    return pointsInFrameLine(p1, p2, cornersuv[0], cornersuv[1]) ||
+      pointsInFrameLine(p1, p2, cornersuv[1], cornersuv[2]) ||
+      pointsInFrameLine(p1, p2, cornersuv[2], cornersuv[3]) ||
+      pointsInFrameLine(p1, p2, cornersuv[3], cornersuv[0]);
+  }
+
+  function pointsInFrameLine(p1, p2, c1, c2) {
+    const diffu1 = p1.u - c1.u;
+    const diffu2 = p2.u - c1.u;
+    const diffu3 = c2.u - c1.u;
+    const diffv1 = p1.v - c1.v;
+    const diffv2 = p2.v - c1.v;
+    const diffv3 = c2.v - c1.v;
+    const div1 = (diffu1 / diffu3);
+    const div2 = (diffv1 / diffv3);
+    const div3 = (diffu2 / diffu3);
+    const div4 = (diffv2 / diffv3);
+    const thresh1 = 0.1;
+    const thresh2 = 2;
+    const inline = (Math.abs(div1 - div2) < thresh1 && Math.abs(div3 - div4) < thresh1) || (Math.abs(diffu3) < thresh2 && Math.abs(diffu2) < thresh2 & Math.abs(diffu1) < thresh2) || (Math.abs(diffv3) < thresh2 && Math.abs(diffv2) < thresh2 && Math.abs(diffv1) < thresh2);
+    return inline;
+  }
+
+  function drawSheets(context, viewport) {
+    if (state.sheets.length == 0) return;
+
+    for (let i = 0; i < state.orderedPolygons.length; i++) {
+      const polygon = state.polygons[state.orderedPolygons[i]];
+      const sheet = state.sheets[polygon.sheetindex];
+      if (viewport) {
+        const sheetdata = sheet.data;
+        if (sheetdata.centerpuv.u < viewport.minu || sheetdata.centerpuv.u > viewport.maxu || sheetdata.centerpuv.v < viewport.minv || sheetdata.centerpuv.v > viewport.maxv)
+          continue;
+      }
+      if (sheet.hidden) continue;
+      if (sheet.dimmed) {
+        context.save();
+        context.globalAlpha = config$1.dimmedAlpha;
+      }
+      drawRect(sheet.data, context, drawTexture, sheet.compositecanvas, true, polygon);
+      if (sheet.dimmed) {
+        context.restore();
+      }
+      drawSheetSelection(sheet, polygon, sheet.data, context);
+    }
+  }
+
+  function getPointuv(p) {
+    const puv = transformPoint(p);
+    if (window.scene) {
+      return {
+        u: puv.u + state.canvasCenter.u - window.scene.center.u,
+        v: puv.v + state.canvasCenter.v - window.scene.center.v
+      };
+    }
+    return { u: puv.u + state.canvasCenter.u, v: puv.v + state.canvasCenter.v };
+  }
+
+  function drawScenePart(options) {
+    const viewPort = options.viewPort;
+    const targetContext = options.targetContext;
+    const targetBaseShadowContext = options.targetBaseShadowContext;
+    const targetBaseShadowCanvas = options.targetBaseShadowCanvas;
+
+    if (!targetContext) {
+      targetContext = state.temppartcontext;
+      targetBaseShadowContext = state.temppartshadowcontext;
+      targetBaseShadowCanvas = state.temppartshadowcanvas;
+    }
+
+    targetContext.fillStyle = state.backgroundColor;
+    targetContext.fillRect(0, 0, viewPort.w, viewPort.h);
+
+    const u = viewPort.u + state.canvasCenter.u;
+    const v = viewPort.v + state.canvasCenter.v;
+
+    targetContext.save();
+    targetContext.translate(-u, -v);
+
+    drawBaseRects(targetContext);
+
+    const distance = state.boundingBoxMaxsheetDistance;
+    const minu = viewPort.u - distance;
+    const minv = viewPort.v - distance;
+    const maxu = viewPort.u + viewPort.w + distance;
+    const maxv = viewPort.v + viewPort.h + distance;
+
+    if (window.scene) {
+      const shadowrel = { u: -u + window.scene.center.u + state.canvasCenter.u - config$2.baseShadowCenter.u, v: -v + window.scene.center.v + state.canvasCenter.v - config$2.baseShadowCenter.v };
+      initBaseRectShadow(targetBaseShadowContext, { w: viewPort.w, h: viewPort.h }, shadowrel, { minu, maxu, minv, maxv });
+      targetContext.save();
+      targetContext.globalAlpha = config$2.shadowAlpha;
+      targetContext.drawImage(targetBaseShadowCanvas, u, v);
+      targetContext.restore();
+    }
+
+    drawSheets(targetContext, { minu, maxu, minv, maxv });
+
+    targetContext.restore();
+  }
+
+  function drawScene(full) {
+    if (full) {
+      if (state.backgroundcanvas) {
+        state.backgroundcontext.clearRect(0, 0, state.backgroundcanvas.width, state.backgroundcanvas.height);
+
+        state.backgroundcontext.save();
+        state.backgroundcontext.translate(-state.canvasCenter.u + config$2.baseShadowCenter.u, -state.canvasCenter.v + config$2.baseShadowCenter.v);
+        drawBaseRects(state.backgroundcontext);
+        state.backgroundcontext.restore();
+
+        if (window.scene) {
+          const shadowrel = { u: window.scene.center.u, v: window.scene.center.v };
+          initBaseRectShadow(config$2.baseshadowContext, { w: config$2.baseshadowCanvas.width, h: config$2.baseshadowCanvas.height }, shadowrel, null);
+          drawBaseRectShadows(state.backgroundcontext, { u: state.backgroundtranslate.u, v: state.backgroundtranslate.v });
+        }
+
+        state.backgroundcontext.save();
+        state.backgroundcontext.translate(-state.canvasCenter.u + config$2.baseShadowCenter.u, -state.canvasCenter.v + config$2.baseShadowCenter.v);
+        drawSheets(state.backgroundcontext, null);
+        state.backgroundcontext.restore();
+      } else {
+        state.context.clearRect(0, 0, state.canvas.width, state.canvas.height);
+        drawBaseRects(state.context);
+
+        if (window.scene) {
+          const shadowrel = { u: window.scene.center.u, v: window.scene.center.v };
+          initBaseRectShadow(config$2.baseshadowContext, { w: config$2.baseshadowCanvas.width, h: config$2.baseshadowCanvas.height }, shadowrel, null);
+          drawBaseRectShadows(state.context);
+        }
+
+        drawSheets(state.context, null);
+      }
+      if (state.drawObjectContour) {
+        for (let i = 0; i < state.objects.length; i++) {
+          const obj = state.objects[i];
+          obj.canvasdirty = true;
+          obj.draw();
+        }
+      }
+    } else {
+      for (let i = 0; i < state.sheets.length; i++) {
+        const s = state.sheets[i];
+
+        const dimmedChanged = s.dimmed != s.dimmedprev;
+        s.dimmedprev = s.dimmed;
+
+        if (dimmedChanged) {
+          const w = Math.ceil(s.data.umax - s.data.umin);
+          const h = Math.ceil(s.data.vmax - s.data.vmin);
+          const u = s.data.umin - state.canvasCenter.u;
+          const v = s.data.vmin - state.canvasCenter.v;
+
+          drawScenePart({ viewPort: { u, v, w, h } });
+          const canvas = state.backgroundcanvas ? state.backgroundcanvas : state.canvas;
+          const context = state.backgroundcanvas ? state.backgroundcontext : state.context;
+          const offsetu = u + canvas.width / 2;
+          const offsetv = v + canvas.height / 2;
+          context.drawImage(state.temppartcanvas, 0, 0, w - 1, h - 1, offsetu, offsetv, w - 1, h - 1);
+        }
+      }
+
+      for (let i = 0; i < state.objects.length; i++) {
+        const obj = state.objects[i];
+        obj.draw();
+      }
+    }
+
+    if (state.backgroundcanvas) {
+      state.context.clearRect(0, 0, state.canvas.width, state.canvas.height);
+      if (window.scene) {
+        const offsetu = -window.scene.center.u - state.backgroundcanvas.width / 2 + state.canvas.width / 2 + state.backgroundtranslate.u;
+        const offsetv = -window.scene.center.v - state.backgroundcanvas.height / 2 + state.canvas.height / 2 + state.backgroundtranslate.v;
+        state.context.drawImage(state.backgroundcanvas, offsetu, offsetv);
+      }
+    }
+  }
+
+  function drawBaseRects(context) {
+    for (let i = 0; i < state.basesheets.length; i++) {
+      const basesheet = state.basesheets[i];
+      drawRect(basesheet.data, context, (ctx, canvas) => {
+        ctx.fillStyle = basesheet.color;
+        ctx.fillRect(0, 0, basesheet.width, basesheet.height);
+      }, null, false);
+    }
+  }
+
+  var drawing = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    config: config$1,
+    createCanvas: createCanvas,
+    drawRect: drawRect,
+    drawScene: drawScene,
+    drawScenePart: drawScenePart,
+    drawSheets: drawSheets,
+    getPointuv: getPointuv,
+    redraw: redraw,
+    redrawSheetCanvases: redrawSheetCanvases
+  });
+
+  /**
+   * Sheet intersection detection and polygon calculation
+   */
+
+
+  const config = {
+    intersections: true
+  };
+
+  const polygonMidpointsForOverlapCheck = [
+    { dist: 50, numpoints: 4 },
+    { dist: 20, numpoints: 3 },
+    { dist: 10, numpoints: 2 },
+    { dist: 0, numpoints: 1 }
+  ];
+
+  function getIntersection(n, p, c1, c2) {
+    const p2 = c1;
+    const n2 = { x: c2.x - c1.x, y: c2.y - c1.y, z: c2.z - c1.z };
+
+    const p2p = { x: p.x - p2.x, y: p.y - p2.y, z: p.z - p2.z };
+    const cp1 = crossProduct(p2p, n);
+    const cp2 = crossProduct(n2, n);
+    let t = vectorMagnitude(cp1) / vectorMagnitude(cp2);
+
+    const check = cp2.x * t + cp2.y * t + cp2.z * t - cp1.x - cp1.y - cp1.z;
+    if (Math.round(check) != 0)
+      t = -t;
+
+    return { p: { x: p2.x + t * n2.x, y: p2.y + t * n2.y, z: p2.z + t * n2.z }, inside: t >= 0 && t <= 1, t };
+  }
+
+  function pointsEqual(p1, p2) {
+    return Math.round(p1.x) == Math.round(p2.x) && Math.round(p1.y) == Math.round(p2.y) && Math.round(p1.z) == Math.round(p2.z);
+  }
+
+  function bisectCornerList(corners, n, p) {
+    const allcorners = [];
+    let firstintersect = null;
+    let secondintersect = null;
+    for (let i = 0; i < corners.length; i++) {
+      const j = i == corners.length - 1 ? 0 : i + 1;
+      let corneradded = false;
+      if ((allcorners.length == 0) || (!pointsEqual(allcorners[allcorners.length - 1], corners[i]))) {
+        allcorners[allcorners.length] = corners[i];
+        corneradded = true;
+      }
+      const p1 = getIntersection(n, p, corners[i], corners[j]);
+      if (p1.inside) {
+        const pointalreadyadded = pointsEqual(allcorners[allcorners.length - 1], p1.p);
+        if (!pointalreadyadded) {
+          if (firstintersect == null)
+            firstintersect = allcorners.length;
+          else if (secondintersect == null)
+            secondintersect = allcorners.length;
+          allcorners[allcorners.length] = p1.p;
+        }
+        if ((pointalreadyadded) && (corneradded)) {
+          if (firstintersect == null)
+            firstintersect = allcorners.length - 1;
+          else if (secondintersect == null)
+            secondintersect = allcorners.length - 1;
+        }
+      }
+    }
+
+    if (secondintersect == null)
+      return null;
+
+    const poly = [];
+    poly[0] = [];
+    poly[1] = [];
+    let index = firstintersect;
+    for (; ;) {
+      poly[0][poly[0].length] = clonePoint(allcorners[index]);
+      if (index == secondintersect) break;
+      index--;
+      if (index < 0) index = allcorners.length - 1;
+    }
+    index = firstintersect;
+    for (; ;) {
+      poly[1][poly[1].length] = clonePoint(allcorners[index]);
+      if (index == secondintersect) break;
+      index++;
+      if (index > allcorners.length - 1) index = 0;
+    }
+    return poly;
+  }
+
+  function isInsideCornerList(corners, n, p) {
+    for (let i = 0; i < corners.length; i++) {
+      const j = i == corners.length - 1 ? 0 : i + 1;
+      const p1 = getIntersection(n, p, corners[i], corners[j]);
+      if (p1.inside) return true;
+    }
+    return false;
+  }
+
+  function getIntersectionLineofPlanes(a, b) {
+    const maxdiag = a.maxdiag + b.maxdiag;
+    const distance = Math.sqrt(
+      ((a.centerp.x - b.centerp.x) * (a.centerp.x - b.centerp.x)) +
+      ((a.centerp.y - b.centerp.y) * (a.centerp.y - b.centerp.y)) +
+      ((a.centerp.z - b.centerp.z) * (a.centerp.z - b.centerp.z))
+    );
+    if (distance > maxdiag) return null;
+
+    const n1n2 = a.normalp.x * b.normalp.x + a.normalp.y * b.normalp.y + a.normalp.z * b.normalp.z;
+    if (n1n2 == 1) return null;
+
+    const n1n1 = a.normalp.x * a.normalp.x + a.normalp.y * a.normalp.y + a.normalp.z * a.normalp.z;
+    const n2n2 = b.normalp.x * b.normalp.x + b.normalp.y * b.normalp.y + b.normalp.z * b.normalp.z;
+
+    const n = crossProduct(a.normalp, b.normalp);
+
+    const d1 = (a.normalp.x * a.centerp.x + a.normalp.y * a.centerp.y + a.normalp.z * a.centerp.z);
+    const d2 = (b.normalp.x * b.centerp.x + b.normalp.y * b.centerp.y + b.normalp.z * b.centerp.z);
+
+    const det = n1n1 * n2n2 - n1n2 * n1n2;
+    const c1 = (d1 * n2n2 - d2 * n1n2) / det;
+    const c2 = (d2 * n1n1 - d1 * n1n2) / det;
+
+    const p = {
+      x: c1 * a.normalp.x + c2 * b.normalp.x,
+      y: c1 * a.normalp.y + c2 * b.normalp.y,
+      z: c1 * a.normalp.z + c2 * b.normalp.z
+    };
+
+    return { n, p: roundVector2digits(p, 10000) };
+  }
+
+  function doSheetsIntersect(s1, s2) {
+    const line = getIntersectionLineofPlanes(s1, s2);
+
+    s1.intersectionParams[s2.index] = { line };
+    s2.intersectionParams[s1.index] = { line };
+
+    if (line == null) return false;
+
+    const insideS1 = isInsideCornerList(s1.corners, line.n, line.p);
+    const insideS2 = isInsideCornerList(s2.corners, line.n, line.p);
+
+    s1.intersectionParams[s2.index].insideThis = insideS1;
+    s1.intersectionParams[s2.index].insideOther = insideS2;
+    s2.intersectionParams[s1.index].insideThis = insideS2;
+    s2.intersectionParams[s1.index].insideOther = insideS1;
+
+    return insideS1 && insideS2;
+  }
+
+  function calculatePolygonsForSheet(sheet, sheetset) {
+    if (sheet.hidden) return;
+
+    if (!sheetset) sheetset = state.sheets;
+
+    for (let s = 0; s < sheetset.length; s++) {
+      const othersheet = sheetset[s];
+      if (othersheet.index == sheet.index) continue;
+      if (othersheet.hidden) continue;
+
+      const intersectionParams = sheet.intersectionParams[othersheet.index];
+
+      const line = intersectionParams == null ?
+        getIntersectionLineofPlanes(sheet, othersheet) :
+        intersectionParams.line;
+      if (line == null) continue;
+
+      let startpolygons1 = null;
+      let poly1initialized = false;
+      let inside = false;
+      if (sheet.polygons.length == 1) {
+        startpolygons1 = bisectCornerList(sheet.corners, line.n, line.p);
+        inside = !(startpolygons1 == null);
+        poly1initialized = true;
+      } else {
+        inside = intersectionParams == null ?
+          isInsideCornerList(sheet.corners, line.n, line.p) :
+          intersectionParams.insideThis;
+      }
+      if (!inside) continue;
+
+      inside = intersectionParams == null ?
+        isInsideCornerList(othersheet.corners, line.n, line.p) :
+        intersectionParams.insideOther;
+
+      if (!inside) continue;
+
+      const newpoly = [];
+      for (let i = 0; i < sheet.polygons.length; i++) {
+        let polygons = null;
+        if (poly1initialized) {
+          polygons = startpolygons1;
+          poly1initialized = false;
+        } else {
+          polygons = bisectCornerList(sheet.polygons[i].points, line.n, line.p);
+        }
+        if (polygons == null)
+          newpoly[newpoly.length] = sheet.polygons[i];
+        else {
+          newpoly[newpoly.length] = { points: polygons[0] };
+          newpoly[newpoly.length] = { points: polygons[1] };
+        }
+      }
+      sheet.polygons = newpoly;
+      sheet.intersectors.push(othersheet.index);
+    }
+  }
+
+  function filterPolygons(polygons) {
+    const newpoly = [];
+    for (let p = 0; p < polygons.length; p++) {
+      const poly = polygons[p];
+      if (poly.points.length == 2) continue;
+      newpoly.push(poly);
+    }
+    return newpoly;
+  }
+
+  function updateuvzMaxMin(data, pi) {
+    if (data.pointsuv[pi].u < data.umin) data.umin = data.pointsuv[pi].u;
+    if (data.pointsuv[pi].u > data.umax) data.umax = data.pointsuv[pi].u;
+    if (data.pointsuv[pi].v < data.vmin) data.vmin = data.pointsuv[pi].v;
+    if (data.pointsuv[pi].v > data.vmax) data.vmax = data.pointsuv[pi].v;
+    if (data.pointsuv[pi].z < data.zmin) data.zmin = data.pointsuv[pi].z;
+    if (data.pointsuv[pi].z > data.zmax) data.zmax = data.pointsuv[pi].z;
+  }
+
+  function getMidpointNum(dist) {
+    for (let k = 0; k < polygonMidpointsForOverlapCheck.length; k++) {
+      if (dist > polygonMidpointsForOverlapCheck[k].dist)
+        return polygonMidpointsForOverlapCheck[k].numpoints;
+    }
+    return polygonMidpointsForOverlapCheck[polygonMidpointsForOverlapCheck.length - 1].numpoints;
+  }
+
+  function getPointForCanvasUV(sheet, p) {
+    const A1 = sheet.A1;
+    const p0 = sheet.corners[0];
+    const p0p = { x: p.x - p0.x, y: p.y - p0.y, z: p.z - p0.z };
+    return {
+      u: p0p.x * A1.b1.x + p0p.y * A1.b2.x + p0p.z * A1.b3.x,
+      v: p0p.x * A1.b1.y + p0p.y * A1.b2.y + p0p.z * A1.b3.y
+    };
+  }
+
+  function calculateSheetSections(sheet, full, sheetset) {
+    const currentsheet = sheet;
+
+    if (full) {
+      currentsheet.polygons = [];
+      currentsheet.polygons[0] = { points: currentsheet.corners };
+
+      currentsheet.intersectors = [];
+      if (config.intersections)
+        calculatePolygonsForSheet(currentsheet, sheetset);
+
+      currentsheet.polygons = filterPolygons(currentsheet.polygons);
+    }
+
+    for (let p = 0; p < currentsheet.polygons.length; p++) {
+      const poly = currentsheet.polygons[p];
+      const umin = 10000, umax = -1e4, vmin = 10000, vmax = -1e4, zmin = 10000, zmax = -1e4;
+      poly.pointscanvasuv = [];
+      poly.data = { umin, umax, vmin, vmax, zmin, zmax, pointsuv: [] };
+      poly.shData = { umin, umax, vmin, vmax, zmin, zmax, pointsuv: [] };
+
+      const avg = { u: 0, v: 0 };
+      for (let pi = 0; pi < poly.points.length; pi++) {
+        const polypointspi = poly.points[pi];
+        poly.pointscanvasuv[pi] = getPointForCanvasUV(currentsheet, polypointspi);
+
+        poly.data.pointsuv[pi] = transformPointuvz(polypointspi, transformPointz, state.canvasCenter);
+
+        avg.u += poly.data.pointsuv[pi].u;
+        avg.v += poly.data.pointsuv[pi].v;
+
+        const c1xyz = getCoordsInBase(config$2.shadowBaseMatrixInverse, polypointspi);
+        poly.shData.pointsuv[pi] = { u: c1xyz.x, v: c1xyz.y, z: c1xyz.z };
+
+        updateuvzMaxMin(poly.data, pi);
+        updateuvzMaxMin(poly.shData, pi);
+      }
+
+      avg.u /= poly.points.length;
+      avg.v /= poly.points.length;
+      poly.data.avguv = { u: avg.u, v: avg.v };
+
+      poly.midpoints = [];
+      poly.data.midpointsuv = [];
+      poly.shData.midpointsuv = [];
+      for (let pi = 0; pi < poly.points.length; pi++) {
+        const pj = pi == poly.points.length - 1 ? 0 : pi + 1;
+        const dist = roughPointDist(poly.points[pi], poly.points[pj]);
+        const midpoints = getMidpointNum(dist) + 1;
+        for (let k = 1; k < midpoints; k++) {
+          const ratio1 = k;
+          const ratio2 = midpoints - ratio1;
+          poly.midpoints[poly.midpoints.length] = avgPoints(poly.points[pi], poly.points[pj], ratio1, ratio2, midpoints);
+        }
+        const p1 = poly.data.pointsuv[pi];
+        const p2 = poly.data.pointsuv[pj];
+        for (let k = 1; k < midpoints; k++) {
+          const ratio1 = k;
+          const ratio2 = midpoints - ratio1;
+          poly.data.midpointsuv[poly.data.midpointsuv.length] = avgPointsuv(p1, p2, ratio1, ratio2, midpoints);
+        }
+
+        const p1sh = poly.shData.pointsuv[pi];
+        const p2sh = poly.shData.pointsuv[pj];
+        for (let k = 1; k < midpoints; k++) {
+          const ratio1 = k;
+          const ratio2 = midpoints - ratio1;
+          poly.shData.midpointsuv[poly.shData.midpointsuv.length] = avgPointsuv(p1sh, p2sh, ratio1, ratio2, midpoints);
+        }
+      }
+
+      poly.sheetindex = currentsheet.index;
+      poly.index = state.polygons.length;
+      poly.constraints = [];
+      poly.shadowconstraints = [];
+      state.polygons.push(poly);
+    }
+  }
+
+  var intersections = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    calculateSheetSections: calculateSheetSections,
+    config: config,
+    doSheetsIntersect: doSheetsIntersect
+  });
+
+  /**
+   * Depth sorting and z-ordering for polygon rendering
+   */
+
+
+  function calculatePolygonOrder(polygon) {
+    calculatePolygonOrderForCam(polygon, 0);
+    calculatePolygonOrderForCam(polygon, 1);
+  }
+
+  function calculatePolygonOrderForCam(polygon, shadow) {
+    if (!shadow) polygon.constraints = [];
+    for (let i = 0; i < state.polygons.length; i++) {
+      const polygon2 = state.polygons[i];
+      if (polygon2.sheetindex == polygon.sheetindex) continue;
+
+      if (state.sheets[polygon2.sheetindex].hidden || state.sheets[polygon.sheetindex].hidden)
+        continue;
+
+      addPolygonConstraintForCam(polygon, polygon2, shadow);
+    }
+  }
+
+  function addPolygonConstraint(polygon, polygon2) {
+    addPolygonConstraintForCam(polygon, polygon2, 0);
+    addPolygonConstraintForCam(polygon, polygon2, 1);
+  }
+
+  function addPolygonConstraintForCam(polygon, polygon2, shadow) {
+    const polygonData = shadow ? polygon.shData : polygon.data;
+    const polygonData2 = shadow ? polygon2.shData : polygon2.data;
+    const viewSource = shadow ? config$2.lightSource : state.viewSource;
+
+    const sheet = state.sheets[polygon.sheetindex];
+    const sheet2 = state.sheets[polygon2.sheetindex];
+
+    if (sheet.hidden || sheet2.hidden) return;
+
+    const isfront = isPolygonFront(polygon2, polygon, sheet2, sheet, polygonData2, polygonData, viewSource, shadow);
+    if (!isfront) return;
+
+    if (!shadow) {
+      polygon.constraints.push(polygon2.index);
+      if (sheet2.dimSheets && !sheet.dimmingDisabled) {
+        if (sheet2.intersectors.indexOf(sheet.index) == -1)
+          sheet.dimmed = 1;
+      }
+    } else {
+      polygon2.shadowconstraints.push(polygon.index);
+    }
+  }
+
+  function getOrderedList() {
+    const ordered = {};
+    const unordered = [];
+    for (let i = 0; i < state.polygons.length; i++) {
+      if (state.sheets[state.polygons[i].sheetindex].hidden) continue;
+      unordered.push(i);
+    }
+
+    for (; ;) {
+      const newunordered = [];
+      const candidates = [];
+      for (let i = 0; i < unordered.length; i++) {
+        const constraints = state.polygons[unordered[i]].constraints;
+
+        let allConstraintsInOrdered = true;
+        for (let j = 0; j < constraints.length; j++) {
+          const key = 'k' + constraints[j];
+          if (typeof (ordered[key]) === 'undefined') {
+            allConstraintsInOrdered = false;
+            break;
+          }
+        }
+
+        if (allConstraintsInOrdered)
+          candidates.push(unordered[i]);
+        else
+          newunordered.push(unordered[i]);
+      }
+
+      for (let i = 0; i < candidates.length; i++) {
+        const key = 'k' + candidates[i];
+        ordered[key] = candidates[i];
+      }
+
+      const nochange = unordered.length == newunordered.length;
+      unordered.length = 0;
+      unordered.push(...newunordered);
+
+      if (unordered.length == 0) break;
+
+      if (nochange) {
+        let zmax = -1e4;
+        let maxidx = 0;
+        for (let i = 0; i < unordered.length; i++) {
+          if (state.polygons[unordered[i]].data.zmax > zmax) {
+            maxidx = i;
+            zmax = state.polygons[unordered[i]].data.zmax;
+          }
+        }
+        const key = 'k' + unordered[maxidx];
+        ordered[key] = unordered[maxidx];
+        unordered.splice(maxidx, 1);
+        if (unordered.length == 0) break;
+      }
+    }
+
+    const newordered = [];
+    for (const key in ordered) {
+      newordered.push(ordered[key]);
+    }
+    return newordered;
+  }
+
+  function isPolygonFront(a, b, asheet, bsheet, aData, bData, viewSource, shadow) {
+    if (aData.umin >= bData.umax || aData.umax <= bData.umin || aData.vmin >= bData.vmax || aData.vmax <= bData.vmin)
+      return false;
+
+    if (bData.zmin > aData.zmax) return false;
+
+    let zOrderDistanceThreshold = 0.3;
+
+    if (!shadow && (asheet.objectsheet || bsheet.objectsheet) && (asheet.object != bsheet.object))
+      zOrderDistanceThreshold = 5;
+
+    for (let i = 0; i < aData.pointsuv.length; i++) {
+      const t = getTForSheetLineCrossing$1(bsheet.normalp, bsheet.centerp, a.points[i], viewSource);
+      if (t < -zOrderDistanceThreshold) {
+        const res = checkInboundsPolygon$1(bData.pointsuv, aData.pointsuv[i].u, aData.pointsuv[i].v);
+        if (res.inbounds) return true;
+      }
+    }
+
+    for (let i = 0; i < aData.midpointsuv.length; i++) {
+      const t = getTForSheetLineCrossing$1(bsheet.normalp, bsheet.centerp, a.midpoints[i], viewSource);
+      if (t < -zOrderDistanceThreshold) {
+        const res = checkInboundsPolygon$1(bData.pointsuv, aData.midpointsuv[i].u, aData.midpointsuv[i].v);
+        if (res.inbounds) return true;
+      }
+    }
+
+    for (let i = 0; i < bData.pointsuv.length; i++) {
+      const t = getTForSheetLineCrossing$1(asheet.normalp, asheet.centerp, b.points[i], viewSource);
+      if (t > zOrderDistanceThreshold) {
+        const res = checkInboundsPolygon$1(aData.pointsuv, bData.pointsuv[i].u, bData.pointsuv[i].v);
+        if (res.inbounds) return true;
+      }
+    }
+
+    for (let i = 0; i < bData.midpointsuv.length; i++) {
+      const t = getTForSheetLineCrossing$1(asheet.normalp, asheet.centerp, b.midpoints[i], viewSource);
+      if (t > zOrderDistanceThreshold) {
+        const res = checkInboundsPolygon$1(aData.pointsuv, bData.midpointsuv[i].u, bData.midpointsuv[i].v);
+        if (res.inbounds) return true;
+      }
+    }
+
+    return false;
+  }
+
+  const inboundsCheckZeroThresh$1 = 0.001;
+
+  function checkInboundsPolygon$1(corners, myx, myy) {
+    const areas = [];
+    let allpositive = true;
+    let allnegative = true;
+    let allzero = true;
+    for (let i = 0; i < corners.length; i++) {
+      const j = i == corners.length - 1 ? 0 : i + 1;
+      areas[areas.length] = myx * corners[j].v - corners[j].u * myy - myx * corners[i].v + corners[i].u * myy + corners[j].u * corners[i].v - corners[i].u * corners[j].v;
+      if ((areas[areas.length - 1]) > inboundsCheckZeroThresh$1) {
+        allnegative = false;
+        allzero = false;
+      }
+      if ((areas[areas.length - 1]) < -inboundsCheckZeroThresh$1) {
+        allpositive = false;
+        allzero = false;
+      }
+    }
+    return { inbounds: (allnegative || allpositive) && !allzero, areas, allzero };
+  }
+
+  function clearDimmedFlags() {
+    const dimmers = [];
+    for (let i = 0; i < state.sheets.length; i++) {
+      const s = state.sheets[i];
+      if (s.dimSheets && !s.hidden) {
+        for (let j = 0; j < s.polygons.length; j++) {
+          dimmers.push(s.polygons[j].index);
+        }
+      }
+    }
+    if (dimmers.length > 0) {
+      for (let i = 0; i < state.sheets.length; i++) {
+        const s = state.sheets[i];
+        if (s.dimmed == 0) continue;
+
+        let dirty = false;
+        for (let j = 0; j < s.polygons.length; j++) {
+          const sheetpoly = s.polygons[j];
+          const constraints = sheetpoly.constraints;
+          for (let c = 0; c < constraints.length; c++) {
+            if (dimmers.indexOf(constraints[c]) != -1) {
+              dirty = true;
+              break;
+            }
+          }
+        }
+        if (!dirty) s.dimmed = 0;
+      }
+    }
+  }
+
+  function deleteIndexFromConstraints(deletedSheet, constraints) {
+    if (!constraints) return;
+
+    const containedIdx = constraints.indexOf(deletedSheet);
+    if (containedIdx != -1)
+      constraints.splice(containedIdx, 1);
+  }
+
+  function updateIndexInConstraints(oldIndex, newIndex, constraints) {
+    if (!constraints) return;
+
+    const containedIdx = constraints.indexOf(oldIndex);
+    if (containedIdx != -1)
+      constraints[containedIdx] = newIndex;
+  }
+
+  var zOrdering = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    addPolygonConstraint: addPolygonConstraint,
+    calculatePolygonOrder: calculatePolygonOrder,
+    clearDimmedFlags: clearDimmedFlags,
+    deleteIndexFromConstraints: deleteIndexFromConstraints,
+    getOrderedList: getOrderedList,
+    updateIndexInConstraints: updateIndexInConstraints
+  });
+
+  /**
+   * @fileoverview Main calculation engine for sheet transformations, ordering, and updates
+   * Handles dirty sheet tracking, polygon calculations, and z-order constraints
+   */
+
+
+  const calc = {};
+
+  let staticsheets = null;
+
+  calc.allowLimitToCorners = false;
+  calc.sheetLimits = { xmin: -150, xmax: 150, ymin: -150, ymax: 150, zmin: 0, zmax: 100 };
+
+  const inboundsCheckZeroThresh = 0.001;
+
+  /**
+   * Check if a point is within polygon bounds
+   */
+  function checkInboundsPolygon(corners, myx, myy) {
+    const areas = [];
+    let allpositive = true;
+    let allnegative = true;
+    let allzero = true;
+    for (let i = 0; i < corners.length; i++) {
+      const j = i === corners.length - 1 ? 0 : i + 1;
+      areas[areas.length] = myx * corners[j].v - corners[j].u * myy - myx * corners[i].v + corners[i].u * myy + corners[j].u * corners[i].v - corners[i].u * corners[j].v;
+      if ((areas[areas.length - 1]) > inboundsCheckZeroThresh) {
+        allnegative = false;
+        allzero = false;
+      }
+      if ((areas[areas.length - 1]) < -inboundsCheckZeroThresh) {
+        allpositive = false;
+        allzero = false;
+      }
+    }
+    return { inbounds: (allnegative || allpositive) && !allzero, areas: areas, allzero: allzero };
+  }
+
+  /**
+   * Calculate u and v difference vectors for sheet
+   */
+  function calcUdifVdif(sheet) {
+    const scalew = sheet.width / 2;
+    const scaleh = sheet.height / 2;
+    sheet.udif = { x: sheet.p1.x * scalew, y: sheet.p1.y * scalew, z: sheet.p1.z * scalew };
+    sheet.vdif = { x: sheet.p2.x * scaleh, y: sheet.p2.y * scaleh, z: sheet.p2.z * scaleh };
+  }
+
+  /**
+   * Calculate sheet transformation data
+   */
+  function calculateSheetData(sheet) {
+    const centerp = sheet.centerp;
+    const p0 = sheet.p0;
+    const p1 = sheet.p1;
+    const p2 = sheet.p2;
+
+    // corners
+    calcUdifVdif(sheet);
+    sheet.corners = calculateCornersFromCenter(centerp, sheet.udif, sheet.vdif);
+
+    // inverse basematrix
+    sheet.A1 = getBaseMatrixInverse(sheet.p1, sheet.p2, sheet.normalp);
+
+    // transformation-specific data
+    sheet.data = calculateSheetDataSingle(centerp, p0, p1, p2, transformPoint, transformPointz, state.canvasCenter, sheet.corners);
+
+    // calculate shadows cast on baserect
+    if (config$2.drawShadows)
+      calculateSheetBaseShadow(sheet);
+
+    // mark sheet as dirty for z-ordering
+    sheet.dirty = true;
+  }
+
+  /**
+   * Calculate single sheet transformation data
+   */
+  function calculateSheetDataSingle(centerp, p0rot, p1rot, p2rot, transformFunction, transformFunctionz, canvasCenter, corners) {
+    // we calculate the new position of the center
+    const centerpuv = transformFunction(centerp);
+
+    // from the angles we calculate 3 cornerpoints of the sheet: p0 is top left
+    const p0rotScale = { x: p0rot.x, y: p0rot.y, z: p0rot.z };
+    const p1rotScale = { x: p1rot.x, y: p1rot.y, z: p1rot.z };
+    const p2rotScale = { x: p2rot.x, y: p2rot.y, z: p2rot.z };
+
+    const p0 = transformFunction(p0rotScale);
+    const p1 = transformFunction(p1rotScale);
+    const p2 = transformFunction(p2rotScale);
+
+    // p1 and p2 are the cornerpoints of the square, so that 0,0 is lower left, p1 is lower right and p2 is upper left point
+    // p1 and p2 will define the transformation with respect to 0,0, and the whole thing should be translated to p0
+
+    const translatex = canvasCenter.u + p0.u + centerpuv.u;
+    const translatey = canvasCenter.v + p0.v + centerpuv.v;
+
+    const ta = p1.u;
+    const tb = p1.v;
+    const tc = p2.u;
+    const td = p2.v;
+
+    if (corners == null)
+      return { p0uv: p0, p1uv: p1, p2uv: p2, translatex: translatex, translatey: translatey, ta: ta, tb: tb, tc: tc, td: td, centerpuv: centerpuv };
+
+    // cornerpoints
+    const c = [];
+    c[0] = transformPointuvz(corners[0], transformFunctionz, canvasCenter);
+    c[1] = transformPointuvz(corners[1], transformFunctionz, canvasCenter);
+    c[2] = transformPointuvz(corners[2], transformFunctionz, canvasCenter);
+    c[3] = transformPointuvz(corners[3], transformFunctionz, canvasCenter);
+
+    const umax = Math.max(c[0].u, c[1].u, c[2].u, c[3].u);
+    const umin = Math.min(c[0].u, c[1].u, c[2].u, c[3].u);
+    const vmax = Math.max(c[0].v, c[1].v, c[2].v, c[3].v);
+    const vmin = Math.min(c[0].v, c[1].v, c[2].v, c[3].v);
+    const zmax = Math.max(c[0].z, c[1].z, c[2].z, c[3].z);
+    const zmin = Math.min(c[0].z, c[1].z, c[2].z, c[3].z);
+    return { p0uv: p0, p1uv: p1, p2uv: p2, translatex: translatex, translatey: translatey, ta: ta, tb: tb, tc: tc, td: td, centerpuv: centerpuv, cornersuv: c, umax: umax, umin: umin, vmax: vmax, vmin: vmin, zmax: zmax, zmin: zmin };
+  }
+
+  /**
+   * Calculate corner positions from center point
+   */
+  function calculateCornersFromCenter(centerp, udif, vdif) {
+    const corners = [];
+    corners[0] = { x: -udif.x - vdif.x + centerp.x, y: -udif.y - vdif.y + centerp.y, z: -udif.z - vdif.z + centerp.z };
+    corners[1] = { x: +udif.x - vdif.x + centerp.x, y: +udif.y - vdif.y + centerp.y, z: +udif.z - vdif.z + centerp.z };
+    corners[2] = { x: +udif.x + vdif.x + centerp.x, y: +udif.y + vdif.y + centerp.y, z: +udif.z + vdif.z + centerp.z };
+    corners[3] = { x: -udif.x + vdif.x + centerp.x, y: -udif.y + vdif.y + centerp.y, z: -udif.z + vdif.z + centerp.z };
+    return corners;
+  }
+
+  /**
+   * Limit sheet corners to bounds
+   */
+  function limitToCorners(sheet) {
+    calcUdifVdif(sheet);
+    sheet.corners = calculateCornersFromCenter(sheet.centerp, sheet.udif, sheet.vdif);
+
+    if (!calc.allowLimitToCorners)
+      return;
+
+    sheet.xsnap = sheet.ysnap = sheet.zsnap = sheet.xexactsnap = sheet.yexactsnap = sheet.zexactsnap = sheet.xminsnap = sheet.xmaxsnap = sheet.yminsnap = sheet.ymaxsnap = sheet.zminsnap = sheet.zmaxsnap = false;
+    for (let l = 0; l < 4; l++) {
+      limitToCorner(sheet, sheet.corners[l], l);
+    }
+  }
+
+  /**
+   * Limit single corner to bounds
+   */
+  function limitToCorner(sheet, c, index) {
+    const udif = sheet.udif;
+    const vdif = sheet.vdif;
+
+    if (c.x <= calc.sheetLimits.xmin) {
+      if (c.x === calc.sheetLimits.xmin && !sheet.xsnap)
+        sheet.xexactsnap = true;
+      c.x = calc.sheetLimits.xmin;
+      sheet.xsnap = true;
+      sheet.xminsnap = true;
+    }
+    if (c.x >= calc.sheetLimits.xmax) {
+      if (c.x === calc.sheetLimits.xmax && !sheet.xsnap)
+        sheet.xexactsnap = true;
+      c.x = calc.sheetLimits.xmax;
+      sheet.xsnap = true;
+      sheet.xmaxsnap = true;
+    }
+    if (c.y <= calc.sheetLimits.ymin) {
+      if (c.y === calc.sheetLimits.ymin && !sheet.ysnap)
+        sheet.yexactsnap = true;
+      c.y = calc.sheetLimits.ymin;
+      sheet.ysnap = true;
+      sheet.yminsnap = true;
+    }
+    if (c.y >= calc.sheetLimits.ymax) {
+      if (c.y === calc.sheetLimits.ymax && !sheet.ysnap)
+        sheet.yexactsnap = true;
+      c.y = calc.sheetLimits.ymax;
+      sheet.ysnap = true;
+      sheet.ymaxsnap = true;
+    }
+    if (c.z <= calc.sheetLimits.zmin) {
+      if (c.z === calc.sheetLimits.zmin && !sheet.zsnap)
+        sheet.zexactsnap = true;
+      c.z = calc.sheetLimits.zmin;
+      sheet.zsnap = true;
+      sheet.zminsnap = true;
+    }
+    if (c.z >= calc.sheetLimits.zmax) {
+      if (c.z === calc.sheetLimits.zmax && !sheet.zsnap)
+        sheet.zexactsnap = true;
+      c.z = calc.sheetLimits.zmax;
+      sheet.zsnap = true;
+      sheet.zmaxsnap = true;
+    }
+
+    // calculate center from corner
+    if (index === 0)
+      sheet.centerp = { x: c.x + udif.x + vdif.x, y: c.y + udif.y + vdif.y, z: c.z + udif.z + vdif.z };
+    if (index === 1)
+      sheet.centerp = { x: c.x - udif.x + vdif.x, y: c.y - udif.y + vdif.y, z: c.z - udif.z + vdif.z };
+    if (index === 2)
+      sheet.centerp = { x: c.x - udif.x - vdif.x, y: c.y - udif.y - vdif.y, z: c.z - udif.z - vdif.z };
+    if (index === 3)
+      sheet.centerp = { x: c.x + udif.x - vdif.x, y: c.y + udif.y - vdif.y, z: c.z + udif.z - vdif.z };
+
+    // recalculate all corners from center
+    sheet.corners = calculateCornersFromCenter(sheet.centerp, udif, vdif);
+  }
+
+  /**
+   * Define sheet parameters
+   */
+  function defineSheetParams(sheet) {
+    sheet.p0orig = { x: -sheet.width / 2, y: 0, z: sheet.height / 2 };
+    sheet.p1orig = { x: 1, y: 0, z: 0 };
+    sheet.p2orig = { x: 0, y: 0, z: -1 };
+    sheet.normalporig = { x: 0, y: 1, z: 0 };
+
+    if (!sheet.objectsheet) {
+      const alpha = sheet.rot.alphaD * Math.PI / 180;
+      const beta = sheet.rot.betaD * Math.PI / 180;
+      const gamma = sheet.rot.gammaD * Math.PI / 180;
+
+      sheet.p0 = sheet.p0start = rotatePoint(sheet.p0orig, alpha, beta, gamma);
+      sheet.p1 = sheet.p1start = rotatePoint(sheet.p1orig, alpha, beta, gamma);
+      sheet.p2 = sheet.p2start = rotatePoint(sheet.p2orig, alpha, beta, gamma);
+      sheet.normalp = sheet.normalpstart = rotatePoint(sheet.normalporig, alpha, beta, gamma);
+    }
+
+    sheet.maxdiag = Math.ceil(Math.sqrt(sheet.width * sheet.width + sheet.height * sheet.height) / 2);
+  }
+
+  /**
+   * Gather sheets that need recalculation
+   */
+  function gatherDirtySheets() {
+    for (let i = 0; i < state.sheets.length; i++) {
+      state.sheets[i].intersectionParams = [];
+    }
+    for (let i = 0; i < state.sheets.length; i++) {
+      const currentsheet = state.sheets[i];
+
+      if (!currentsheet.dirty)
+        continue;
+
+      // objectsheets don't make other sheets dirty
+      if (!state.objectsintersect && currentsheet.objectsheet && !currentsheet.object.intersectionsenabled)
+        continue;
+
+      // - former intersectOR sheets
+      if (currentsheet.intersectors != null) {
+        for (let j = 0; j < currentsheet.intersectors.length; j++) {
+          const idx = currentsheet.intersectors[j];
+          state.sheets[idx].madedirty = true;
+        }
+      }
+
+      for (let j = 0; j < state.sheets.length; j++) {
+        if (j === i)
+          continue;
+
+        const othersheet = state.sheets[j];
+        if (othersheet.hidden)
+          continue;
+
+        // if othersheet is already made dirty, we are ready
+        if (othersheet.madedirty)
+          continue;
+
+        // if either of the two sheets are objectsheet, intersections will be handled separately
+        if (!state.objectsintersect && currentsheet.objectsheet && !currentsheet.object.intersectionsenabled)
+          continue;
+        if (!state.objectsintersect && othersheet.objectsheet && !othersheet.object.intersectionsenabled)
+          continue;
+
+        // - new intersecting sheets
+        if (doSheetsIntersect(currentsheet, othersheet)) {
+          othersheet.madedirty = true;
+        }
+
+        // - former intersecTED sheets
+        if (othersheet.intersectors != null) {
+          if (othersheet.intersectors.indexOf(i) !== -1)
+            othersheet.madedirty = true;
+        }
+      }
+    }
+    // build dirtySheets array
+    const movedSheets = [];
+    const dirtySheets = [];
+    const dirtySheetsRedefinePolygons = [];
+    for (let i = 0; i < state.sheets.length; i++) {
+      const sheet = state.sheets[i];
+
+      if (state.objectsintersect) {
+        // if object intersection is allowed, simple mechanism: we only care about sheets and not objects
+        if (sheet.dirty || sheet.madedirty) {
+          dirtySheets.push(i);
+          dirtySheetsRedefinePolygons.push(i);
+        }
+      } else {
+        // if objects don't intersect, complex mechanism: all sheets of a dirty object will be included
+        const objdirty = sheet.objectsheet && (sheet.object.intersectionsredefine || sheet.object.intersectionsrecalc) && !sheet.object.intersectionsenabled;
+        if (sheet.dirty || sheet.madedirty || objdirty) {
+          dirtySheets.push(i);
+
+          const objectintersection = sheet.objectsheet && !sheet.object.intersectionsenabled;
+          if (!objectintersection)
+            dirtySheetsRedefinePolygons.push(i);
+        }
+      }
+
+      if (sheet.dirty) {
+        movedSheets.push(i);
+      }
+    }
+    return { dirtySheets: dirtySheets, movedSheets: movedSheets, dirtySheetsRedefinePolygons: dirtySheetsRedefinePolygons };
+  }
+
+  /**
+   * Delete polygons for dirty sheets
+   */
+  function deleteDirtyPolygons(dirtySheets) {
+    if (state.polygons == null)
+      state.polygons = [];
+
+    // delete references from state.polygons
+    const polys = [];
+    for (let j = 0; j < state.polygons.length; j++) {
+      // check if polygon's sheet is among dirty ones
+      const poly = state.polygons[j];
+      const containedIdx = dirtySheets.indexOf(poly.sheetindex);
+      if (containedIdx !== -1) {
+        // delete polygon index from z-order constraints
+        for (let i = 0; i < state.polygons.length; i++) {
+          const actPoly = state.polygons[i];
+          // delete from constraint lists
+          deleteIndexFromConstraints(poly.index, actPoly.constraints);
+          deleteIndexFromConstraints(poly.index, actPoly.shadowconstraints);
+          deleteIndexFromConstraints(poly.index, actPoly.prevshadowconstraints);
+        }
+      } else {
+        polys[polys.length] = state.polygons[j];
+      }
+    }
+    state.polygons = polys;
+
+    // update polygon indexes
+    for (let j = 0; j < state.polygons.length; j++) {
+      if (state.polygons[j].index !== j) {
+
+        // update z-order constraint indexes
+        for (let i = 0; i < state.polygons.length; i++) {
+          const actPoly = state.polygons[i];
+          updateIndexInConstraints(state.polygons[j].index, j, actPoly.constraints);
+          updateIndexInConstraints(state.polygons[j].index, j, actPoly.shadowconstraints);
+          updateIndexInConstraints(state.polygons[j].index, j, actPoly.prevshadowconstraints);
+        }
+
+        // update index in polygonlist
+        state.polygons[j].index = j;
+      }
+    }
+  }
+
+  /**
+   * Calculate z-order for dirty polygons
+   */
+  function calculateDirtyPolygonOrder(firstDirtyPolygon) {
+    for (let i = firstDirtyPolygon; i < state.polygons.length; i++) {
+      const dirtyPoly = state.polygons[i];
+      calculatePolygonOrder(dirtyPoly);
+
+      // calculate all polygons z-order constraints with respect to dirty polygons
+      for (let k = 0; k < firstDirtyPolygon; k++) {
+        const staticPoly = state.polygons[k];
+        const staticSheet = state.sheets[staticPoly.sheetindex];
+        if (staticSheet.hidden)
+          continue;
+        addPolygonConstraint(staticPoly, dirtyPoly);
+      }
+    }
+  }
+
+  /**
+   * Set previous shadow constraints
+   */
+  function setPrevShadowConstraints() {
+    for (let i = 0; i < state.polygons.length; i++) {
+      state.polygons[i].prevshadowconstraints = [];
+      for (let j = 0; j < state.polygons[i].shadowconstraints.length; j++) {
+        state.polygons[i].prevshadowconstraints[state.polygons[i].prevshadowconstraints.length] = state.polygons[i].shadowconstraints[j];
+      }
+    }
+  }
+
+  /**
+   * Update ordered polygon lists
+   */
+  function updateOrderedLists() {
+    state.orderedPolygons = getOrderedList();
+  }
+
+  /**
+   * Get static sheets (non-object sheets or object sheets with intersections enabled)
+   */
+  function getStaticSheets() {
+    if (staticsheets != null)
+      return staticsheets;
+
+    const sheetset = [];
+    for (let i = 0; i < state.sheets.length; i++) {
+      const s = state.sheets[i];
+      if (!s.objectsheet || s.object.intersectionsenabled)
+        sheetset.push(s);
+    }
+    staticsheets = sheetset;
+    return staticsheets;
+  }
+
+  /**
+   * Calculate changed sheets (incremental update)
+   */
+  function calculateChangedSheets() {
+    const start1 = +new Date();
+
+    // 1. gather sheets whose polygons are to be recalculated
+    const dirtySheetsObj = gatherDirtySheets();
+    const dirtySheets = dirtySheetsObj.dirtySheets;
+    const movedSheets = dirtySheetsObj.movedSheets;
+    const dirtySheetsRedefinePolygons = dirtySheetsObj.dirtySheetsRedefinePolygons;
+
+    const end1 = +new Date();
+    const start2 = +new Date();
+
+    // redraw canvases where canvas changed
+    for (let i = 0; i < state.sheets.length; i++) {
+      const s = state.sheets[i];
+      if (s.canvasdirty)
+        s.refreshCanvas();
+    }
+
+    // gather sheets for shadow redrawing
+    checkDirtyShadowConstraint(true, movedSheets);
+
+    const end2 = +new Date();
+    const start3 = +new Date();
+
+    // 2. delete polygons of dirty sheets
+    deleteDirtyPolygons(dirtySheets);
+    const firstDirtyPolygon = state.polygons.length;
+
+    const end3 = +new Date();
+    const start4 = +new Date();
+
+    // 3. redefine polygons
+    if (state.objectsintersect) {
+      // redefine polygons of all sheets
+      const sheetset = state.sheets;
+      for (let idx = 0; idx < dirtySheetsRedefinePolygons.length; idx++) {
+        calculateSheetSections(state.sheets[dirtySheetsRedefinePolygons[idx]], true, sheetset);
+      }
+    } else {
+      // redefine polygons of static sheets
+      const sheetset = getStaticSheets();
+      for (let idx = 0; idx < dirtySheetsRedefinePolygons.length; idx++) {
+        calculateSheetSections(state.sheets[dirtySheetsRedefinePolygons[idx]], true, sheetset);
+      }
+
+      // recalculate/redefine polygons of object sheets
+      for (let idx = 0; idx < state.objects.length; idx++) {
+        const obj = state.objects[idx];
+        if (obj.intersectionsenabled)
+          continue;
+        if (obj.intersectionsredefine) {
+          redefineIntersections(obj);
+        } else if (obj.intersectionsrecalc) {
+          for (let i = 0; i < obj.sheets.length; i++) {
+            calculateSheetSections(obj.sheets[i], false, obj.sheets);
+          }
+        }
+        obj.intersectionsredefine = false;
+        obj.intersectionsrecalc = false;
+      }
+    }
+
+    const end4 = +new Date();
+    const start5 = +new Date();
+
+    // 4. calculate z-order constraints of dirty polygons
+    calculateDirtyPolygonOrder(firstDirtyPolygon);
+
+    const end5 = +new Date();
+    const start6 = +new Date();
+
+    // 5. clear dimmed flags for sheets that are not dimmed any more
+    clearDimmedFlags();
+
+    const end6 = +new Date();
+    const start7 = +new Date();
+
+    // gather sheets for shadow redrawing
+    checkDirtyShadowConstraint(false, movedSheets);
+
+    const end7 = +new Date();
+    const start8 = +new Date();
+
+    // set previous constraints for polygons
+    setPrevShadowConstraints();
+
+    const end8 = +new Date();
+    const start9 = +new Date();
+
+    // draw shadows on sheet canvases
+    calculateSheetsShadows(false);
+
+    const end9 = +new Date();
+    const start10 = +new Date();
+
+    updateOrderedLists();
+
+    const end10 = +new Date();
+
+    // clear dirty flags
+    for (let i = 0; i < state.sheets.length; i++) {
+      state.sheets[i].dirty = false;
+      state.sheets[i].madedirty = false;
+    }
+
+    // delete all sheets that were marked as deleting
+    deleteSheets();
+
+    if (state.debug)
+      console.log((end1 - start1) + ' - ' + (end2 - start2) + ' - ' + (end3 - start3) + ' - ' + (end4 - start4) + ' - ' + (end5 - start5) + ' - ' + (end6 - start6) + ' - ' + (end7 - start7) + ' - ' + (end8 - start8) + ' - ' + (end9 - start9) + ' - ' + (end10 - start10));
+  }
+
+  /**
+   * Calculate all sheets (full recalculation)
+   */
+  function calculateAllSheets() {
+    for (let i = 0; i < state.sheets.length; i++) {
+      const s = state.sheets[i];
+      s.dimmed = 0;
+      s.intersectionParams = [];
+
+      // redraw canvases where canvas changed
+      if (s.canvasdirty)
+        s.refreshCanvas();
+    }
+    state.polygons = [];
+    // recalculate intersection of static sheets
+    staticsheets = null;
+    const sheetset = state.objectsintersect ? state.sheets : getStaticSheets();
+    for (let idx = 0; idx < sheetset.length; idx++) {
+      calculateSheetSections(sheetset[idx], true, sheetset);
+    }
+    // recalculate intersection of object sheets
+    if (!state.objectsintersect) {
+      for (let idx = 0; idx < state.objects.length; idx++) {
+        const obj = state.objects[idx];
+        if (obj.intersectionsenabled)
+          continue;
+        if (obj.intersectionsredefine) {
+          redefineIntersections(obj);
+        } else {
+          for (let i = 0; i < obj.sheets.length; i++) {
+            calculateSheetSections(obj.sheets[i], true, obj.sheets);
+          }
+        }
+        obj.intersectionsredefine = false;
+        obj.intersectionsrecalc = false;
+      }
+    }
+
+    for (let i = 0; i < state.polygons.length; i++) {
+      calculatePolygonOrder(state.polygons[i]);
+    }
+    setPrevShadowConstraints();
+    calculateSheetsShadows(true);
+    updateOrderedLists();
+    // clear dirty flags
+    for (let i = 0; i < state.sheets.length; i++) {
+      const s = state.sheets[i];
+      s.dirty = false;
+      s.madedirty = false;
+    }
+
+    // delete all sheets that were marked as deleting
+    deleteSheets();
+  }
+
+  /**
+   * Delete sheets marked for deletion
+   */
+  function deleteSheets() {
+    if (!state.sheetsbeingdeleted)
+      return;
+
+    // remove deleted sheets' polygons from state.polygons
+    const newpolys = [];
+    const deletedpolyidxs = [];
+    for (let p = 0; p < state.polygons.length; p++) {
+      const poly = state.polygons[p];
+      const psheet = state.sheets[poly.sheetindex];
+      if (!psheet.deleting)
+        newpolys.push(poly);
+      else
+        deletedpolyidxs.push(p);
+    }
+    state.polygons = newpolys;
+
+    // remove deleted sheets' polygons from orderedPolygons
+    const neworderedpolys = [];
+    for (let p = 0; p < state.orderedPolygons.length; p++) {
+      const polyidx = state.orderedPolygons[p];
+      if (deletedpolyidxs.indexOf(polyidx) === -1)
+        neworderedpolys.push(polyidx);
+    }
+    state.orderedPolygons = neworderedpolys;
+
+    // remove deleted sheets' polygons from polygons' constraints
+    for (let p = 0; p < state.polygons.length; p++) {
+      const poly = state.polygons[p];
+
+      let newconstraints = [];
+      for (let si = 0; si < poly.constraints.length; si++) {
+        const polyidx = poly.constraints[si];
+        if (deletedpolyidxs.indexOf(polyidx) === -1)
+          newconstraints.push(polyidx);
+      }
+      poly.constraints = newconstraints;
+
+      let newshadowconstraints = [];
+      for (let si = 0; si < poly.shadowconstraints.length; si++) {
+        const polyidx = poly.shadowconstraints[si];
+        if (deletedpolyidxs.indexOf(polyidx) === -1)
+          newshadowconstraints.push(polyidx);
+      }
+      poly.shadowconstraints = newshadowconstraints;
+
+      newshadowconstraints = [];
+      for (let si = 0; si < poly.prevshadowconstraints.length; si++) {
+        const polyidx = poly.prevshadowconstraints[si];
+        if (deletedpolyidxs.indexOf(polyidx) === -1)
+          newshadowconstraints.push(polyidx);
+      }
+      poly.prevshadowconstraints = newshadowconstraints;
+    }
+
+    // remove deleted sheets from state.sheets
+    const newsheets = [];
+    const deletedsheetidxs = [];
+    for (let s = 0; s < state.sheets.length; s++) {
+      const sheet = state.sheets[s];
+      if (!sheet.deleting)
+        newsheets.push(sheet);
+      else
+        deletedsheetidxs.push(s);
+    }
+    state.sheets = newsheets;
+
+    // remove deleted sheet indexes from intersectors
+    for (let s = 0; s < state.sheets.length; s++) {
+      const sheet = state.sheets[s];
+      if (!sheet.intersectors)
+        continue;
+      const newintersectors = [];
+      for (let is = 0; is < sheet.intersectors.length; is++) {
+        const isindex = sheet.intersectors[is];
+        if (deletedsheetidxs.indexOf(isindex) === -1)
+          newintersectors.push(isindex);
+      }
+      sheet.intersectors = newintersectors;
+    }
+
+    // adjust sheet indexes
+    for (let i = 0; i < state.sheets.length; i++) {
+      const oldindex = state.sheets[i].index;
+      state.sheets[i].index = i;
+      if (oldindex !== i) {
+        // adjust indices in polygon array
+        for (let j = 0; j < state.polygons.length; j++) {
+          const poly = state.polygons[j];
+          if (poly.sheetindex === oldindex)
+            poly.sheetindex = i;
+        }
+
+        // adjust indices in intersector array
+        for (let s = 0; s < state.sheets.length; s++) {
+          const sheet = state.sheets[s];
+          updateIndexInConstraints(oldindex, i, sheet.intersectors);
+        }
+      }
+    }
+
+    // update polygon indexes
+    for (let j = 0; j < state.polygons.length; j++) {
+      const oldindex = state.polygons[j].index;
+      if (oldindex !== j) {
+        // adjust indexes in orderedPolygons
+        updateIndexInConstraints(oldindex, j, state.orderedPolygons);
+
+        // update z-order constraint indexes
+        for (let i = 0; i < state.polygons.length; i++) {
+          const actPoly = state.polygons[i];
+          updateIndexInConstraints(oldindex, j, actPoly.constraints);
+          updateIndexInConstraints(oldindex, j, actPoly.shadowconstraints);
+          updateIndexInConstraints(oldindex, j, actPoly.prevshadowconstraints);
+        }
+
+        // update index in polygonlist
+        state.polygons[j].index = j;
+      }
+    }
+
+    state.sheetsbeingdeleted = false;
+    staticsheets = null;
+  }
+
+  /**
+   * Delete object from objects array
+   */
+  function deleteObject(obj) {
+    const idx = state.objects.indexOf(obj);
+    if (idx !== -1)
+      state.objects.splice(idx, 1);
+  }
+
+  /**
+   * Redefine intersections for an object
+   */
+  function redefineIntersections(obj) {
+    // redefine polygons
+    for (let i = 0; i < obj.sheets.length; i++) {
+      calculateSheetSections(obj.sheets[i], true, obj.sheets);
+    }
+
+    // calculate initial polygons from the redefined current polygonset
+    for (let i = 0; i < obj.sheets.length; i++) {
+      const s = obj.sheets[i];
+      s.startpolygons = [];
+      const A1 = getBaseMatrixInverse(s.p1start, s.p2start, s.normalpstart);
+      for (let j = 0; j < s.polygons.length; j++) {
+        const poly = s.polygons[j];
+        const points = [];
+        const relpoints = [];
+        for (let p = 0; p < poly.points.length; p++) {
+          let sp = subPoint(poly.points[p], obj.centerp);
+          sp = rotatePoint(sp, -obj.rot.alpha, -obj.rot.beta, -obj.rot.gamma);
+          points.push(sp);
+          const relp = getCoordsInBase(A1, sp);
+          relpoints.push(relp);
+        }
+        s.startpolygons.push({ points: points, relpoints: relpoints });
+        s.startpolygonscenterp = clonePoint(s.startcenterp);
+      }
+    }
+  }
+
+  // Export calc functions
+  calc.checkInboundsPolygon = checkInboundsPolygon;
+  calc.calculateSheetData = calculateSheetData;
+  calc.limitToCorners = limitToCorners;
+  calc.defineSheetParams = defineSheetParams;
+  calc.calculateChangedSheets = calculateChangedSheets;
+  calc.calculateAllSheets = calculateAllSheets;
+  calc.deleteSheets = deleteSheets;
+
+  var calc$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    calc: calc,
+    calculateSheetData: calculateSheetData,
+    deleteObject: deleteObject,
+    redefineIntersections: redefineIntersections
+  });
+
+  /**
+   * Sheet class - drawable 3D sheets in the scene
+   */
+
+
+  class Sheet {
+    constructor(centerp, rot, size) {
+      const rotclone = fillRot$2(rot);
+
+      this.width = size.w;
+      this.height = size.h;
+      this.centerp = clonePoint(centerp);
+      this.rot = { alphaD: rotclone.alphaD, betaD: rotclone.betaD, gammaD: rotclone.gammaD };
+
+      this.objectsheet = false;
+      this.skipDensityMap = false;
+      this.dimSheets = false;
+      this.dimmingDisabled = false;
+      this.hidden = false;
+      this.dirty = false;
+      this.canvasdirty = true;
+
+      this.dimmed = 0;
+      this.dimmedprev = 0;
+
+      this.castshadows = true;
+      this.allowshadows = true;
+
+      this.canvas = createCanvas(this.width, this.height);
+      this.context = this.canvas.getContext('2d');
+      this.shadowcanvas = createCanvas(this.width, this.height);
+      this.shadowcontext = this.shadowcanvas.getContext('2d');
+      this.shadowtempcanvas = createCanvas(this.width, this.height);
+      this.shadowtempcontext = this.shadowtempcanvas.getContext('2d');
+      this.baseshadowcanvas = createCanvas(this.width, this.height);
+      this.baseshadowcontext = this.baseshadowcanvas.getContext('2d');
+      this.compositecanvas = createCanvas(this.width, this.height);
+      this.compositecontext = this.compositecanvas.getContext('2d');
+
+      // These will be set by calc module when integrated
+      if (window.calc) {
+        window.calc.defineSheetParams(this);
+        window.calc.limitToCorners(this);
+        window.calc.calculateSheetData(this);
+      }
+      calculateSheetShade(this);
+
+      this.index = state.sheets.length;
+      state.sheets.push(this);
+      internal.staticsheets = null;
+    }
+
+    canvasChanged() {
+      this.canvasdirty = true;
+      if (this.objectsheet) {
+        this.object.canvasdirty = true;
+        this.object.intersectionsrecalc = true;
+      }
+      this.dirty = true;
+    }
+
+    destroy() {
+      this.hidden = true;
+      this.dirty = true;
+      this.deleting = true;
+      state.sheetsbeingdeleted = true;
+    }
+
+    refreshCanvas() {
+      if (!this.canvasdirty) return;
+
+      this.compositecontext.clearRect(0, 0, this.width, this.height);
+      redrawSheetCanvases(this);
+      this.canvasdirty = false;
+    }
+
+    setShadows(castshadows, allowshadows) {
+      this.castshadows = castshadows;
+      if (this.allowshadows != allowshadows) {
+        this.allowshadows = allowshadows;
+        calculateSheetShade(this);
+      }
+      this.dirty = true;
+    }
+
+    setDimming(dimSheets, dimmingDisabled) {
+      this.dimSheets = dimSheets;
+      this.dimmingDisabled = dimmingDisabled;
+      this.dirty = true;
+    }
+  }
+
+  function fillRot$2(rot) {
+    if (!rot) return { alphaD: 0, betaD: 0, gammaD: 0 };
+    return {
+      alphaD: rot.alphaD || 0,
+      betaD: rot.betaD || 0,
+      gammaD: rot.gammaD || 0
+    };
+  }
+
+  /**
+   * @fileoverview SheetObject class - main object class with multiple sheets
+   * Handles object positioning, rotation, intersection management, and rendering
+   */
+
+
+  /**
+   * SheetObject class - represents a 3D object composed of multiple sheets
+   * @constructor
+   * @param {Object} centerp - Center position {x, y, z}
+   * @param {Object} rot - Rotation angles {alphaD, betaD, gammaD}
+   * @param {Array} sheets - Array of Sheet objects
+   * @param {Object} canvasSize - Canvas size {w, h, relu, relv}
+   * @param {boolean} intersectionsenabled - Whether intersections are enabled
+   */
+  function SheetObject(centerp, rot, sheets, canvasSize, intersectionsenabled) {
+    for (let i = 0; i < sheets.length; i++) {
+      const s = sheets[i];
+      s.objectsheet = true;
+      s.object = this;
+
+      s.startcenterp = { x: s.centerp.x, y: s.centerp.y, z: s.centerp.z };
+      s.rotcenterp = { x: s.centerp.x, y: s.centerp.y, z: s.centerp.z };
+      s.centerp.x += centerp.x;
+      s.centerp.y += centerp.y;
+      s.centerp.z += centerp.z;
+
+      s.intersectionParams = [];
+
+      calculateSheetData(s);
+    }
+
+    this.intersectionsenabled = intersectionsenabled ? true : false;
+
+    if (!state.objectsintersect && !this.intersectionsenabled) {
+      for (let i = 0; i < sheets.length; i++) {
+        calculateSheetSections(sheets[i], true, sheets);
+      }
+      for (let i = 0; i < sheets.length; i++) {
+        const s = sheets[i];
+        const startpoly = [];
+        const A1 = getBaseMatrixInverse(s.p1start, s.p2start, s.normalpstart);
+        for (let j = 0; j < s.polygons.length; j++) {
+          const poly = s.polygons[j];
+          const points = [];
+          const relpoints = [];
+          for (let p = 0; p < poly.points.length; p++) {
+            const pp = subPoint(poly.points[p], centerp);
+            points.push(pp);
+            const relp = getCoordsInBase(A1, pp);
+            relpoints.push(relp);
+          }
+          startpoly.push({ points: points, relpoints: relpoints });
+        }
+        s.startpolygons = startpoly;
+        s.startpolygonscenterp = clonePoint(s.startcenterp);
+      }
+    }
+
+    this.centerp = centerp;
+    this.rot = fillRot$1(rot);
+    this.rotvectorstart = [{ x: 1, y: 0, z: 0 }, { x: 0, y: 0, z: -1 }, { x: 0, y: 1, z: 0 }];
+    this.rotvector = calcRotVector(this.rot, this.rotvectorstart);
+    this.sheets = sheets;
+    this.hidden = false;
+    this.intersectionsredefine = false;
+    this.intersectionsrecalc = false;
+
+    this.canvasSize = canvasSize;
+
+    // adjust temppartcanvas size if necessary
+    if (canvasSize.w > state.tempCanvasSize.w || canvasSize.h > state.tempCanvasSize.h) {
+      const w = Math.max(canvasSize.w, state.tempCanvasSize.w);
+      const h = Math.max(canvasSize.h, state.tempCanvasSize.h);
+      state.tempCanvasSize = { w: w, h: h };
+      state.temppartcanvas.width = w;
+      state.temppartcanvas.height = h;
+      state.temppartshadowcanvas.width = w;
+      state.temppartshadowcanvas.height = h;
+    }
+
+    this.oldcenterp = clonePoint(this.centerp);
+
+    this.centerpuv = transformPoint(this.centerp);
+    this.centerpuvrel = transformPointuvz(this.centerp, transformPointz, state.canvasCenter);
+    this.oldcenterpuv = transformPoint(this.oldcenterp);
+
+    this.setOrientation(this.rot);
+    state.objects.push(this);
+  }
+
+  /**
+   * Set dimming for object sheets
+   */
+  SheetObject.prototype.setDimming = function(dimSheets, dimmingDisabled) {
+    for (let i = 0; i < this.sheets.length; i++) {
+      const s = this.sheets[i];
+      s.dimSheets = dimSheets;
+      s.dimmingDisabled = dimmingDisabled;
+      s.dirty = true;
+    }
+    this.intersectionsrecalc = true;
+    this.canvasdirty = true;
+  };
+
+  /**
+   * Set shadow properties for object sheets
+   */
+  SheetObject.prototype.setShadows = function(castshadows, allowshadows) {
+    for (let i = 0; i < this.sheets.length; i++) {
+      const s = this.sheets[i];
+      s.setShadows(castshadows, allowshadows);
+    }
+    this.intersectionsrecalc = true;
+    this.canvasdirty = true;
+  };
+
+  /**
+   * Set collision detection for object
+   */
+  SheetObject.prototype.setCollision = function(collisionEnabled) {
+    for (let i = 0; i < this.sheets.length; i++) {
+      const s = this.sheets[i];
+      s.skipDensityMap = !collisionEnabled;
+    }
+  };
+
+  /**
+   * Destroy object and remove from scene
+   */
+  SheetObject.prototype.destroy = function() {
+    this.hide();
+    for (let s = 0; s < this.sheets.length; s++) {
+      const sheet = this.sheets[s];
+      sheet.deleting = true;
+    }
+    state.sheetsbeingdeleted = true;
+    this.deleting = true;
+  };
+
+  /**
+   * Set object position (absolute)
+   */
+  SheetObject.prototype.setPosition = function(pos) {
+    this.move(pos, true);
+  };
+
+  /**
+   * Move object by vector or set absolute position
+   */
+  SheetObject.prototype.move = function(vector, base) {
+    this.oldcenterp = clonePoint(this.centerp);
+    if (base) {
+      this.centerp.x = vector.x;
+      this.centerp.y = vector.y;
+      this.centerp.z = vector.z;
+    } else {
+      this.centerp.x += vector.x;
+      this.centerp.y += vector.y;
+      this.centerp.z += vector.z;
+    }
+
+    const diffx = this.centerp.x - this.oldcenterp.x;
+    const diffy = this.centerp.y - this.oldcenterp.y;
+    const diffz = this.centerp.z - this.oldcenterp.z;
+
+    for (let i = 0; i < this.sheets.length; i++) {
+      const s = this.sheets[i];
+
+      s.centerp.x = s.rotcenterp.x + this.centerp.x;
+      s.centerp.y = s.rotcenterp.y + this.centerp.y;
+      s.centerp.z = s.rotcenterp.z + this.centerp.z;
+
+      calculateSheetData(s);
+
+      if (s.polygons && !state.objectsintersect && !this.intersectionsenabled) {
+        for (let j = 0; j < s.polygons.length; j++) {
+          const poly = s.polygons[j];
+          for (let p = 0; p < poly.points.length; p++) {
+            const pp = poly.points[p];
+            pp.x += diffx;
+            pp.y += diffy;
+            pp.z += diffz;
+          }
+        }
+      }
+    }
+
+    this.centerpuv = transformPoint(this.centerp);
+    this.centerpuvrel = transformPointuvz(this.centerp, transformPointz, state.canvasCenter);
+    this.oldcenterpuv = transformPoint(this.oldcenterp);
+
+    this.intersectionsrecalc = true;
+    this.canvasdirty = true;
+  };
+
+  /**
+   * Rotate object around axis (absolute)
+   */
+  SheetObject.prototype.rotateBase = function(axis, angle) {
+    this.rotate(axis, angle, true);
+  };
+
+  /**
+   * Rotate object around axis
+   */
+  SheetObject.prototype.rotate = function(axis, angle, base) {
+    if (base) {
+      this.rotvector[0] = rotateAroundAxis(this.rotvectorstart[0], axis, angle);
+      this.rotvector[1] = rotateAroundAxis(this.rotvectorstart[1], axis, angle);
+      this.rotvector[2] = rotateAroundAxis(this.rotvectorstart[2], axis, angle);
+    } else {
+      this.rotvector[0] = rotateAroundAxis(this.rotvector[0], axis, angle);
+      this.rotvector[1] = rotateAroundAxis(this.rotvector[1], axis, angle);
+      this.rotvector[2] = rotateAroundAxis(this.rotvector[2], axis, angle);
+    }
+    this.rot = inverseRPY(this.rotvector[0], this.rotvector[1], this.rotvector[2]);
+
+    for (let i = 0; i < this.sheets.length; i++) {
+      const s = this.sheets[i];
+
+      if (base) {
+        s.p0 = rotateAroundAxis(s.p0start, axis, angle);
+        s.p1 = rotateAroundAxis(s.p1start, axis, angle);
+        s.p2 = rotateAroundAxis(s.p2start, axis, angle);
+        s.normalp = rotateAroundAxis(s.normalpstart, axis, angle);
+        s.rotcenterp = rotateAroundAxis(s.startcenterp, axis, angle);
+
+        if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
+          s.polygons = [];
+          for (let j = 0; j < s.startpolygons.length; j++) {
+            const poly = { points: [] };
+            s.polygons.push(poly);
+            const startpoly = s.startpolygons[j];
+            for (let p = 0; p < startpoly.points.length; p++) {
+              const pp = rotateAroundAxis(startpoly.points[p], axis, angle);
+              poly.points.push(addPoint(pp, this.centerp));
+            }
+          }
+        }
+
+      } else {
+        s.p0 = rotateAroundAxis(s.p0, axis, angle);
+        s.p1 = rotateAroundAxis(s.p1, axis, angle);
+        s.p2 = rotateAroundAxis(s.p2, axis, angle);
+        s.normalp = rotateAroundAxis(s.normalp, axis, angle);
+        s.rotcenterp = rotateAroundAxis(s.rotcenterp, axis, angle);
+
+        if (s.polygons && !state.objectsintersect && !this.intersectionsenabled) {
+          for (let j = 0; j < s.polygons.length; j++) {
+            const poly = s.polygons[j];
+            for (let p = 0; p < poly.points.length; p++) {
+              let pp = subPoint(poly.points[p], this.centerp);
+              pp = rotateAroundAxis(pp, axis, angle);
+              poly.points[p] = addPoint(pp, this.centerp);
+            }
+          }
+        }
+
+      }
+
+      s.centerp.x = s.rotcenterp.x + this.centerp.x;
+      s.centerp.y = s.rotcenterp.y + this.centerp.y;
+      s.centerp.z = s.rotcenterp.z + this.centerp.z;
+
+      calculateSheetData(s);
+      calculateSheetShade(s);
+    }
+
+    this.intersectionsrecalc = true;
+    this.canvasdirty = true;
+  };
+
+  /**
+   * Set object orientation (absolute)
+   */
+  SheetObject.prototype.setOrientation = function(rot) {
+    this.rot = fillRot$1(rot);
+    this.rotvector = calcRotVector(this.rot, this.rotvectorstart);
+
+    for (let i = 0; i < this.sheets.length; i++) {
+      const s = this.sheets[i];
+
+      s.p0 = rotatePoint(s.p0start, this.rot.alpha, this.rot.beta, this.rot.gamma);
+      s.p1 = rotatePoint(s.p1start, this.rot.alpha, this.rot.beta, this.rot.gamma);
+      s.p2 = rotatePoint(s.p2start, this.rot.alpha, this.rot.beta, this.rot.gamma);
+      s.normalp = rotatePoint(s.normalpstart, this.rot.alpha, this.rot.beta, this.rot.gamma);
+
+      s.rotcenterp = rotatePoint(s.startcenterp, this.rot.alpha, this.rot.beta, this.rot.gamma);
+
+      s.centerp.x = s.rotcenterp.x + this.centerp.x;
+      s.centerp.y = s.rotcenterp.y + this.centerp.y;
+      s.centerp.z = s.rotcenterp.z + this.centerp.z;
+
+      calculateSheetData(s);
+      calculateSheetShade(s);
+
+      if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
+        s.polygons = [];
+        for (let j = 0; j < s.startpolygons.length; j++) {
+          const poly = { points: [] };
+          s.polygons.push(poly);
+          const startpoly = s.startpolygons[j];
+          for (let p = 0; p < startpoly.points.length; p++) {
+            const pp = rotatePoint(startpoly.points[p], this.rot.alpha, this.rot.beta, this.rot.gamma);
+            poly.points.push(addPoint(pp, this.centerp));
+          }
+        }
+      }
+    }
+
+    this.intersectionsrecalc = true;
+    this.canvasdirty = true;
+  };
+
+  /**
+   * Set individual sheet position and rotation within object
+   */
+  SheetObject.prototype.setSheetPos = function(sheet, sheetpos, sheetrot) {
+    const s = sheet;
+
+    const sheetrot2 = fillRot$1(sheetrot);
+
+    s.startcenterp = sheetpos;
+
+    s.p0start = rotatePoint(s.p0orig, sheetrot2.alpha, sheetrot2.beta, sheetrot2.gamma);
+    s.p1start = rotatePoint(s.p1orig, sheetrot2.alpha, sheetrot2.beta, sheetrot2.gamma);
+    s.p2start = rotatePoint(s.p2orig, sheetrot2.alpha, sheetrot2.beta, sheetrot2.gamma);
+    s.normalpstart = rotatePoint(s.normalporig, sheetrot2.alpha, sheetrot2.beta, sheetrot2.gamma);
+
+    if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
+      const diffp = subPoint(sheetpos, s.startpolygonscenterp);
+      for (let j = 0; j < s.startpolygons.length; j++) {
+        const startpoly = s.startpolygons[j];
+        for (let p = 0; p < startpoly.points.length; p++) {
+          const relp = startpoly.relpoints[p];
+          startpoly.points[p] = getPointInBase(relp, s.p1start, s.p2start, s.normalpstart);
+          startpoly.points[p] = addPoint(startpoly.points[p], diffp);
+        }
+      }
+    }
+
+    const rot = this.rot;
+    s.p0 = rotatePoint(s.p0start, rot.alpha, rot.beta, rot.gamma);
+    s.p1 = rotatePoint(s.p1start, rot.alpha, rot.beta, rot.gamma);
+    s.p2 = rotatePoint(s.p2start, rot.alpha, rot.beta, rot.gamma);
+    s.normalp = rotatePoint(s.normalpstart, rot.alpha, rot.beta, rot.gamma);
+    s.rotcenterp = rotatePoint(s.startcenterp, rot.alpha, rot.beta, rot.gamma);
+
+    s.centerp.x = s.rotcenterp.x + this.centerp.x;
+    s.centerp.y = s.rotcenterp.y + this.centerp.y;
+    s.centerp.z = s.rotcenterp.z + this.centerp.z;
+
+    calculateSheetData(s);
+    calculateSheetShade(s);
+
+    if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
+      s.polygons = [];
+      for (let j = 0; j < s.startpolygons.length; j++) {
+        const poly = { points: [] };
+        s.polygons.push(poly);
+        const startpoly = s.startpolygons[j];
+        for (let p = 0; p < startpoly.points.length; p++) {
+          const pp = rotatePoint(startpoly.points[p], this.rot.alpha, this.rot.beta, this.rot.gamma);
+          poly.points.push(addPoint(pp, this.centerp));
+        }
+      }
+    }
+
+    this.intersectionsrecalc = true;
+    this.canvasdirty = true;
+  };
+
+  /**
+   * Rotate individual sheet around arbitrary axis
+   */
+  SheetObject.prototype.rotateSheet = function(sheet, rotationCenter, rotationAxis, angle) {
+    const s = sheet;
+
+    if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
+      for (let j = 0; j < s.startpolygons.length; j++) {
+        const startpoly = s.startpolygons[j];
+        for (let p = 0; p < startpoly.points.length; p++) {
+          startpoly.points[p] = rotateAroundArbitraryAxis(startpoly.points[p], rotationCenter, rotationAxis, angle);
+        }
+      }
+    }
+
+    s.p0start = rotateAroundAxis(s.p0start, rotationAxis, angle);
+    s.p1start = rotateAroundAxis(s.p1start, rotationAxis, angle);
+    s.p2start = rotateAroundAxis(s.p2start, rotationAxis, angle);
+    s.normalpstart = rotateAroundAxis(s.normalpstart, rotationAxis, angle);
+    s.startcenterp = rotateAroundArbitraryAxis(s.startcenterp, rotationCenter, rotationAxis, angle);
+
+    // rotationCenter and rotationAxis are given relatively to object orientation
+    rotationCenter = rotatePoint(rotationCenter, this.rot.alpha, this.rot.beta, this.rot.gamma);
+    rotationAxis = rotatePoint(rotationAxis, this.rot.alpha, this.rot.beta, this.rot.gamma);
+
+    s.p0 = rotateAroundAxis(s.p0, rotationAxis, angle);
+    s.p1 = rotateAroundAxis(s.p1, rotationAxis, angle);
+    s.p2 = rotateAroundAxis(s.p2, rotationAxis, angle);
+    s.normalp = rotateAroundAxis(s.normalp, rotationAxis, angle);
+    s.rotcenterp = rotateAroundArbitraryAxis(s.rotcenterp, rotationCenter, rotationAxis, angle);
+
+    s.centerp.x = s.rotcenterp.x + this.centerp.x;
+    s.centerp.y = s.rotcenterp.y + this.centerp.y;
+    s.centerp.z = s.rotcenterp.z + this.centerp.z;
+
+    calculateSheetData(s);
+    calculateSheetShade(s);
+
+    if (s.startpolygons && s.polygons && !state.objectsintersect && !this.intersectionsenabled) {
+      s.polygons = [];
+      for (let j = 0; j < s.startpolygons.length; j++) {
+        const poly = { points: [] };
+        s.polygons.push(poly);
+        const startpoly = s.startpolygons[j];
+        for (let p = 0; p < startpoly.points.length; p++) {
+          const pp = rotatePoint(startpoly.points[p], this.rot.alpha, this.rot.beta, this.rot.gamma);
+          poly.points.push(addPoint(pp, this.centerp));
+        }
+      }
+    }
+
+    this.intersectionsrecalc = true;
+    this.canvasdirty = true;
+  };
+
+  /**
+   * Mark object for intersection redefinition
+   */
+  SheetObject.prototype.redefineIntersections = function() {
+    this.intersectionsredefine = true;
+  };
+
+  /**
+   * Show object
+   */
+  SheetObject.prototype.show = function() {
+    for (let i = 0; i < this.sheets.length; i++) {
+      this.sheets[i].hidden = false;
+      this.sheets[i].dirty = true;
+    }
+    this.hidden = false;
+    this.intersectionsrecalc = true;
+    this.canvasdirty = true;
+  };
+
+  /**
+   * Hide object
+   */
+  SheetObject.prototype.hide = function() {
+    for (let i = 0; i < this.sheets.length; i++) {
+      this.sheets[i].hidden = true;
+      this.sheets[i].dirty = true;
+    }
+    this.hidden = true;
+    this.intersectionsrecalc = true;
+    this.canvasdirty = true;
+  };
+
+  /**
+   * Get object data as JSON string
+   */
+  SheetObject.prototype.getString = function() {
+    const sheets = [];
+    for (let i = 0; i < this.sheets.length; i++) {
+      const s = this.sheets[i];
+
+      sheets.push({
+        centerp: s.centerp,
+        rot: { alphaD: s.rot.alphaD, betaD: s.rot.betaD, gammaD: s.rot.gammaD },
+        width: s.width,
+        height: s.height,
+        canvas: s.canvas.toDataURL()
+      });
+    }
+    const retobj = { name: 'my object', thumbnail: '', hidden: false, intersectionsenabled: this.intersectionsenabled, canvasSize: this.canvasSize, sheets: sheets };
+    return JSON.stringify(retobj);
+  };
+
+  /**
+   * Draw object to scene
+   */
+  SheetObject.prototype.draw = function() {
+    if (!this.canvasdirty)
+      return;
+
+    const centerpuv = this.centerpuv;
+    const oldcenterpuv = this.oldcenterpuv;
+
+    // check if old position is close enough to be refreshed in one step
+    const du = Math.ceil(Math.abs(centerpuv.u - oldcenterpuv.u) + this.canvasSize.w);
+    const dv = Math.ceil(Math.abs(centerpuv.v - oldcenterpuv.v) + this.canvasSize.h);
+
+    const fit = (du < state.temppartcanvas.width && dv < state.temppartcanvas.height);
+    if (fit) {
+      // update old + new location using temppartcanvas
+      const u = Math.floor(Math.min(centerpuv.u, oldcenterpuv.u) - this.canvasSize.relu);
+      const v = Math.floor(Math.min(centerpuv.v, oldcenterpuv.v) - this.canvasSize.relv);
+      const w = du;
+      const h = dv;
+      drawScenePart({
+        viewPort: { u: u, v: v, w: w, h: h }
+      });
+      const canvas = state.backgroundcanvas ? state.backgroundcanvas : state.canvas;
+      const context = state.backgroundcanvas ? state.backgroundcontext : state.context;
+      const canvasU = u + canvas.width / 2;
+      const canvasV = v + canvas.height / 2;
+      const canvasW = w - 1;
+      const canvasH = h - 1;
+      context.drawImage(state.temppartcanvas, 0, 0, canvasW, canvasH, canvasU, canvasV, canvasW, canvasH);
+
+      if (state.drawObjectContour) {
+        context.strokeStyle = '#FFF';
+        context.strokeRect(centerpuv.u - this.canvasSize.relu + canvas.width / 2, centerpuv.v - this.canvasSize.relv + canvas.height / 2, this.canvasSize.w, this.canvasSize.h);
+      }
+    } else {
+      // update old + new location separately
+      drawObjectToScene(this, oldcenterpuv);
+      drawObjectToScene(this, centerpuv);
+    }
+
+    this.canvasdirty = false;
+
+    if (this.deleting)
+      deleteObject(this);
+  };
+
+  /**
+   * @fileoverview Object helper utilities for defining and managing objects
+   * Provides utilities for object creation, rotation handling, and object data serialization
+   */
+
+
+  const objhelpers = {};
+
+  /**
+   * Draw object to scene canvas
+   */
+  function drawObjectToScene(obj, centerpuv) {
+    const u = Math.floor(centerpuv.u - obj.canvasSize.relu);
+    const v = Math.floor(centerpuv.v - obj.canvasSize.relv);
+    const w = obj.canvasSize.w;
+    const h = obj.canvasSize.h;
+    drawScenePart({
+      viewPort: { u: u, v: v, w: w, h: h }
+    });
+    const canvas = state.backgroundcanvas ? state.backgroundcanvas : state.canvas;
+    const context = state.backgroundcanvas ? state.backgroundcontext : state.context;
+    const canvasU = u + canvas.width / 2;
+    const canvasV = v + canvas.height / 2;
+    const canvasW = w - 1;
+    const canvasH = h - 1;
+    if (state.drawObjectContour) {
+      state.temppartcontext.strokeStyle = '#FFF';
+      state.temppartcontext.strokeRect(0, 0, canvasW, canvasH);
+    }
+    context.drawImage(state.temppartcanvas, 0, 0, canvasW, canvasH, canvasU, canvasV, canvasW, canvasH);
+  }
+
+  /**
+   * Define application objects from server data
+   */
+  function defineAppObjects(appobjects) {
+    state.appobjects = {};
+    for (let i = 0; i < appobjects.length; i++) {
+      const obj = appobjects[i];
+      state.appobjects[obj.name] = obj;
+    }
+  }
+
+  /**
+   * Define object from template by name
+   */
+  function defineObject(name) {
+    const obj = state.appobjects[name];
+    if (!obj)
+      return null;
+
+    const createdSheets = [];
+    for (let i = 0; i < obj.sheets.length; i++) {
+      const s = new Sheet(obj.sheets[i].centerp, obj.sheets[i].rot, { w: obj.sheets[i].width, h: obj.sheets[i].height });
+      s.canvasdata = obj.sheets[i].canvas;
+      createdSheets.push(s);
+    }
+
+    const canvasSize = obj.canvasSize;
+    const createdObj = new SheetObject({ x: 0, y: 0, z: 0 }, { alphaD: 0, betaD: 0, gammaD: 0 }, createdSheets, canvasSize, obj.intersectionsenabled);
+    for (let i = 0; i < createdSheets.length; i++) {
+      createdSheets[i].objecttypehidden = obj.hidden;
+    }
+
+    createdObj.name = name;
+    return createdObj;
+  }
+
+  /**
+   * Convert radians to degrees
+   */
+  function fromRadian(a) {
+    return a / Math.PI * 180;
+  }
+
+  /**
+   * Convert degrees to radians
+   */
+  function fromDegree(a) {
+    return a / 180 * Math.PI;
+  }
+
+  /**
+   * Fill rotation object with both radians and degrees
+   */
+  function fillRot$1(rot) {
+    const newrot = {
+      alpha: rot.alpha, beta: rot.beta, gamma: rot.gamma,
+      alphaD: rot.alphaD, betaD: rot.betaD, gammaD: rot.gammaD
+    };
+
+    // fill radians if degrees are given
+    if (typeof (newrot.alpha) === 'undefined')
+      newrot.alpha = fromDegree(newrot.alphaD);
+    if (typeof (newrot.beta) === 'undefined')
+      newrot.beta = fromDegree(newrot.betaD);
+    if (typeof (newrot.gamma) === 'undefined')
+      newrot.gamma = fromDegree(newrot.gammaD);
+
+    // fill degrees if radians are given
+    if (typeof (newrot.alphaD) === 'undefined')
+      newrot.alphaD = fromRadian(newrot.alpha);
+    if (typeof (newrot.betaD) === 'undefined')
+      newrot.betaD = fromRadian(newrot.beta);
+    if (typeof (newrot.gammaD) === 'undefined')
+      newrot.gammaD = fromRadian(newrot.gamma);
+
+    return newrot;
+  }
+
+  /**
+   * Calculate rotation vector from rotation angles
+   */
+  function calcRotVector(rot, rotvectorstart) {
+    const rotvector = [];
+    rotvector[0] = rotatePoint(rotvectorstart[0], rot.alpha, rot.beta, rot.gamma);
+    rotvector[1] = rotatePoint(rotvectorstart[1], rot.alpha, rot.beta, rot.gamma);
+    rotvector[2] = rotatePoint(rotvectorstart[2], rot.alpha, rot.beta, rot.gamma);
+    return rotvector;
+  }
+
+  /**
+   * Get thumbnail image string for object
+   */
+  function getThumbnailString(imgSrcPath, callback) {
+    const i = document.createElement('img');
+    const c = document.createElement('canvas');
+    c.width = 16;
+    c.height = 16;
+    const ctx = c.getContext('2d');
+    i.onload = () => {
+      ctx.drawImage(i, 0, 0);
+      callback(c.toDataURL());
+    };
+    i.src = imgSrcPath;
+  }
+
+  /**
+   * Get current sheets as object data
+   */
+  function getCurrentSheetsObject() {
+    if (state.currentSheet === -1)
+      return { name: 'my object', thumbnail: '', hidden: false, canvasSize: { w: 0, h: 0, relu: 0, relv: 0 }, sheets: {} };
+
+    const currentSheet = state.sheets[state.currentSheet];
+    const group = currentSheet.group;
+    const sheets = [];
+    if (typeof (group) !== 'undefined' && group !== null) {
+      for (let i = 0; i < state.sheets.length; i++) {
+        const s = state.sheets[i];
+        if (s.group !== group)
+          continue;
+
+        sheets.push({
+          centerp: s.centerp,
+          rot: { alphaD: s.rot.alphaD, betaD: s.rot.betaD, gammaD: s.rot.gammaD },
+          width: s.width,
+          height: s.height,
+          canvas: s.canvas.toDataURL()
+        });
+      }
+    } else {
+      const s = currentSheet;
+      sheets.push({
+        centerp: s.centerp,
+        rot: { alphaD: s.rot.alphaD, betaD: s.rot.betaD, gammaD: s.rot.gammaD },
+        width: s.width,
+        height: s.height,
+        canvas: s.canvas.toDataURL()
+      });
+    }
+
+    let maxdist = 0;
+    for (let i = 0; i < sheets.length; i++) {
+      const sheet = sheets[i];
+      const w2 = sheet.width / 2;
+      const h2 = sheet.height / 2;
+      const dist = Math.sqrt(w2 * w2 + h2 * h2) + pointDist(sheet.centerp, { x: 0, y: 0, z: 0 });
+      if (dist > maxdist)
+        maxdist = dist;
+    }
+    const w = Math.round(maxdist * 2);
+    const h = w;
+    const relu = Math.round(maxdist);
+    const relv = Math.round(maxdist);
+
+    const canvasSize = { w: w, h: h, relu: relu, relv: relv };
+
+    return { name: 'my object', thumbnail: '', hidden: false, intersectionsenabled: true, canvasSize: canvasSize, sheets: sheets };
+  }
+
+  /**
+   * Get current sheets as JSON string
+   */
+  function getCurrentSheetsObjectStr() {
+    const retobj = getCurrentSheetsObject();
+    return JSON.stringify(retobj);
+  }
+
+  // Export objhelpers functions
+  objhelpers.drawObjectToScene = drawObjectToScene;
+  objhelpers.fillRot = fillRot$1;
+  objhelpers.defineAppObjects = defineAppObjects;
+  objhelpers.defineObject = defineObject;
+  objhelpers.getThumbnailString = getThumbnailString;
+  objhelpers.getCurrentSheetsObject = getCurrentSheetsObject;
+  objhelpers.getCurrentSheetsObjectStr = getCurrentSheetsObjectStr;
+  objhelpers.calcRotVector = calcRotVector;
+
+  var objhelpers$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    calcRotVector: calcRotVector,
+    drawObjectToScene: drawObjectToScene,
+    fillRot: fillRot$1,
+    objhelpers: objhelpers
+  });
+
+  /**
+   * BaseSheet class - static base rectangles for the scene
+   */
+
+
+  class BaseSheet {
+    constructor(centerp, rot, size) {
+      const rotclone = fillRot(rot);
+
+      this.width = size.w;
+      this.height = size.h;
+      this.centerp = clonePoint(centerp);
+      this.rot = { alphaD: rotclone.alphaD, betaD: rotclone.betaD, gammaD: rotclone.gammaD };
+
+      // These will be set by calc module when integrated
+      if (window.calc) {
+        window.calc.defineSheetParams(this);
+        window.calc.limitToCorners(this);
+        window.calc.calculateSheetData(this);
+      }
+      calculateSheetShade(this);
+
+      state.basesheets.push(this);
+    }
+
+    destroy() {
+      const bidx = state.basesheets.indexOf(this);
+      if (bidx != -1)
+        state.basesheets.splice(bidx, 1);
+    }
+  }
+
+  function fillRot(rot) {
+    if (!rot) return { alphaD: 0, betaD: 0, gammaD: 0 };
+    return {
+      alphaD: rot.alphaD || 0,
+      betaD: rot.betaD || 0,
+      gammaD: rot.gammaD || 0
+    };
+  }
+
+  /**
+   * @fileoverview Scene management, canvas initialization, and yard loading
+   * Handles scene setup, center positioning, and dynamic yard loading/unloading
+   */
+
+
+  const scene = {};
+  let loadedyards = {};
+
+  scene.yardcenterstart = { yardx: 0, yardy: 0 };
+  scene.yardcenter = { yardx: 0, yardy: 0 };
+  scene.center = { x: 0, y: 0, u: 0, v: 0 };
+  scene.tilewidth = 300;
+  scene.tilesize = { x: 212, y: 106 };
+
+  /**
+   * Initialize the sheetengine scene with canvas element
+   */
+  function init(canvasElement, backgroundSize) {
+    config$1.allowContourDrawing = false;
+
+    state.sheets = [];
+    state.basesheets = [];
+    state.polygons = [];
+    state.objects = [];
+    loadedyards = {};
+
+    state.canvas = canvasElement;
+    state.context = state.canvas.getContext('2d');
+    state.canvasCenter = { u: state.canvas.width / 2, v: state.canvas.height / 2 };
+
+    config$2.baseshadowCanvas = createCanvas(state.canvas.width, state.canvas.height);
+
+    if (backgroundSize) {
+      config$2.baseshadowCanvas.width = backgroundSize.w;
+      config$2.baseshadowCanvas.height = backgroundSize.h;
+      state.backgroundcanvas = createCanvas(backgroundSize.w, backgroundSize.h);
+      state.backgroundcontext = state.backgroundcanvas.getContext('2d');
+      state.backgroundtranslate = { u: 0, v: 0 };
+
+      state.temppartcanvas = createCanvas(state.tempCanvasSize.w, state.tempCanvasSize.h);
+      state.temppartcontext = state.temppartcanvas.getContext('2d');
+      state.temppartshadowcanvas = createCanvas(state.tempCanvasSize.w, state.tempCanvasSize.h);
+      state.temppartshadowcontext = state.temppartshadowcanvas.getContext('2d');
+    }
+    config$2.baseshadowContext = config$2.baseshadowCanvas.getContext('2d');
+    config$2.baseShadowCenter = { u: config$2.baseshadowCanvas.width / 2, v: config$2.baseshadowCanvas.height / 2 };
+  }
+
+  /**
+   * Add yards to the scene
+   */
+  function addYards(yards, callback) {
+    let newsheets = [];
+    let newobjects = [];
+
+    if (yards) {
+      for (let i = 0; i < yards.length; i++) {
+        const yard = yards[i];
+
+        const offset = { x: (yard.x - scene.yardcenterstart.yardx) * scene.tilewidth, y: (yard.y - scene.yardcenterstart.yardy) * scene.tilewidth, z: 0 };
+
+        const basesheet = new BaseSheet(offset, { alphaD: -90, betaD: 0, gammaD: 0 }, { w: scene.tilewidth, h: scene.tilewidth });
+        basesheet.color = yard.baserectcolor;
+
+        let sheets;
+        if (yard.sheets) {
+          sheets = createSheets(yard.sheets, offset);
+          newsheets = newsheets.concat(sheets);
+        } else {
+          sheets = [];
+        }
+
+        const objects = yard.objects;
+        const yardObjects = [];
+        if (objects) {
+          for (let j = 0; j < objects.length; j++) {
+            const objdata = objects[j];
+            undefined(objdata.name);
+            continue;
+          }
+        }
+
+        const newyard = { sheets: sheets, basesheet: basesheet, x: yard.x, y: yard.y, objects: yardObjects };
+        const key = 'x' + yard.x + 'y' + yard.y;
+        loadedyards[key] = newyard;
+      }
+    }
+    if (newsheets.length === 0) {
+      callback([], []);
+      return;
+    }
+
+    // draw images on canvases
+    state.imgCount = 0;
+    for (let i = 0; i < newsheets.length; i++) {
+      const img = new Image();
+      const context = newsheets[i].canvas.getContext('2d');
+      img.onload = imageOnload(newsheets[i], context, img, newsheets.length, () => { callback(newsheets, newobjects); });
+      img.src = newsheets[i].canvasdata;
+      newsheets[i].canvasdata = null;
+    }
+  }
+
+  /**
+   * Create sheets from sheet data
+   */
+  function createSheets(sheetdata, offset) {
+    const sheets = [];
+    if (sheetdata == null)
+      return sheets;
+
+    for (let i = 0; i < sheetdata.length; i++) {
+      const data = sheetdata[i];
+      const sheet = new Sheet(
+        addPoint(data.centerp, offset),
+        data.rot,
+        { w: data.width, h: data.height }
+      );
+      sheet.canvasdata = data.canvas;
+      sheets.push(sheet);
+    }
+    return sheets;
+  }
+
+  /**
+   * Create image onload handler
+   */
+  function imageOnload(sheet, context, img, count, callback) {
+    return function() {
+      context.drawImage(img, 0, 0);
+      sheet.canvasChanged();
+      state.imgCount++;
+      if (state.imgCount === count) {
+        callback();
+      }
+    };
+  }
+
+  /**
+   * Move base shadows by a vector
+   */
+  function moveBaseShadows(vector, sheets) {
+    if (!config$2.drawShadows)
+      return;
+
+    const sheetsToMove = state.sheets;
+    for (let i = 0; i < sheetsToMove.length; i++) {
+      const s = sheetsToMove[i];
+      s.baseShadoweData.translatex -= vector.u;
+      s.baseShadoweData.translatey -= vector.v;
+    }
+  }
+
+  /**
+   * Initialize scene with center point
+   */
+  function initScene(centerp) {
+    undefined();
+
+    const centerpuv = transformPoint(centerp);
+    scene.center = { x: centerp.x, y: centerp.y, u: centerpuv.u, v: centerpuv.v };
+
+    moveBaseShadows(scene.center);
+  }
+
+  /**
+   * Move scene center by a vector
+   */
+  function moveCenter(vectorxyz, vectoruv) {
+    if (!vectoruv) {
+      if (!vectorxyz.z)
+        vectoruv = transformPoint({ x: vectorxyz.x, y: vectorxyz.y, z: 0 });
+      else
+        vectoruv = transformPointz(vectorxyz);
+    }
+    if (!vectorxyz)
+      vectorxyz = inverseTransformPointSimple(vectoruv);
+
+    scene.center.x += vectorxyz.x;
+    scene.center.y += vectorxyz.y;
+    scene.center.u += vectoruv.u;
+    scene.center.v += vectoruv.v;
+
+    // move static sheets baseshadow
+    moveBaseShadows(vectoruv);
+  }
+
+  /**
+   * Set scene center to absolute position
+   */
+  function setCenter(vectorxyz, vectoruv) {
+    if (!vectoruv) {
+      if (!vectorxyz.z)
+        vectoruv = transformPoint({ x: vectorxyz.x, y: vectorxyz.y, z: 0 });
+      else
+        vectoruv = transformPointz(vectorxyz);
+    }
+    if (!vectorxyz)
+      vectorxyz = inverseTransformPointSimple(vectoruv);
+
+    scene.center.x = vectorxyz.x;
+    scene.center.y = vectorxyz.y;
+    const diff = { u: vectoruv.u - scene.center.u, v: vectoruv.v - scene.center.v };
+    scene.center.u = vectoruv.u;
+    scene.center.v = vectoruv.v;
+
+    // move static sheets baseshadow
+    moveBaseShadows(diff);
+  }
+
+  /**
+   * Get URL parameters
+   */
+  function getUrlParams() {
+    let e;
+    const a = /\+/g;
+    const r = /([^&=]+)=?([^&]*)/g;
+    const d = (s) => { return decodeURIComponent(s.replace(a, " ")); };
+    const q = window.location.search.substring(1);
+
+    const urlParams = {};
+    while (e = r.exec(q))
+      urlParams[d(e[1])] = d(e[2]);
+    return urlParams;
+  }
+
+  /**
+   * Get yard center from URL parameters
+   */
+  function getUrlLoadInfo() {
+    const urlParams = scene.getUrlParams();
+    return { yardcenter: { yardx: parseInt(urlParams.x), yardy: parseInt(urlParams.y) } };
+  }
+
+  /**
+   * Make AJAX request for URL
+   */
+  function requestUrl(url, callback) {
+    $.ajax({
+      url: url,
+      cache: false,
+      dataType: "json",
+      success: callback
+    });
+  }
+
+  /**
+   * Get yards from server
+   */
+  function getYards(urlBase, center, levelsize, appid, callback) {
+    scene.yardcenterstart = { yardx: center.yardx, yardy: center.yardy };
+    const url = urlBase + '/yard?x=' + center.yardx + '&y=' + center.yardy + '&levelsize=' + levelsize + '&appid=' + appid + '&appobjects=1';
+    requestUrl(url, (yardsAndObjects) => {
+      if (yardsAndObjects) {
+        if (yardsAndObjects.center) {
+          scene.yardcenterstart = { yardx: yardsAndObjects.center.x, yardy: yardsAndObjects.center.y };
+          scene.yardcenter = { yardx: yardsAndObjects.center.x, yardy: yardsAndObjects.center.y };
+          scene.level = yardsAndObjects.level;
+        }
+        undefined(yardsAndObjects.appobjects);
+        state.objects = [];
+        addYards(yardsAndObjects.yards, (newsheets, newobjects) => {
+          callback();
+        });
+      } else {
+        callback();
+      }
+    });
+  }
+
+  /**
+   * Get new yards from server (incremental loading)
+   */
+  function getNewYards(urlBase, center, levelsize, appid, callback) {
+    // gather yards to be removed and loaded
+    const oldcenter = scene.yardcenter;
+    scene.yardcenter = { yardx: center.yardx, yardy: center.yardy };
+    const newcenter = scene.yardcenter;
+
+    const oldc = { x1: oldcenter.yardx - levelsize, x2: oldcenter.yardx + levelsize, y1: oldcenter.yardy - levelsize, y2: oldcenter.yardy + levelsize };
+    const newc = { x1: newcenter.yardx - levelsize, x2: newcenter.yardx + levelsize, y1: newcenter.yardy - levelsize, y2: newcenter.yardy + levelsize };
+
+    // yards to remove
+    const yardsToRemove = [];
+    for (let x = oldc.x1; x <= oldc.x2; x++) {
+      for (let y = oldc.y1; y <= oldc.y2; y++) {
+        if (x < newc.x1 || x > newc.x2 ||
+          y < newc.y1 || y > newc.y2)
+          yardsToRemove.push({ x: x, y: y });
+      }
+    }
+
+    // yards to add
+    const yardsToAdd = [];
+    for (let x = newc.x1; x <= newc.x2; x++) {
+      for (let y = newc.y1; y <= newc.y2; y++) {
+        if (x < oldc.x1 || x > oldc.x2 ||
+          y < oldc.y1 || y > oldc.y2)
+          yardsToAdd.push({ x: x, y: y });
+      }
+    }
+
+    let yardsStr = '';
+    for (let i = 0; i < yardsToAdd.length; i++) {
+      yardsStr += yardsToAdd[i].x + ',' + yardsToAdd[i].y;
+      if (i < yardsToAdd.length - 1)
+        yardsStr += ';';
+    }
+    const url = urlBase + '/yard?x=' + scene.yardcenterstart.yardx + '&y=' + scene.yardcenterstart.yardy + '&yards=' + yardsStr + '&appid=' + appid + '&appobjects=0';
+    requestUrl(url, (yardsAndObjects) => {
+      const oldcenter2 = { x: oldcenter.yardx * scene.tilewidth, y: oldcenter.yardy * scene.tilewidth, z: 0 };
+      const newcenter2 = { x: newcenter.yardx * scene.tilewidth, y: newcenter.yardy * scene.tilewidth, z: 0 };
+      scene.translateBackground(oldcenter2, newcenter2);
+
+      if (yardsAndObjects) {
+        addYards(yardsAndObjects.yards, (newsheets, newobjects) => {
+          const removedsheets = { sheets: [] };
+          const removedobjects = { objects: [] };
+          newYardsAdded(newsheets, removedsheets, removedobjects, yardsToRemove);
+          callback(newsheets, newobjects, removedsheets.sheets, removedobjects.objects);
+        });
+      } else {
+        const removedsheets = { sheets: [] };
+        const removedobjects = { objects: [] };
+        newYardsAdded(null, removedsheets, removedobjects, yardsToRemove);
+        callback([], [], removedsheets.sheets, removedobjects.objects);
+      }
+    });
+  }
+
+  /**
+   * Remove yard from scene
+   */
+  function removeYard(yard) {
+    // remove yard sheets
+    for (let s = 0; s < yard.sheets.length; s++) {
+      const sheet = yard.sheets[s];
+      sheet.destroy();
+    }
+
+    // remove basesheet
+    const bidx = state.basesheets.indexOf(yard.basesheet);
+    if (bidx !== -1)
+      state.basesheets.splice(bidx, 1);
+
+    // remove yard objects
+    for (let o = 0; o < yard.objects.length; o++) {
+      const obj = yard.objects[o];
+      const idx = state.objects.indexOf(obj);
+      if (idx !== -1)
+        state.objects.splice(idx, 1);
+
+      obj.destroy();
+    }
+
+    // remove yard
+    delete loadedyards['x' + yard.x + 'y' + yard.y];
+
+    // adjust sheet indexes
+    for (let i = 0; i < state.sheets.length; i++) {
+      state.sheets[i].index = i;
+    }
+  }
+
+  /**
+   * Handle new yards being added
+   */
+  function newYardsAdded(newsheets, removedsheets, removedobjects, yardsToRemove) {
+    // remove yard
+    for (let i = 0; i < yardsToRemove.length; i++) {
+      const y = yardsToRemove[i];
+      const key = 'x' + y.x + 'y' + y.y;
+      const yard = loadedyards[key];
+      if (!yard)
+        continue;
+      removedsheets.sheets = removedsheets.sheets.concat(yard.sheets);
+      removedobjects.objects = removedobjects.objects.concat(yard.objects);
+      removeYard(yard);
+    }
+  }
+
+  /**
+   * Get yard coordinates from position
+   */
+  function getYardFromPos(centerp) {
+    const yardx = Math.round(centerp.x / scene.tilewidth);
+    const yardy = Math.round(centerp.y / scene.tilewidth);
+    return { relyardx: yardx, relyardy: yardy, yardx: yardx + scene.yardcenterstart.yardx, yardy: yardy + scene.yardcenterstart.yardy };
+  }
+
+  /**
+   * Translate background canvas
+   */
+  function translateBackground(oldcenter, newcenter) {
+    if (typeof (oldcenter.z) === 'undefined')
+      oldcenter.z = 0;
+    if (typeof (newcenter.z) === 'undefined')
+      newcenter.z = 0;
+    const oldcenteruv = transformPoint(oldcenter);
+    const newcenteruv = transformPoint(newcenter);
+    const transu = newcenteruv.u - oldcenteruv.u;
+    const transv = newcenteruv.v - oldcenteruv.v;
+    state.backgroundcontext.translate(-transu, -transv);
+    config$2.baseshadowContext.translate(-transu, -transv);
+    state.backgroundtranslate.u += transu;
+    state.backgroundtranslate.v += transv;
+
+    state.backgroundcontext.clearRect(state.backgroundtranslate.u, state.backgroundtranslate.v, state.backgroundcanvas.width, state.backgroundcanvas.height);
+    config$2.baseshadowContext.clearRect(state.backgroundtranslate.u, state.backgroundtranslate.v, state.backgroundcanvas.width, state.backgroundcanvas.height);
+  }
+
+  // Export scene functions
+  scene.init = init;
+  scene.initScene = initScene;
+  scene.moveCenter = moveCenter;
+  scene.setCenter = setCenter;
+  scene.getUrlParams = getUrlParams;
+  scene.getUrlLoadInfo = getUrlLoadInfo;
+  scene.getYards = getYards;
+  scene.getNewYards = getNewYards;
+  scene.getYardFromPos = getYardFromPos;
+  scene.translateBackground = translateBackground;
+
+  var scene$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    scene: scene
+  });
+
+  /**
+   * DensityMap class - collision detection and spatial queries
+   */
+
+
+  class DensityMap {
+    constructor(granularity) {
+      this.map = {};
+      this.granularity = granularity;
+    }
+
+    get(p) {
+      const map = this.map;
+      const gran = this.granularity;
+      const x = Math.round(p.x / gran);
+      const y = Math.round(p.y / gran);
+      const z = Math.round(p.z / gran);
+
+      if (map['x' + x + 'y' + y + 'z' + z])
+        return map['x' + x + 'y' + y + 'z' + z];
+
+      return 0;
+    }
+
+    put(p) {
+      this.map;
+      const gran = this.granularity;
+      const x = Math.round(p.x / gran);
+      const y = Math.round(p.y / gran);
+      const z = Math.floor(p.z / gran);
+
+      this.add('x' + x + 'y' + y + 'z' + z);
+      this.add('x' + (x + 1) + 'y' + (y) + 'z' + (z));
+      this.add('x' + (x) + 'y' + (y + 1) + 'z' + (z));
+      this.add('x' + (x - 1) + 'y' + (y) + 'z' + (z));
+      this.add('x' + (x) + 'y' + (y - 1) + 'z' + (z));
+    }
+
+    remove(p) {
+      this.map;
+      const gran = this.granularity;
+      const x = Math.round(p.x / gran);
+      const y = Math.round(p.y / gran);
+      const z = Math.floor(p.z / gran);
+
+      this.sub('x' + x + 'y' + y + 'z' + z);
+      this.sub('x' + (x + 1) + 'y' + (y) + 'z' + (z));
+      this.sub('x' + (x) + 'y' + (y + 1) + 'z' + (z));
+      this.sub('x' + (x - 1) + 'y' + (y) + 'z' + (z));
+      this.sub('x' + (x) + 'y' + (y - 1) + 'z' + (z));
+    }
+
+    add(id) {
+      const map = this.map;
+      if (!map[id])
+        map[id] = 1;
+      else
+        map[id] = map[id] + 1;
+    }
+
+    sub(id) {
+      const map = this.map;
+      if (!map[id] || map[id] == 0)
+        return;
+      else
+        map[id] = map[id] - 1;
+    }
+
+    addSheet(sheet) {
+      this.processSheet(sheet, this.put);
+    }
+
+    removeSheet(sheet) {
+      this.processSheet(sheet, this.remove);
+    }
+
+    processSheet(sheet, processFunction) {
+      const gran = this.granularity;
+      const s = sheet;
+      if (s.skipDensityMap) return;
+      const granx = Math.round(s.width / gran);
+      const grany = Math.round(s.height / gran);
+      const xmod = {
+        x: (s.corners[1].x - s.corners[0].x) / granx,
+        y: (s.corners[1].y - s.corners[0].y) / granx,
+        z: (s.corners[1].z - s.corners[0].z) / granx
+      };
+      const ymod = {
+        x: (s.corners[3].x - s.corners[0].x) / grany,
+        y: (s.corners[3].y - s.corners[0].y) / grany,
+        z: (s.corners[3].z - s.corners[0].z) / grany
+      };
+
+      const w = s.canvas.width;
+      const h = s.canvas.height;
+      const imgData = s.context.getImageData(0, 0, w, h).data;
+      let actp = clonePoint(addPoint(s.corners[0], { x: (xmod.x + ymod.x) / 2, y: (xmod.y + ymod.y) / 2, z: (xmod.z + ymod.z) / 2 }));
+      for (let y = 0; y < grany; y++) {
+        let actpx = clonePoint(actp);
+        for (let x = 0; x < granx; x++) {
+          const sx = Math.round(x * gran + gran / 2);
+          const sy = Math.round(y * gran + gran / 2);
+          const pixi = (sx + w * sy) * 4;
+          const alpha = imgData[pixi + 3];
+          if (alpha != 0) {
+            processFunction.call(this, actpx);
+          }
+          actpx = addPoint(actpx, xmod);
+        }
+        actp = addPoint(actp, ymod);
+      }
+    }
+
+    addSheets(sheets) {
+      for (let i = 0; i < sheets.length; i++) {
+        this.addSheet(sheets[i]);
+      }
+    }
+
+    removeSheets(sheets) {
+      for (let i = 0; i < sheets.length; i++) {
+        this.removeSheet(sheets[i]);
+      }
+    }
+
+    getTargetHeight(targetp, objectHeight) {
+      const startz = targetp.z + objectHeight;
+      for (let z = startz; z > 0; z--) {
+        const obstacle = this.get({ x: targetp.x, y: targetp.y, z });
+        if (obstacle) return z;
+      }
+      return 0;
+    }
+
+    getTargetPoint(targetPos, vector, objHeight, tolerance) {
+      let allowMove = true;
+      let stopFall = false;
+      let targetp = {
+        x: targetPos.x + vector.x,
+        y: targetPos.y + vector.y,
+        z: targetPos.z + vector.z
+      };
+      let h = this.getTargetHeight({ x: targetp.x, y: targetp.y, z: targetp.z }, objHeight);
+      if (h >= targetp.z) {
+        if (h - targetp.z < tolerance) {
+          stopFall = true;
+          targetp.z = h;
+        } else {
+          vector.x = 0;
+          vector.y = 0;
+          targetp = {
+            x: targetPos.x,
+            y: targetPos.y,
+            z: targetPos.z + vector.z
+          };
+          h = this.getTargetHeight({ x: targetp.x, y: targetp.y, z: targetp.z }, objHeight);
+          if (h >= targetp.z) {
+            stopFall = true;
+            if (h - targetp.z < tolerance) {
+              targetp.z = h;
+            } else {
+              allowMove = false;
+              targetp.z = h;
+            }
+          }
+        }
+      }
+      return { allowMove, targetp, movex: vector.x, movey: vector.y, stopFall };
+    }
+  }
+
+  /**
+   * SheetEngine v2.0.0
+   * Isometric HTML5 JavaScript Display Engine
+   * https://github.com/normanzb/sheetengine
+   *
+   * Licensed under the MIT license.
+   * Copyright (C) 2012 Levente Dobson
+   */
+
+
+  // Initialize shadow base matrix
+  config$2.shadowBaseMatrixInverse = getBaseMatrixInverse(
+    config$2.lightSourcep1,
+    config$2.lightSourcep2,
+    config$2.lightSource
+  );
+
+  // Create the main sheetengine namespace object
+  const sheetengine = {
+    // State
+    ...state,
+
+    // Modules
+    geometry,
+    transforms,
+    shadows: config$2,
+    drawing: config$1,
+    calc: {
+      calculateChangedSheets: undefined,
+      calculateAllSheets: undefined,
+      deleteSheets: undefined,
+      defineSheetParams: undefined
+    },
+    scene: {
+      init: undefined,
+      initScene: undefined,
+      moveCenter: undefined,
+      setCenter: undefined,
+      addYards: undefined,
+      getYards: undefined,
+      getNewYards: undefined,
+      removeYard: undefined,
+      translateBackground: undefined
+    },
+    objhelpers: {
+      defineObject: undefined,
+      defineAppObjects: undefined,
+      drawObjectToScene: drawObjectToScene,
+      fromRadian: undefined,
+      fromDegree: undefined,
+      getCurrentSheetsObject: undefined,
+      getCurrentSheetsObjectStr: undefined,
+      redefineIntersections: undefined
+    },
+
+    // Classes
+    BaseSheet,
+    Sheet,
+    SheetObject,
+    DensityMap
+  };
+
+  exports.BaseSheet = BaseSheet;
+  exports.DensityMap = DensityMap;
+  exports.Sheet = Sheet;
+  exports.SheetObject = SheetObject;
+  exports.calc = calc$1;
+  exports.default = sheetengine;
+  exports.drawing = drawing;
+  exports.geometry = geometry;
+  exports.internal = internal;
+  exports.intersections = intersections;
+  exports.objhelpers = objhelpers$1;
+  exports.scene = scene$1;
+  exports.shadows = shadows;
+  exports.state = state;
+  exports.transforms = transforms;
+  exports.zOrdering = zOrdering;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
+
+}));
+//# sourceMappingURL=sheetengine.js.map

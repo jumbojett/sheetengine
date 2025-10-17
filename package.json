@@ -1,0 +1,30 @@
+{
+  "name": "sheetengine",
+  "version": "2.0.0",
+  "description": "Isometric HTML5 JavaScript Display Engine",
+  "main": "dist/sheetengine.js",
+  "module": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "serve": "npx http-server . -p 8080"
+  },
+  "keywords": [
+    "isometric",
+    "3d",
+    "canvas",
+    "graphics",
+    "engine"
+  ],
+  "author": "Levente Dobson",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "rollup": "^4.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/normanzb/sheetengine"
+  }
+}
