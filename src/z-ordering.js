@@ -162,7 +162,7 @@ function isPolygonFront(a, b, asheet, bsheet, aData, bData, viewSource, shadow) 
   return false;
 }
 
-const inboundsCheckZeroThresh = 0.001;
+let inboundsCheckZeroThresh = 0.001;
 
 function checkInboundsPolygon(corners, myx, myy) {
   const areas = [];

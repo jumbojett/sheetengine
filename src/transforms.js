@@ -4,8 +4,8 @@
 
 import { state } from './core.js';
 
-const su = Math.SQRT1_2;
-const sv = Math.SQRT1_2 / 2;
+let su = Math.SQRT1_2;
+let sv = Math.SQRT1_2 / 2;
 
 export function transformPoint(p) {
   const u = (p.x - p.y) * su;

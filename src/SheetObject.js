@@ -19,7 +19,7 @@ import * as drawing from './drawing.js';
  * @returns {Array} Calculated rotation vectors
  */
 function calcRotVector(rot, rotvectorstart) {
-  const rotvector = [];
+  let rotvector = [];
   rotvector[0] = geometry.rotatePoint(rotvectorstart[0], rot.alpha, rot.beta, rot.gamma);
   rotvector[1] = geometry.rotatePoint(rotvectorstart[1], rot.alpha, rot.beta, rot.gamma);
   rotvector[2] = geometry.rotatePoint(rotvectorstart[2], rot.alpha, rot.beta, rot.gamma);

@@ -7,11 +7,11 @@ import * as transforms from './transforms.js';
 import { state } from './core.js';
 import * as shadows from './shadows.js';
 
-export const config = {
+export let config = {
   intersections: true
 };
 
-const polygonMidpointsForOverlapCheck = [
+let polygonMidpointsForOverlapCheck = [
   { dist: 50, numpoints: 4 },
   { dist: 20, numpoints: 3 },
   { dist: 10, numpoints: 2 },

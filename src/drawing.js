@@ -7,7 +7,7 @@ import * as shadows from './shadows.js';
 import * as transforms from './transforms.js';
 import * as geometry from './geometry.js';
 
-export const config = {
+export let config = {
   drawBaseRect: null,
   drawBeforeSheets: null,
   drawAfterSheets: null,
@@ -260,10 +260,10 @@ export function getPointuv(p) {
 }
 
 function drawScenePart(options) {
-  const viewPort = options.viewPort;
-  const targetContext = options.targetContext;
-  const targetBaseShadowContext = options.targetBaseShadowContext;
-  const targetBaseShadowCanvas = options.targetBaseShadowCanvas;
+  let viewPort = options.viewPort;
+  let targetContext = options.targetContext;
+  let targetBaseShadowContext = options.targetBaseShadowContext;
+  let targetBaseShadowCanvas = options.targetBaseShadowCanvas;
 
   if (!targetContext) {
     targetContext = state.temppartcontext;

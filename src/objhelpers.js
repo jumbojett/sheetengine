@@ -10,7 +10,7 @@ import { calculateSheetSections } from './intersections.js';
 import { Sheet } from './Sheet.js';
 import { SheetObject } from './SheetObject.js';
 
-export const objhelpers = {};
+export let objhelpers = {};
 
 /**
  * Draw object to scene canvas

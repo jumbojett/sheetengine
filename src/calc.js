@@ -17,14 +17,14 @@ import {
   clearDimmedFlags
 } from './z-ordering.js';
 
-export const calc = {
+export let calc = {
   allowLimitToCorners: false,
   sheetLimits: { xmin: -150, xmax: 150, ymin: -150, ymax: 150, zmin: 0, zmax: 100 }
 };
 
 let staticsheets = null;
 
-const inboundsCheckZeroThresh = 0.001;
+let inboundsCheckZeroThresh = 0.001;
 
 /**
  * Check if a point is within polygon bounds

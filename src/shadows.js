@@ -6,7 +6,7 @@ import { state } from './core.js';
 import * as geometry from './geometry.js';
 import * as transforms from './transforms.js';
 
-export const config = {
+export let config = {
   baseshadowCanvas: null,
   baseshadowContext: null,
   baseShadowCenter: { u: 212, v: 2 * 106 },

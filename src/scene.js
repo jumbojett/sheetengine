@@ -31,10 +31,10 @@ scene.tilesize = { x: 212, y: 106 };
 function init(canvasElement, backgroundSize) {
   drawing.config.allowContourDrawing = false;
 
-  state.sheets = [];
-  state.basesheets = [];
-  state.polygons = [];
-  state.objects = [];
+  state.sheets.length = 0;
+  state.basesheets.length = 0;
+  state.polygons.length = 0;
+  state.objects.length = 0;
   startsheets = [];
   loadedyards = {};
 

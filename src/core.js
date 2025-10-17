@@ -2,7 +2,7 @@
  * Core state management for SheetEngine
  */
 
-export const state = {
+export let state = {
   sheets: [],
   basesheets: [],
   polygons: [],
@@ -33,7 +33,7 @@ export const state = {
   appobjects: null
 };
 
-export const internal = {
+export let internal = {
   startsheets: [],
   loadedyards: {},
   staticsheets: null

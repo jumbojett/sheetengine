@@ -130,52 +130,46 @@ export function rotatePoint(p, phi, theta, omega) {
 }
 
 export function inverseRPY(p1, p2, normalp) {
-  let alpha = 0;
-  let beta = 0;
-  let gamma = 0;
+  let resultAlpha = 0;
+  let resultBeta = 0;
+  let resultGamma = 0;
 
-  const nz = p1.x;
-  const ny = p1.y;
-  const nx = p1.z;
-  const lz = p2.x;
-  const ly = p2.y;
-  const lx = p2.z;
-  const mz = normalp.x;
-  const my = normalp.y;
-  const mx = normalp.z;
+  const { y: lightYValue, z: lightXValue, x: lightZValue } = p2;
+  const { y: normalYValue, z: normalXValue } = p1;
+  const { y: matrixYValue, z: matrixXValue } = normalp;
 
-  if (ly === 0 && lx === 0) {
-    if (lz === 1) {
-      beta = -Math.PI / 2;
-      alpha = 0;
-      gamma = Math.atan2(ny, nx);
+  if (lightYValue === 0 && lightXValue === 0) {
+    if (lightZValue === 1) {
+      resultBeta = -Math.PI / 2;
+      resultAlpha = 0;
+      resultGamma = Math.atan2(normalYValue, normalXValue);
     } else {
-      beta = Math.PI / 2;
-      alpha = 0;
-      gamma = Math.atan2(mx, my);
+      resultBeta = Math.PI / 2;
+      resultAlpha = 0;
+      resultGamma = Math.atan2(matrixXValue, matrixYValue);
     }
   } else {
-    alpha = Math.atan2(ly, lx);
-    const sa = Math.sin(alpha);
-    const ca = Math.cos(alpha);
-    beta = Math.atan2(-lz, sa * ly + ca * lx);
-    gamma = Math.atan2(sa * nx - ca * ny, -sa * mx + ca * my);
+    resultAlpha = Math.atan2(lightYValue, lightXValue);
+    const sa = Math.sin(resultAlpha);
+    const ca = Math.cos(resultAlpha);
+    resultBeta = Math.atan2(-lightZValue, sa * lightYValue + ca * lightXValue);
+    resultGamma = Math.atan2(sa * normalXValue - ca * normalYValue, -sa * matrixXValue + ca * matrixYValue);
   }
 
-  alpha = alpha + Math.PI;
-  beta = -beta;
-  gamma = gamma + Math.PI;
+  resultAlpha = resultAlpha + Math.PI;
+  resultBeta = -resultBeta;
+  resultGamma = resultGamma + Math.PI;
 
-  if (alpha === 2 * Math.PI) alpha = 0;
-  if (gamma === 2 * Math.PI) gamma = 0;
-  if (beta < 0) beta = 2 * Math.PI + beta;
-  if (beta === 2 * Math.PI) beta = 0;
+  if (resultAlpha === 2 * Math.PI) resultAlpha = 0;
+  if (resultGamma === 2 * Math.PI) resultGamma = 0;
+  if (resultBeta < 0) resultBeta = 2 * Math.PI + resultBeta;
+  if (resultBeta === 2 * Math.PI) resultBeta = 0;
 
-  const alphaD = Math.round((180 / Math.PI) * alpha);
-  const betaD = Math.round((180 / Math.PI) * beta);
-  const gammaD = Math.round((180 / Math.PI) * gamma);
+  const alphaD = Math.round((180 / Math.PI) * resultAlpha);
+  const betaD = Math.round((180 / Math.PI) * resultBeta);
+  const gammaD = Math.round((180 / Math.PI) * resultGamma);
 
-  return { alpha, beta, gamma, alphaD, betaD, gammaD };
+  return { alpha: resultAlpha, beta: resultBeta, gamma: resultGamma, alphaD, betaD, gammaD };
 }
 
 export function rotateAroundAxis(p, t, phi) {

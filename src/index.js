@@ -31,15 +31,21 @@ shadows.config.shadowBaseMatrixInverse = geometry.getBaseMatrixInverse(
 );
 
 // Create the main sheetengine namespace object
-const sheetengine = {
-  // State
-  ...state,
-
+let sheetengine = {
   // Modules
   geometry,
   transforms,
   shadows: shadows.config,
-  drawing: drawing.config,
+  drawing: {
+    ...drawing.config,
+    drawScene: drawing.drawScene,
+    redraw: drawing.redraw,
+    drawSheets: drawing.drawSheets,
+    createCanvas: drawing.createCanvas,
+    redrawSheetCanvases: drawing.redrawSheetCanvases,
+    drawRect: drawing.drawRect,
+    getPointuv: drawing.getPointuv
+  },
   calc: {
     calculateChangedSheets: calc.calculateChangedSheets,
     calculateAllSheets: calc.calculateAllSheets,
@@ -64,6 +70,23 @@ const sheetengine = {
   SheetObject,
   DensityMap
 };
+
+// Add state properties as getters/setters to maintain reference
+const stateProps = ['sheets', 'basesheets', 'polygons', 'objects', 'currentSheet', 'hoverSheet', 
+  'canvas', 'context', 'canvasCenter', 'viewSource', 'tempCanvasSize', 'backgroundColor', 
+  'drawObjectContour', 'boundingBoxMaxsheetDistance', 'objectsintersect', 'debug',
+  'sheetsbeingdeleted', 'orderedPolygons', 'backgroundcanvas', 'backgroundcontext', 
+  'backgroundtranslate', 'temppartcanvas', 'temppartcontext', 'temppartshadowcanvas', 
+  'temppartshadowcontext', 'imgCount', 'appobjects'];
+
+stateProps.forEach(prop => {
+  Object.defineProperty(sheetengine, prop, {
+    get() { return state[prop]; },
+    set(value) { state[prop] = value; },
+    enumerable: true,
+    configurable: true
+  });
+});
 
 // Export for ES6 modules
 export default sheetengine;
