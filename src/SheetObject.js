@@ -91,7 +91,7 @@ export function SheetObject(centerp, rot, sheets, canvasSize, intersectionsenabl
   this.canvasSize = canvasSize;
 
   // adjust temppartcanvas size if necessary
-  if (canvasSize.w > state.tempCanvasSize.w || canvasSize.h > state.tempCanvasSize.h) {
+  if (state.temppartcanvas && (canvasSize.w > state.tempCanvasSize.w || canvasSize.h > state.tempCanvasSize.h)) {
     const w = Math.max(canvasSize.w, state.tempCanvasSize.w);
     const h = Math.max(canvasSize.h, state.tempCanvasSize.h);
     state.tempCanvasSize = { w: w, h: h };
@@ -515,7 +515,7 @@ SheetObject.prototype.draw = function() {
   const du = Math.ceil(Math.abs(centerpuv.u - oldcenterpuv.u) + this.canvasSize.w);
   const dv = Math.ceil(Math.abs(centerpuv.v - oldcenterpuv.v) + this.canvasSize.h);
 
-  const fit = (du < state.temppartcanvas.width && dv < state.temppartcanvas.height);
+  const fit = state.temppartcanvas && (du < state.temppartcanvas.width && dv < state.temppartcanvas.height);
   if (fit) {
     // update old + new location using temppartcanvas
     const u = Math.floor(Math.min(centerpuv.u, oldcenterpuv.u) - this.canvasSize.relu);

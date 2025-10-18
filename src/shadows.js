@@ -158,7 +158,7 @@ export function drawSheetShadow(sheet) {
 
   const drawshadows = !sheet.shaded && config.drawShadows && sheet.allowshadows;
 
-  if (drawshadows) {
+  if (drawshadows && sheet.shadowtempcontext) {
     sheet.shadowtempcontext.clearRect(0, 0, sheet.width, sheet.height);
     sheet.shadowData = [];
 
@@ -197,33 +197,35 @@ export function drawSheetShadow(sheet) {
     }
   }
 
-  sheet.compositecontext.save();
-  sheet.compositecontext.drawImage(sheet.canvas, 0, 0);
+  if (sheet.compositecontext) {
+    sheet.compositecontext.save();
+    sheet.compositecontext.drawImage(sheet.canvas, 0, 0);
 
-  if (sheet.shaded) {
-    sheet.compositecontext.globalCompositeOperation = 'source-over';
-    sheet.compositecontext.globalAlpha = config.shadeAlpha;
-    sheet.compositecontext.drawImage(sheet.shadowcanvas, 0, 0);
-  } else {
-    const shadeThresh = 0;
-    if (sheet.shadealpha > shadeThresh) {
+    if (sheet.shaded) {
       sheet.compositecontext.globalCompositeOperation = 'source-over';
-      sheet.compositecontext.globalAlpha = sheet.shadealpha;
+      sheet.compositecontext.globalAlpha = config.shadeAlpha;
       sheet.compositecontext.drawImage(sheet.shadowcanvas, 0, 0);
     } else {
-      sheet.compositecontext.globalCompositeOperation = 'source-atop';
-      sheet.compositecontext.globalAlpha = (shadeThresh - sheet.shadealpha * 6);
-      sheet.compositecontext.fillStyle = '#FFF';
-      sheet.compositecontext.fillRect(0, 0, sheet.width, sheet.height);
+      const shadeThresh = 0;
+      if (sheet.shadealpha > shadeThresh) {
+        sheet.compositecontext.globalCompositeOperation = 'source-over';
+        sheet.compositecontext.globalAlpha = sheet.shadealpha;
+        sheet.compositecontext.drawImage(sheet.shadowcanvas, 0, 0);
+      } else {
+        sheet.compositecontext.globalCompositeOperation = 'source-atop';
+        sheet.compositecontext.globalAlpha = (shadeThresh - sheet.shadealpha * 6);
+        sheet.compositecontext.fillStyle = '#FFF';
+        sheet.compositecontext.fillRect(0, 0, sheet.width, sheet.height);
+      }
     }
-  }
 
-  if (drawshadows) {
-    sheet.compositecontext.globalAlpha = config.shadowAlpha - sheet.shadealpha;
-    sheet.compositecontext.globalCompositeOperation = 'source-atop';
-    sheet.compositecontext.drawImage(sheet.shadowtempcanvas, 0, 0);
+    if (drawshadows) {
+      sheet.compositecontext.globalAlpha = config.shadowAlpha - sheet.shadealpha;
+      sheet.compositecontext.globalCompositeOperation = 'source-atop';
+      sheet.compositecontext.drawImage(sheet.shadowtempcanvas, 0, 0);
+    }
+    sheet.compositecontext.restore();
   }
-  sheet.compositecontext.restore();
 }
 
 export function calculateSheetsShadows(calculateAll) {

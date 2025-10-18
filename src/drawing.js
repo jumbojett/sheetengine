@@ -141,21 +141,25 @@ function drawSelectRect(sheetdata, context, selected) {
 }
 
 export function redrawSheetCanvases(sheet) {
-  sheet.baseshadowcontext.save();
-  sheet.baseshadowcontext.clearRect(0, 0, sheet.width, sheet.height);
-  sheet.baseshadowcontext.drawImage(sheet.canvas, 0, 0);
-  sheet.baseshadowcontext.globalCompositeOperation = 'source-in';
-  sheet.baseshadowcontext.fillStyle = '#000';
-  sheet.baseshadowcontext.fillRect(0, 0, sheet.width, sheet.height);
-  sheet.baseshadowcontext.restore();
+  if (sheet.baseshadowcontext) {
+    sheet.baseshadowcontext.save();
+    sheet.baseshadowcontext.clearRect(0, 0, sheet.width, sheet.height);
+    sheet.baseshadowcontext.drawImage(sheet.canvas, 0, 0);
+    sheet.baseshadowcontext.globalCompositeOperation = 'source-in';
+    sheet.baseshadowcontext.fillStyle = '#000';
+    sheet.baseshadowcontext.fillRect(0, 0, sheet.width, sheet.height);
+    sheet.baseshadowcontext.restore();
+  }
 
-  sheet.shadowcontext.save();
-  sheet.shadowcontext.clearRect(0, 0, sheet.width, sheet.height);
-  sheet.shadowcontext.drawImage(sheet.canvas, 0, 0);
-  sheet.shadowcontext.globalCompositeOperation = 'source-in';
-  sheet.shadowcontext.fillStyle = '#000';
-  sheet.shadowcontext.fillRect(0, 0, sheet.width, sheet.height);
-  sheet.shadowcontext.restore();
+  if (sheet.shadowcontext) {
+    sheet.shadowcontext.save();
+    sheet.shadowcontext.clearRect(0, 0, sheet.width, sheet.height);
+    sheet.shadowcontext.drawImage(sheet.canvas, 0, 0);
+    sheet.shadowcontext.globalCompositeOperation = 'source-in';
+    sheet.shadowcontext.fillStyle = '#000';
+    sheet.shadowcontext.fillRect(0, 0, sheet.width, sheet.height);
+    sheet.shadowcontext.restore();
+  }
 }
 
 function drawSheetSelection(sheet, polygon, sheetData, context) {
@@ -271,6 +275,11 @@ function drawScenePart(options) {
     targetBaseShadowCanvas = state.temppartshadowcanvas;
   }
 
+  // If temp canvases are not initialized, skip drawing
+  if (!targetContext) {
+    return;
+  }
+
   targetContext.fillStyle = state.backgroundColor;
   targetContext.fillRect(0, 0, viewPort.w, viewPort.h);
 
@@ -355,11 +364,13 @@ export function drawScene(full) {
         const v = s.data.vmin - state.canvasCenter.v;
 
         drawScenePart({ viewPort: { u, v, w, h } });
-        const canvas = state.backgroundcanvas ? state.backgroundcanvas : state.canvas;
-        const context = state.backgroundcanvas ? state.backgroundcontext : state.context;
-        const offsetu = u + canvas.width / 2;
-        const offsetv = v + canvas.height / 2;
-        context.drawImage(state.temppartcanvas, 0, 0, w - 1, h - 1, offsetu, offsetv, w - 1, h - 1);
+        if (state.temppartcanvas) {
+          const canvas = state.backgroundcanvas ? state.backgroundcanvas : state.canvas;
+          const context = state.backgroundcanvas ? state.backgroundcontext : state.context;
+          const offsetu = u + canvas.width / 2;
+          const offsetv = v + canvas.height / 2;
+          context.drawImage(state.temppartcanvas, 0, 0, w - 1, h - 1, offsetu, offsetv, w - 1, h - 1);
+        }
       }
     }
 

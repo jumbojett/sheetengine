@@ -29,11 +29,13 @@ function drawObjectToScene(obj, centerpuv) {
   const canvasV = v + canvas.height / 2;
   const canvasW = w - 1;
   const canvasH = h - 1;
-  if (state.drawObjectContour) {
+  if (state.drawObjectContour && state.temppartcontext) {
     state.temppartcontext.strokeStyle = '#FFF';
     state.temppartcontext.strokeRect(0, 0, canvasW, canvasH);
   }
-  context.drawImage(state.temppartcanvas, 0, 0, canvasW, canvasH, canvasU, canvasV, canvasW, canvasH);
+  if (state.temppartcanvas) {
+    context.drawImage(state.temppartcanvas, 0, 0, canvasW, canvasH, canvasU, canvasV, canvasW, canvasH);
+  }
 }
 
 /**
