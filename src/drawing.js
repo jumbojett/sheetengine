@@ -6,6 +6,7 @@ import { state } from './core.js';
 import * as shadows from './shadows.js';
 import * as transforms from './transforms.js';
 import * as geometry from './geometry.js';
+import { scene } from './scene.js';
 
 export let config = {
   drawBaseRect: null,
@@ -31,7 +32,7 @@ export function redraw() {
   if (config.drawBaseRect)
     config.drawBaseRect();
   if (shadows.config.drawShadows) {
-    shadows.initBaseRectShadow(shadows.config.baseshadowContext, { w: shadows.config.baseshadowCanvas.width, h: shadows.config.baseshadowCanvas.height }, { u: 0, v: 0 });
+    shadows.initBaseRectShadow(shadows.config.baseshadowContext, { w: shadows.config.baseshadowCanvas.width, h: shadows.config.baseshadowCanvas.height }, { u: 0, v: 0 }, null, { drawRect });
     shadows.drawBaseRectShadow();
   }
   if (config.drawBeforeSheets)
@@ -299,7 +300,7 @@ function drawScenePart(options) {
 
   if (window.scene) {
     const shadowrel = { u: -u + window.scene.center.u + state.canvasCenter.u - shadows.config.baseShadowCenter.u, v: -v + window.scene.center.v + state.canvasCenter.v - shadows.config.baseShadowCenter.v };
-    shadows.initBaseRectShadow(targetBaseShadowContext, { w: viewPort.w, h: viewPort.h }, shadowrel, { minu, maxu, minv, maxv });
+    shadows.initBaseRectShadow(targetBaseShadowContext, { w: viewPort.w, h: viewPort.h }, shadowrel, { minu, maxu, minv, maxv }, { drawRect });
     targetContext.save();
     targetContext.globalAlpha = shadows.config.shadowAlpha;
     targetContext.drawImage(targetBaseShadowCanvas, u, v);
@@ -321,9 +322,9 @@ export function drawScene(full) {
       drawBaseRects(state.backgroundcontext);
       state.backgroundcontext.restore();
 
-      if (window.scene) {
-        const shadowrel = { u: window.scene.center.u, v: window.scene.center.v };
-        shadows.initBaseRectShadow(shadows.config.baseshadowContext, { w: shadows.config.baseshadowCanvas.width, h: shadows.config.baseshadowCanvas.height }, shadowrel, null);
+      if (scene.center) {
+        const shadowrel = { u: scene.center.u, v: scene.center.v };
+        shadows.initBaseRectShadow(shadows.config.baseshadowContext, { w: shadows.config.baseshadowCanvas.width, h: shadows.config.baseshadowCanvas.height }, shadowrel, null, { drawRect });
         shadows.drawBaseRectShadows(state.backgroundcontext, { u: state.backgroundtranslate.u, v: state.backgroundtranslate.v });
       }
 
@@ -335,9 +336,9 @@ export function drawScene(full) {
       state.context.clearRect(0, 0, state.canvas.width, state.canvas.height);
       drawBaseRects(state.context);
 
-      if (window.scene) {
-        const shadowrel = { u: window.scene.center.u, v: window.scene.center.v };
-        shadows.initBaseRectShadow(shadows.config.baseshadowContext, { w: shadows.config.baseshadowCanvas.width, h: shadows.config.baseshadowCanvas.height }, shadowrel, null);
+      if (scene.center) {
+        const shadowrel = { u: scene.center.u, v: scene.center.v };
+        shadows.initBaseRectShadow(shadows.config.baseshadowContext, { w: shadows.config.baseshadowCanvas.width, h: shadows.config.baseshadowCanvas.height }, shadowrel, null, { drawRect });
         shadows.drawBaseRectShadows(state.context);
       }
 

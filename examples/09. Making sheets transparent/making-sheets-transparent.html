@@ -8,7 +8,7 @@
     #maincanvas{border:1px solid #DDD;}
   </style>
   <body>
-    <script src="/dist/sheetengine.js?v=6"></script>
+    <script src="/dist/sheetengine.js?v=8"></script>
     
     <div class="main">
       <div class="header">
@@ -36,23 +36,23 @@ staticsheet2.setDimming(false, true);
 
     <script>
       var canvasElement = document.getElementById('maincanvas');
-      sheetengine.default.scene.init(canvasElement);
+      sheetengine.scene.init(canvasElement);
       
       // define some basesheets
       for (var x=-1; x<=1; x++) {
         for (var y=-1; y<=1; y++) {
-          var basesheet = new sheetengine.default.BaseSheet({x:x*200,y:y*200,z:0}, {alphaD:90,betaD:0,gammaD:0}, {w:200,h:200});
+          var basesheet = new sheetengine.BaseSheet({x:x*200,y:y*200,z:0}, {alphaD:90,betaD:0,gammaD:0}, {w:200,h:200});
           basesheet.color = '#5D7E36';
         }
       }
       
       // define a sheet that will be dimmed by the moving object
-      var staticsheet1 = new sheetengine.default.Sheet({x:-51,y:0,z:40}, {alphaD:0,betaD:0,gammaD:0}, {w:80,h:80});
+      var staticsheet1 = new sheetengine.Sheet({x:-51,y:0,z:40}, {alphaD:0,betaD:0,gammaD:0}, {w:80,h:80});
       staticsheet1.context.fillStyle='#5F5';
       staticsheet1.context.fillRect(0,0,80,80);
 
       // define a sheet that will NOT be dimmed by the moving object
-      var staticsheet2 = new sheetengine.default.Sheet({x:102,y:0,z:40}, {alphaD:0,betaD:0,gammaD:0}, {w:80,h:80});
+      var staticsheet2 = new sheetengine.Sheet({x:102,y:0,z:40}, {alphaD:0,betaD:0,gammaD:0}, {w:80,h:80});
       staticsheet2.context.fillStyle='#5F5';
       staticsheet2.context.fillRect(0,0,80,80);
       
@@ -63,17 +63,17 @@ staticsheet2.setDimming(false, true);
       
 
       // define a custom object
-      var sheet1 = new sheetengine.default.Sheet({x:0,y:-14,z:14}, {alphaD:45,betaD:0,gammaD:0}, {w:40,h:40});
+      var sheet1 = new sheetengine.Sheet({x:0,y:-14,z:14}, {alphaD:45,betaD:0,gammaD:0}, {w:40,h:40});
       sheet1.context.fillStyle='#F00';
       sheet1.context.fillRect(0,0,40,40);
       sheet1.context.clearRect(10,10,20,20);
 
-      var sheet2 = new sheetengine.default.Sheet({x:0,y:14,z:14}, {alphaD:-45,betaD:0,gammaD:0}, {w:40,h:40});
+      var sheet2 = new sheetengine.Sheet({x:0,y:14,z:14}, {alphaD:-45,betaD:0,gammaD:0}, {w:40,h:40});
       sheet2.context.fillStyle='#FFF';
       sheet2.context.fillRect(0,0,40,40);
       sheet2.context.clearRect(10,10,20,20);
 
-      var obj = new sheetengine.default.SheetObject({x:-50,y:-50,z:0}, {alphaD:0,betaD:0,gammaD:0}, [sheet1, sheet2], {w:80,h:80,relu:40,relv:50});
+      var obj = new sheetengine.SheetObject({x:-50,y:-50,z:0}, {alphaD:0,betaD:0,gammaD:0}, [sheet1, sheet2], {w:80,h:80,relu:40,relv:50});
       
       // set object's dimming properties
       // - first parameter (dimSheets): object will dim other sheets
@@ -81,8 +81,8 @@ staticsheet2.setDimming(false, true);
       obj.setDimming(true, true);
 
       // draw initial scene
-      sheetengine.default.calc.calculateAllSheets();
-      sheetengine.default.drawing.drawScene(true);
+      sheetengine.calc.calculateAllSheets();
+      sheetengine.drawing.drawScene(true);
 
       // move object around
       var maxsteps = 60;
@@ -96,8 +96,8 @@ staticsheet2.setDimming(false, true);
         }
 
         // calculate sheets and draw scene
-        sheetengine.default.calc.calculateChangedSheets();
-        sheetengine.default.drawing.drawScene();
+        sheetengine.calc.calculateChangedSheets();
+        sheetengine.drawing.drawScene();
       }, 30);
       
     </script>

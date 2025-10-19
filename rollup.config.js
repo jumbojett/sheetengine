@@ -10,7 +10,20 @@ export default {
       name: 'sheetengine',
       sourcemap: true,
       exports: 'named',
-      strict: false
+      strict: false,
+      footer: `(function() {
+  if (typeof window !== 'undefined' && typeof window.sheetengine !== 'undefined' && window.sheetengine.default) {
+    // Copy all properties and property descriptors from default export to the global namespace
+    Object.getOwnPropertyNames(window.sheetengine.default).forEach(function(key) {
+      if (!window.sheetengine.hasOwnProperty(key)) {
+        var descriptor = Object.getOwnPropertyDescriptor(window.sheetengine.default, key);
+        if (descriptor) {
+          Object.defineProperty(window.sheetengine, key, descriptor);
+        }
+      }
+    });
+  }
+})();`
     },
     {
       file: 'dist/sheetengine.esm.js',

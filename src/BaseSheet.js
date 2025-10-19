@@ -6,6 +6,7 @@ import { state } from './core.js';
 import * as geometry from './geometry.js';
 import * as calc from './calc.js';
 import * as shadows from './shadows.js';
+import * as drawing from './drawing.js';
 
 export class BaseSheet {
   constructor(centerp, rot, size) {
@@ -18,6 +19,14 @@ export class BaseSheet {
 
     this.objectsheet = false;
     this.dirty = true;
+    this.allowshadows = true;
+    this.castshadows = false;
+    
+    // Initialize shadow canvases
+    this.shadowcanvas = drawing.createCanvas(this.width, this.height);
+    this.shadowcontext = this.shadowcanvas.getContext('2d');
+    this.shadowtempcanvas = drawing.createCanvas(this.width, this.height);
+    this.shadowtempcontext = this.shadowtempcanvas.getContext('2d');
     
     // Initialize sheet parameters inline
     this.p0orig = { x: -this.width / 2, y: 0, z: this.height / 2 };

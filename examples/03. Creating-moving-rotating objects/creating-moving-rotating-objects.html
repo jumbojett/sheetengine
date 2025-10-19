@@ -8,7 +8,7 @@
     #maincanvas{border:1px solid #DDD;}
   </style>
   <body>
-    <script src="../dist/sheetengine.js"></script>
+    <script src="/dist/sheetengine.js?v=20"></script>
     
     <div class="main">
       <div class="header">
@@ -63,7 +63,7 @@ sheetengine.drawing.drawScene();
     
     <script>
       var canvasElement = document.getElementById('maincanvas');
-      sheetengine.scene.init(canvasElement, {w:900,h:500});
+      sheetengine.scene.init(canvasElement);
 
       // define some basesheets
       for (var x=-1; x<=1; x++) {
@@ -115,8 +115,8 @@ sheetengine.drawing.drawScene();
         }
       
         // calculate sheets and draw scene
-        sheetengine.calc.calculateChangedSheets();
-        sheetengine.drawing.drawScene();
+        sheetengine.calc.calculateAllSheets();
+        sheetengine.drawing.drawScene(true);
       }, 30);
       
     </script>
