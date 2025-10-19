@@ -37,20 +37,58 @@ export function checkInboundsPolygon(corners, myx, myy) {
 }
 
 /**
- * Calculate 3D point position from center point and local offset vectors
- * Creates p0, p1, p2 relative to centerp
- * @param {Object} centerp - Center point
- * @param {Object} p0 - Local p0 offset
- * @param {Object} p1 - Local p1 offset
- * @param {Object} p2 - Local p2 offset
- * @returns {Object} Object with p0, p1, p2 world positions
+ * Calculate t-parameter for line-plane intersection
+ * @param {Object} normalp - Normal point/plane
+ * @param {Object} centerp - Center point on plane
+ * @param {Object} p - Point to project
+ * @param {Object} l - Direction vector
+ * @returns {number} T-parameter for intersection
  */
-export function calculateSheetPoints(centerp, p0, p1, p2) {
-  return {
-    p0: { x: centerp.x + p0.x, y: centerp.y + p0.y, z: centerp.z + p0.z },
-    p1: { x: centerp.x + p1.x, y: centerp.y + p1.y, z: centerp.z + p1.z },
-    p2: { x: centerp.x + p2.x, y: centerp.y + p2.y, z: centerp.z + p2.z }
-  };
+export function getTForSheetLineCrossing(normalp, centerp, p, l) {
+  return (
+    (normalp.x * centerp.x + normalp.y * centerp.y + normalp.z * centerp.z -
+      normalp.x * p.x - normalp.y * p.y - normalp.z * p.z) /
+    (normalp.x * l.x + normalp.y * l.y + normalp.z * l.z)
+  );
+}
+
+/**
+ * Calculate intersection points for shadow casting
+ * @param {Object} centerp - Center point
+ * @param {Object} p0 - First point
+ * @param {Object} p1 - Second point
+ * @param {Object} p2 - Third point
+ * @param {Object} l - Light source or vector
+ * @returns {Array} Array of t-parameters for line intersection [tc, t0, t1, t2]
+ */
+export function calculateTParameters(centerp, p0, p1, p2, l) {
+  return [
+    centerp.z / -l.z,
+    p0.z / -l.z,
+    p1.z / -l.z,
+    p2.z / -l.z
+  ];
+}
+
+/**
+ * Calculate section points from light intersection
+ * @param {Object} centerp - Center point
+ * @param {Object} p0 - First point
+ * @param {Object} p1 - Second point
+ * @param {Object} p2 - Third point
+ * @param {Array} tparams - T-parameters [tc, t0, t1, t2]
+ * @param {Object} l - Light source or vector
+ * @returns {Array} Array of section points [centerpsect, p0sect, p1sect, p2sect]
+ */
+export function calculateSectionPoints(centerp, p0, p1, p2, tparams, l) {
+  const [tc, t0, t1, t2] = tparams;
+  const centerpsect = { x: centerp.x + l.x * tc, y: centerp.y + l.y * tc, z: centerp.z + l.z * tc };
+  return [
+    centerpsect,
+    { x: p0.x + l.x * t0 - centerpsect.x, y: p0.y + l.y * t0 - centerpsect.y, z: p0.z + l.z * t0 - centerpsect.z },
+    { x: p1.x + l.x * t1 - centerpsect.x, y: p1.y + l.y * t1 - centerpsect.y, z: p1.z + l.z * t1 - centerpsect.z },
+    { x: p2.x + l.x * t2 - centerpsect.x, y: p2.y + l.y * t2 - centerpsect.y, z: p2.z + l.z * t2 - centerpsect.z }
+  ];
 }
 
 /**

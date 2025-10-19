@@ -31,15 +31,8 @@ export function calculateSheetBaseShadow(sheet) {
   const p1 = pts.p1;
   const p2 = pts.p2;
 
-  const tc = centerp.z / -l.z;
-  const t0 = p0.z / -l.z;
-  const t1 = p1.z / -l.z;
-  const t2 = p2.z / -l.z;
-
-  const centerpsect = { x: centerp.x + l.x * tc, y: centerp.y + l.y * tc, z: centerp.z + l.z * tc };
-  const p0sect = { x: p0.x + l.x * t0 - centerpsect.x, y: p0.y + l.y * t0 - centerpsect.y, z: p0.z + l.z * t0 - centerpsect.z };
-  const p1sect = { x: p1.x + l.x * t1 - centerpsect.x, y: p1.y + l.y * t1 - centerpsect.y, z: p1.z + l.z * t1 - centerpsect.z };
-  const p2sect = { x: p2.x + l.x * t2 - centerpsect.x, y: p2.y + l.y * t2 - centerpsect.y, z: p2.z + l.z * t2 - centerpsect.z };
+  const tparams = sheetutil.calculateTParameters(centerp, p0, p1, p2, l);
+  const [centerpsect, p0sect, p1sect, p2sect] = sheetutil.calculateSectionPoints(centerp, p0, p1, p2, tparams, l);
 
   // Use shared calculateSheetDataSingle from sheetutil
   s.baseShadoweData = sheetutil.calculateSheetDataSingle(centerpsect, p0sect, p1sect, p2sect, transforms.transformPoint, transforms.transformPointz, config.baseShadowCenter, s.corners);
@@ -220,10 +213,8 @@ function calculateShadowData(sheet, shadowcaster) {
   const t1 = getTForSheetLineCrossing(sheet.normalp, sheet.centerp, p1, l);
   const t2 = getTForSheetLineCrossing(sheet.normalp, sheet.centerp, p2, l);
 
-  const centerpsect = { x: centerp.x + l.x * tc, y: centerp.y + l.y * tc, z: centerp.z + l.z * tc };
-  const p0sect = { x: p0.x + l.x * t0 - centerpsect.x, y: p0.y + l.y * t0 - centerpsect.y, z: p0.z + l.z * t0 - centerpsect.z };
-  const p1sect = { x: p1.x + l.x * t1 - centerpsect.x, y: p1.y + l.y * t1 - centerpsect.y, z: p1.z + l.z * t1 - centerpsect.z };
-  const p2sect = { x: p2.x + l.x * t2 - centerpsect.x, y: p2.y + l.y * t2 - centerpsect.y, z: p2.z + l.z * t2 - centerpsect.z };
+  const tparams = [tc, t0, t1, t2];
+  const [centerpsect, p0sect, p1sect, p2sect] = sheetutil.calculateSectionPoints(centerp, p0, p1, p2, tparams, l);
 
   const eData = sheetutil.calculateSheetDataSingle(centerpsect, p0sect, p1sect, p2sect, transforms.transformPoint, null, state.canvasCenter, null);
 
@@ -235,11 +226,7 @@ function calculateShadowData(sheet, shadowcaster) {
 }
 
 function getTForSheetLineCrossing(normalp, centerp, p, l) {
-  return (
-    (normalp.x * centerp.x + normalp.y * centerp.y + normalp.z * centerp.z -
-      normalp.x * p.x - normalp.y * p.y - normalp.z * p.z) /
-    (normalp.x * l.x + normalp.y * l.y + normalp.z * l.z)
-  );
+  return sheetutil.getTForSheetLineCrossing(normalp, centerp, p, l);
 }
 
 function isSheetDark(sheet, viewSource) {

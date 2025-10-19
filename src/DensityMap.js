@@ -13,23 +13,16 @@ export class DensityMap {
 
   get(p) {
     const map = this.map;
-    const gran = this.granularity;
-    const x = Math.round(p.x / gran);
-    const y = Math.round(p.y / gran);
-    const z = Math.round(p.z / gran);
-
-    if (map[sheetutil.calculateGridKey(x, y, z)])
-      return map[sheetutil.calculateGridKey(x, y, z)];
-
+    const coords = sheetutil.calculateGridCoordinates(p, this.granularity);
+    if (map[sheetutil.calculateGridKey(coords.x, coords.y, coords.z)])
+      return map[sheetutil.calculateGridKey(coords.x, coords.y, coords.z)];
     return 0;
   }
 
   put(p) {
     const map = this.map;
-    const gran = this.granularity;
-    const x = Math.round(p.x / gran);
-    const y = Math.round(p.y / gran);
-    const z = Math.floor(p.z / gran);
+    const coords = sheetutil.calculateGridCoordinates(p, this.granularity, true);
+    const { x, y, z } = coords;
 
     this.add(sheetutil.calculateGridKey(x, y, z));
     this.add(sheetutil.calculateGridKey(x + 1, y, z));
@@ -40,10 +33,8 @@ export class DensityMap {
 
   remove(p) {
     const map = this.map;
-    const gran = this.granularity;
-    const x = Math.round(p.x / gran);
-    const y = Math.round(p.y / gran);
-    const z = Math.floor(p.z / gran);
+    const coords = sheetutil.calculateGridCoordinates(p, this.granularity, true);
+    const { x, y, z } = coords;
 
     this.sub(sheetutil.calculateGridKey(x, y, z));
     this.sub(sheetutil.calculateGridKey(x + 1, y, z));

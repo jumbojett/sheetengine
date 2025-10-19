@@ -2,6 +2,8 @@
  * Geometry helper functions for 3D math operations
  */
 
+import * as sheetutil from './sheetutil.js';
+
 export function getBaseMatrixInverse(u, v, w) {
   const det = u.x * (w.z * v.y - v.z * w.y) - u.y * (w.z * v.x - v.z * w.x) + u.z * (w.y * v.x - v.y * w.x);
   const b1 = { x: (w.z * v.y - v.z * w.y) / det, y: (u.z * w.y - w.z * u.y) / det, z: (v.z * u.y - u.z * v.y) / det };
@@ -35,11 +37,7 @@ export function roundVector2digits(v, digits) {
 }
 
 export function getTForSheetLineCrossing(normalp, centerp, p, l) {
-  return (
-    (normalp.x * centerp.x + normalp.y * centerp.y + normalp.z * centerp.z -
-      normalp.x * p.x - normalp.y * p.y - normalp.z * p.z) /
-    (normalp.x * l.x + normalp.y * l.y + normalp.z * l.z)
-  );
+  return sheetutil.getTForSheetLineCrossing(normalp, centerp, p, l);
 }
 
 export function multiplyMatrices(a1, a2, a3, b1, b2, b3) {
