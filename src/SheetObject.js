@@ -231,6 +231,8 @@ SheetObject.prototype.rotate = function(axis, angle, base) {
 
     calc.calculateSheetData(s);
     shadows.calculateSheetShade(s);
+
+    sheetutil.transformSheetPolygons(s, this.centerp, this.rot, this.intersectionsenabled || state.objectsintersect);
   }
 
   this.intersectionsrecalc = true;
