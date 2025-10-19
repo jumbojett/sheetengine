@@ -67,6 +67,34 @@ export function initializeSheetProperties(sheet, rot) {
 }
 
 /**
+ * Finalize sheet initialization - calculate corners, A1 matrix, and sheet data
+ * @param {Object} sheet - Sheet object to finalize
+ * @param {Object} deps - Dependencies object {calc, geometry, shadows, state}
+ * @param {boolean} isObjectSheet - Whether this is an object sheet
+ */
+export function finalizeSheetInitialization(sheet, deps, isObjectSheet = false) {
+  sheet.maxdiag = Math.ceil(Math.sqrt(sheet.width * sheet.width + sheet.height * sheet.height) / 2);
+
+  // Calculate corners
+  calcUdifVdif(sheet);
+  sheet.corners = calculateCornersFromCenter(sheet.centerp, sheet.udif, sheet.vdif);
+  
+  // Calculate A1 (base matrix inverse)
+  sheet.A1 = deps.geometry.getBaseMatrixInverse(sheet.p1, sheet.p2, sheet.normalp);
+
+  // Calculate sheet data if transforms are available
+  if (deps.state.canvasCenter) {
+    deps.calc.calculateSheetData(sheet);
+  }
+  
+  // Calculate shade for the sheet
+  deps.shadows.calculateSheetShade(sheet);
+}
+
+/**
+ * Initialize common sheet properties from rotation object
+
+/**
  * Calculate t-parameter for line-plane intersection
  * @param {Object} normalp - Normal point/plane
  * @param {Object} centerp - Center point on plane

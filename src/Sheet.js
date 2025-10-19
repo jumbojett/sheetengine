@@ -47,22 +47,8 @@ export class Sheet {
       sheetutil.initializeSheetOrientation(this);
     }
 
-    this.maxdiag = Math.ceil(Math.sqrt(this.width * this.width + this.height * this.height) / 2);
-
-    // Calculate corners
-    sheetutil.calcUdifVdif(this);
-    this.corners = sheetutil.calculateCornersFromCenter(this.centerp, this.udif, this.vdif);
-    
-    // Calculate A1 (base matrix inverse)
-    this.A1 = geometry.getBaseMatrixInverse(this.p1, this.p2, this.normalp);
-
-    // Calculate sheet data if transforms are available
-    if (state.canvasCenter) {
-      calc.calculateSheetData(this);
-    }
-    
-    // Calculate shade for the sheet
-    shadows.calculateSheetShade(this);
+    // Finalize sheet initialization
+    sheetutil.finalizeSheetInitialization(this, { calc, geometry, shadows, state }, this.objectsheet);
 
     this.index = state.sheets.length;
     state.sheets.push(this);
