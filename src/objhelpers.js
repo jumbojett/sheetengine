@@ -153,29 +153,25 @@ function getCurrentSheetsObject() {
   const currentSheet = state.sheets[state.currentSheet];
   const group = currentSheet.group;
   const sheets = [];
+  
+  // Helper to create sheet data object
+  const createSheetData = (sheet) => ({
+    centerp: sheet.centerp,
+    rot: { alphaD: sheet.rot.alphaD, betaD: sheet.rot.betaD, gammaD: sheet.rot.gammaD },
+    width: sheet.width,
+    height: sheet.height,
+    canvas: sheet.canvas.toDataURL()
+  });
+  
   if (typeof (group) !== 'undefined' && group !== null) {
     for (let i = 0; i < state.sheets.length; i++) {
       const s = state.sheets[i];
       if (s.group !== group)
         continue;
-
-      sheets.push({
-        centerp: s.centerp,
-        rot: { alphaD: s.rot.alphaD, betaD: s.rot.betaD, gammaD: s.rot.gammaD },
-        width: s.width,
-        height: s.height,
-        canvas: s.canvas.toDataURL()
-      });
+      sheets.push(createSheetData(s));
     }
   } else {
-    const s = currentSheet;
-    sheets.push({
-      centerp: s.centerp,
-      rot: { alphaD: s.rot.alphaD, betaD: s.rot.betaD, gammaD: s.rot.gammaD },
-      width: s.width,
-      height: s.height,
-      canvas: s.canvas.toDataURL()
-    });
+    sheets.push(createSheetData(currentSheet));
   }
 
   let maxdist = 0;

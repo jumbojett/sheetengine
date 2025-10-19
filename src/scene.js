@@ -188,17 +188,28 @@ function initScene(centerp) {
 }
 
 /**
+ * Normalize vector transformations - convert between xyz and uv coordinates
+ */
+function normalizeVector(vectorxyz, vectoruv) {
+  const normalized = { vectorxyz, vectoruv };
+  if (!vectoruv) {
+    if (!vectorxyz.z)
+      normalized.vectoruv = transforms.transformPoint({ x: vectorxyz.x, y: vectorxyz.y, z: 0 });
+    else
+      normalized.vectoruv = transforms.transformPointz(vectorxyz);
+  }
+  if (!vectorxyz)
+    normalized.vectorxyz = transforms.inverseTransformPointSimple(vectoruv);
+  return normalized;
+}
+
+/**
  * Move scene center by a vector
  */
 function moveCenter(vectorxyz, vectoruv) {
-  if (!vectoruv) {
-    if (!vectorxyz.z)
-      vectoruv = transforms.transformPoint({ x: vectorxyz.x, y: vectorxyz.y, z: 0 });
-    else
-      vectoruv = transforms.transformPointz(vectorxyz);
-  }
-  if (!vectorxyz)
-    vectorxyz = transforms.inverseTransformPointSimple(vectoruv);
+  const norm = normalizeVector(vectorxyz, vectoruv);
+  vectorxyz = norm.vectorxyz;
+  vectoruv = norm.vectoruv;
 
   scene.center.x += vectorxyz.x;
   scene.center.y += vectorxyz.y;
@@ -213,14 +224,9 @@ function moveCenter(vectorxyz, vectoruv) {
  * Set scene center to absolute position
  */
 function setCenter(vectorxyz, vectoruv) {
-  if (!vectoruv) {
-    if (!vectorxyz.z)
-      vectoruv = transforms.transformPoint({ x: vectorxyz.x, y: vectorxyz.y, z: 0 });
-    else
-      vectoruv = transforms.transformPointz(vectorxyz);
-  }
-  if (!vectorxyz)
-    vectorxyz = transforms.inverseTransformPointSimple(vectoruv);
+  const norm = normalizeVector(vectorxyz, vectoruv);
+  vectorxyz = norm.vectorxyz;
+  vectoruv = norm.vectoruv;
 
   scene.center.x = vectorxyz.x;
   scene.center.y = vectorxyz.y;
