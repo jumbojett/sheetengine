@@ -26,6 +26,27 @@ export let calc = {
 let staticsheets = null;
 
 let inboundsCheckZeroThresh = 0.001;
+
+/**
+ * Recalculate object intersections with optional mode
+ * @param {Object} obj - Object to process
+ * @param {Object} state - State object
+ * @param {boolean} forceRecalc - Force recalculation mode (true = recalculate all, false = conditional)
+ */
+function recalculateObjectIntersections(obj, state, forceRecalc = false) {
+  if (obj.intersectionsenabled)
+    return;
+  if (obj.intersectionsredefine) {
+    redefineIntersections(obj);
+  } else if (forceRecalc || obj.intersectionsrecalc) {
+    for (let i = 0; i < obj.sheets.length; i++) {
+      calculateSheetSections(obj.sheets[i], forceRecalc, obj.sheets);
+    }
+  }
+  obj.intersectionsredefine = false;
+  obj.intersectionsrecalc = false;
+}
+
 /**
  * Check if a point is within polygon bounds
  * Re-exported from sheetutil for backward compatibility
@@ -394,17 +415,7 @@ export function calculateChangedSheets() {
     // recalculate/redefine polygons of object sheets
     for (let idx = 0; idx < state.objects.length; idx++) {
       const obj = state.objects[idx];
-      if (obj.intersectionsenabled)
-        continue;
-      if (obj.intersectionsredefine) {
-        redefineIntersections(obj);
-      } else if (obj.intersectionsrecalc) {
-        for (let i = 0; i < obj.sheets.length; i++) {
-          calculateSheetSections(obj.sheets[i], false, obj.sheets);
-        }
-      }
-      obj.intersectionsredefine = false;
-      obj.intersectionsrecalc = false;
+      recalculateObjectIntersections(obj, state);
     }
   }
 
@@ -482,17 +493,7 @@ export function calculateAllSheets() {
   if (!state.objectsintersect) {
     for (let idx = 0; idx < state.objects.length; idx++) {
       const obj = state.objects[idx];
-      if (obj.intersectionsenabled)
-        continue;
-      if (obj.intersectionsredefine) {
-        redefineIntersections(obj);
-      } else {
-        for (let i = 0; i < obj.sheets.length; i++) {
-          calculateSheetSections(obj.sheets[i], true, obj.sheets);
-        }
-      }
-      obj.intersectionsredefine = false;
-      obj.intersectionsrecalc = false;
+      recalculateObjectIntersections(obj, state, true);
     }
   }
 
