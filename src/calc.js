@@ -663,21 +663,6 @@ export function redefineIntersections(obj) {
   // calculate initial polygons from the redefined current polygonset
   for (let i = 0; i < obj.sheets.length; i++) {
     const s = obj.sheets[i];
-    s.startpolygons = [];
-    const A1 = geometry.getBaseMatrixInverse(s.p1start, s.p2start, s.normalpstart);
-    for (let j = 0; j < s.polygons.length; j++) {
-      const poly = s.polygons[j];
-      const points = [];
-      const relpoints = [];
-      for (let p = 0; p < poly.points.length; p++) {
-        let sp = geometry.subPoint(poly.points[p], obj.centerp);
-        sp = geometry.rotatePoint(sp, -obj.rot.alpha, -obj.rot.beta, -obj.rot.gamma);
-        points.push(sp);
-        const relp = geometry.getCoordsInBase(A1, sp);
-        relpoints.push(relp);
-      }
-      s.startpolygons.push({ points: points, relpoints: relpoints });
-      s.startpolygonscenterp = geometry.clonePoint(s.startcenterp);
-    }
+    sheetutil.initializeStartPolygons(s, obj.centerp, { alpha: -obj.rot.alpha, beta: -obj.rot.beta, gamma: -obj.rot.gamma });
   }
 }

@@ -46,23 +46,7 @@ export function SheetObject(centerp, rot, sheets, canvasSize, intersectionsenabl
       calculateSheetSections(sheets[i], true, sheets);
     }
     for (let i = 0; i < sheets.length; i++) {
-      const s = sheets[i];
-      const startpoly = [];
-      const A1 = geometry.getBaseMatrixInverse(s.p1start, s.p2start, s.normalpstart);
-      for (let j = 0; j < s.polygons.length; j++) {
-        const poly = s.polygons[j];
-        const points = [];
-        const relpoints = [];
-        for (let p = 0; p < poly.points.length; p++) {
-          const pp = geometry.subPoint(poly.points[p], centerp);
-          points.push(pp);
-          const relp = geometry.getCoordsInBase(A1, pp);
-          relpoints.push(relp);
-        }
-        startpoly.push({ points: points, relpoints: relpoints });
-      }
-      s.startpolygons = startpoly;
-      s.startpolygonscenterp = geometry.clonePoint(s.startcenterp);
+      sheetutil.initializeStartPolygons(sheets[i], centerp);
     }
   }
 

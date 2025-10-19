@@ -360,3 +360,41 @@ export function transformSheetPolygons(sheet, objectCenter, rotation, intersecti
     }
   }
 }
+
+/**
+ * Initialize startpolygons from current polygons
+ * Used during object construction and intersection redefinition
+ * @param {Object} sheet - Sheet object to initialize
+ * @param {Object} centerPoint - Reference center point for coordinate transformation
+ * @param {Object} rotationInverse - Inverse rotation angles (for calc phase)
+ */
+export function initializeStartPolygons(sheet, centerPoint, rotationInverse = null) {
+  if (!sheet.polygons) return;
+  
+  const startpoly = [];
+  const A1 = geometry.getBaseMatrixInverse(sheet.p1start, sheet.p2start, sheet.normalpstart);
+  
+  for (let j = 0; j < sheet.polygons.length; j++) {
+    const poly = sheet.polygons[j];
+    const points = [];
+    const relpoints = [];
+    
+    for (let p = 0; p < poly.points.length; p++) {
+      let pp = geometry.subPoint(poly.points[p], centerPoint);
+      
+      // Apply inverse rotation if provided (used during recalculation phase)
+      if (rotationInverse) {
+        pp = geometry.rotatePoint(pp, rotationInverse.alpha, rotationInverse.beta, rotationInverse.gamma);
+      }
+      
+      points.push(pp);
+      const relp = geometry.getCoordsInBase(A1, pp);
+      relpoints.push(relp);
+    }
+    
+    startpoly.push({ points: points, relpoints: relpoints });
+  }
+  
+  sheet.startpolygons = startpoly;
+  sheet.startpolygonscenterp = geometry.clonePoint(sheet.startcenterp);
+}
