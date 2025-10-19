@@ -37,6 +37,20 @@ export function checkInboundsPolygon(corners, myx, myy) {
 }
 
 /**
+ * Initialize shadow canvas pair for a sheet
+ * @param {Object} sheet - Sheet object
+ * @param {Object} drawing - Drawing module for canvas creation
+ * @param {number} width - Canvas width
+ * @param {number} height - Canvas height
+ */
+export function initializeShadowCanvases(sheet, drawing, width, height) {
+  sheet.shadowcanvas = drawing.createCanvas(width, height);
+  sheet.shadowcontext = sheet.shadowcanvas.getContext('2d');
+  sheet.shadowtempcanvas = drawing.createCanvas(width, height);
+  sheet.shadowtempcontext = sheet.shadowtempcanvas.getContext('2d');
+}
+
+/**
  * Fill rotation object with default values
  * @param {Object} rot - Rotation object with alphaD, betaD, gammaD
  * @returns {Object} Filled rotation object

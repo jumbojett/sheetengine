@@ -31,10 +31,7 @@ export class Sheet {
 
     this.canvas = drawing.createCanvas(this.width, this.height);
     this.context = this.canvas.getContext('2d');
-    this.shadowcanvas = drawing.createCanvas(this.width, this.height);
-    this.shadowcontext = this.shadowcanvas.getContext('2d');
-    this.shadowtempcanvas = drawing.createCanvas(this.width, this.height);
-    this.shadowtempcontext = this.shadowtempcanvas.getContext('2d');
+    sheetutil.initializeShadowCanvases(this, drawing, this.width, this.height);
     this.baseshadowcanvas = drawing.createCanvas(this.width, this.height);
     this.baseshadowcontext = this.baseshadowcanvas.getContext('2d');
     this.compositecanvas = drawing.createCanvas(this.width, this.height);

@@ -21,10 +21,7 @@ export class BaseSheet {
     this.castshadows = false;
     
     // Initialize shadow canvases
-    this.shadowcanvas = drawing.createCanvas(this.width, this.height);
-    this.shadowcontext = this.shadowcanvas.getContext('2d');
-    this.shadowtempcanvas = drawing.createCanvas(this.width, this.height);
-    this.shadowtempcontext = this.shadowtempcanvas.getContext('2d');
+    sheetutil.initializeShadowCanvases(this, drawing, this.width, this.height);
     
     // Initialize common sheet properties and parameters
     sheetutil.initializeSheetProperties(this, rot);
