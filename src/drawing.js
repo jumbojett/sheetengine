@@ -312,37 +312,39 @@ function drawScenePart(options) {
   targetContext.restore();
 }
 
+/**
+ * Helper to initialize and draw base rects with optional shadow rendering
+ */
+function drawBaseRectsAndShadows(context, useBackgroundMode = false) {
+  context.save();
+  context.translate(-state.canvasCenter.u + shadows.config.baseShadowCenter.u, -state.canvasCenter.v + shadows.config.baseShadowCenter.v);
+  drawBaseRects(context);
+  context.restore();
+
+  if (scene.center) {
+    const shadowrel = { u: scene.center.u, v: scene.center.v };
+    shadows.initBaseRectShadow(shadows.config.baseshadowContext, { w: shadows.config.baseshadowCanvas.width, h: shadows.config.baseshadowCanvas.height }, shadowrel, null, { drawRect });
+    if (useBackgroundMode) {
+      shadows.drawBaseRectShadows(context, { u: state.backgroundtranslate.u, v: state.backgroundtranslate.v });
+    } else {
+      shadows.drawBaseRectShadows(context);
+    }
+  }
+
+  context.save();
+  context.translate(-state.canvasCenter.u + shadows.config.baseShadowCenter.u, -state.canvasCenter.v + shadows.config.baseShadowCenter.v);
+  drawSheets(context, null);
+  context.restore();
+}
+
 export function drawScene(full) {
   if (full) {
     if (state.backgroundcanvas) {
       state.backgroundcontext.clearRect(0, 0, state.backgroundcanvas.width, state.backgroundcanvas.height);
-
-      state.backgroundcontext.save();
-      state.backgroundcontext.translate(-state.canvasCenter.u + shadows.config.baseShadowCenter.u, -state.canvasCenter.v + shadows.config.baseShadowCenter.v);
-      drawBaseRects(state.backgroundcontext);
-      state.backgroundcontext.restore();
-
-      if (scene.center) {
-        const shadowrel = { u: scene.center.u, v: scene.center.v };
-        shadows.initBaseRectShadow(shadows.config.baseshadowContext, { w: shadows.config.baseshadowCanvas.width, h: shadows.config.baseshadowCanvas.height }, shadowrel, null, { drawRect });
-        shadows.drawBaseRectShadows(state.backgroundcontext, { u: state.backgroundtranslate.u, v: state.backgroundtranslate.v });
-      }
-
-      state.backgroundcontext.save();
-      state.backgroundcontext.translate(-state.canvasCenter.u + shadows.config.baseShadowCenter.u, -state.canvasCenter.v + shadows.config.baseShadowCenter.v);
-      drawSheets(state.backgroundcontext, null);
-      state.backgroundcontext.restore();
+      drawBaseRectsAndShadows(state.backgroundcontext, true);
     } else {
       state.context.clearRect(0, 0, state.canvas.width, state.canvas.height);
-      drawBaseRects(state.context);
-
-      if (scene.center) {
-        const shadowrel = { u: scene.center.u, v: scene.center.v };
-        shadows.initBaseRectShadow(shadows.config.baseshadowContext, { w: shadows.config.baseshadowCanvas.width, h: shadows.config.baseshadowCanvas.height }, shadowrel, null, { drawRect });
-        shadows.drawBaseRectShadows(state.context);
-      }
-
-      drawSheets(state.context, null);
+      drawBaseRectsAndShadows(state.context, false);
     }
     if (state.drawObjectContour) {
       for (let i = 0; i < state.objects.length; i++) {

@@ -320,3 +320,43 @@ export function calculateSheetDataSingle(centerp, p0rot, p1rot, p2rot, transform
   const zmin = Math.min(c[0].z, c[1].z, c[2].z, c[3].z);
   return { p0uv: p0, p1uv: p1, p2uv: p2, translatex: translatex, translatey: translatey, ta: ta, tb: tb, tc: tc, td: td, centerpuv: centerpuv, cornersuv: c, umax: umax, umin: umin, vmax: vmax, vmin: vmin, zmax: zmax, zmin: zmin };
 }
+
+/**
+ * Apply rotation to sheet corner points (used in rotate/rotateBase/setOrientation/rotateSheet)
+ * @param {Object} sheet - Sheet object to rotate
+ * @param {Object} baseStart - Starting point for rotation (p0start, p1start, p2start, normalpstart)
+ * @param {Object} baseCurrent - Current point state (p0, p1, p2, normalp)
+ * @param {Object} rotationAxis - Axis to rotate around
+ * @param {number} angle - Rotation angle in radians
+ * @param {boolean} useStart - If true, rotate from start state; otherwise from current
+ */
+export function rotateSheetCorners(sheet, baseStart, baseCurrent, rotationAxis, angle, useStart) {
+  const source = useStart ? baseStart : baseCurrent;
+  sheet.p0 = geometry.rotateAroundAxis(source.p0, rotationAxis, angle);
+  sheet.p1 = geometry.rotateAroundAxis(source.p1, rotationAxis, angle);
+  sheet.p2 = geometry.rotateAroundAxis(source.p2, rotationAxis, angle);
+  sheet.normalp = geometry.rotateAroundAxis(source.normalp, rotationAxis, angle);
+}
+
+/**
+ * Transform sheet start polygons with rotation and center offset
+ * Used by rotate, rotateSheet, and setOrientation methods
+ * @param {Object} sheet - Sheet object
+ * @param {Object} objectCenter - Object center point
+ * @param {Object} rotation - Rotation angles {alpha, beta, gamma}
+ * @param {boolean} intersectionsEnabled - Whether intersections are enabled
+ */
+export function transformSheetPolygons(sheet, objectCenter, rotation, intersectionsEnabled) {
+  if (!sheet.startpolygons || intersectionsEnabled) return;
+  
+  sheet.polygons = [];
+  for (let j = 0; j < sheet.startpolygons.length; j++) {
+    const poly = { points: [] };
+    sheet.polygons.push(poly);
+    const startpoly = sheet.startpolygons[j];
+    for (let p = 0; p < startpoly.points.length; p++) {
+      const pp = geometry.rotatePoint(startpoly.points[p], rotation.alpha, rotation.beta, rotation.gamma);
+      poly.points.push(geometry.addPoint(pp, objectCenter));
+    }
+  }
+}

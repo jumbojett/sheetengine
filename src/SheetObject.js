@@ -236,14 +236,10 @@ SheetObject.prototype.rotate = function(axis, angle, base) {
       s.rotcenterp = geometry.rotateAroundAxis(s.startcenterp, axis, angle);
 
       if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
-        s.polygons = [];
         for (let j = 0; j < s.startpolygons.length; j++) {
-          const poly = { points: [] };
-          s.polygons.push(poly);
           const startpoly = s.startpolygons[j];
           for (let p = 0; p < startpoly.points.length; p++) {
-            const pp = geometry.rotateAroundAxis(startpoly.points[p], axis, angle);
-            poly.points.push(geometry.addPoint(pp, this.centerp));
+            startpoly.points[p] = geometry.rotateAroundAxis(startpoly.points[p], axis, angle);
           }
         }
       }
@@ -304,18 +300,7 @@ SheetObject.prototype.setOrientation = function(rot) {
     calc.calculateSheetData(s);
     shadows.calculateSheetShade(s);
 
-    if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
-      s.polygons = [];
-      for (let j = 0; j < s.startpolygons.length; j++) {
-        const poly = { points: [] };
-        s.polygons.push(poly);
-        const startpoly = s.startpolygons[j];
-        for (let p = 0; p < startpoly.points.length; p++) {
-          const pp = geometry.rotatePoint(startpoly.points[p], this.rot.alpha, this.rot.beta, this.rot.gamma);
-          poly.points.push(geometry.addPoint(pp, this.centerp));
-        }
-      }
-    }
+    sheetutil.transformSheetPolygons(s, this.centerp, this.rot, this.intersectionsenabled || state.objectsintersect);
   }
 
   this.intersectionsrecalc = true;
@@ -363,18 +348,7 @@ SheetObject.prototype.setSheetPos = function(sheet, sheetpos, sheetrot) {
   calc.calculateSheetData(s);
   shadows.calculateSheetShade(s);
 
-  if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
-    s.polygons = [];
-    for (let j = 0; j < s.startpolygons.length; j++) {
-      const poly = { points: [] };
-      s.polygons.push(poly);
-      const startpoly = s.startpolygons[j];
-      for (let p = 0; p < startpoly.points.length; p++) {
-        const pp = geometry.rotatePoint(startpoly.points[p], this.rot.alpha, this.rot.beta, this.rot.gamma);
-        poly.points.push(geometry.addPoint(pp, this.centerp));
-      }
-    }
-  }
+  sheetutil.transformSheetPolygons(s, this.centerp, this.rot, this.intersectionsenabled || state.objectsintersect);
 
   this.intersectionsrecalc = true;
   this.canvasdirty = true;
@@ -418,18 +392,7 @@ SheetObject.prototype.rotateSheet = function(sheet, rotationCenter, rotationAxis
   calc.calculateSheetData(s);
   shadows.calculateSheetShade(s);
 
-  if (s.startpolygons && s.polygons && !state.objectsintersect && !this.intersectionsenabled) {
-    s.polygons = [];
-    for (let j = 0; j < s.startpolygons.length; j++) {
-      const poly = { points: [] };
-      s.polygons.push(poly);
-      const startpoly = s.startpolygons[j];
-      for (let p = 0; p < startpoly.points.length; p++) {
-        const pp = geometry.rotatePoint(startpoly.points[p], this.rot.alpha, this.rot.beta, this.rot.gamma);
-        poly.points.push(geometry.addPoint(pp, this.centerp));
-      }
-    }
-  }
+  sheetutil.transformSheetPolygons(s, this.centerp, this.rot, this.intersectionsenabled || state.objectsintersect);
 
   this.intersectionsrecalc = true;
   this.canvasdirty = true;
