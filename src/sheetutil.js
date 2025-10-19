@@ -398,3 +398,13 @@ export function initializeStartPolygons(sheet, centerPoint, rotationInverse = nu
   sheet.startpolygons = startpoly;
   sheet.startpolygonscenterp = geometry.clonePoint(sheet.startcenterp);
 }
+
+/**
+ * Update sheet center point from its rotated center point and object center
+ * Common pattern: s.centerp.x = s.rotcenterp.x + objCenterp.x, etc.
+ */
+export function updateSheetCenterp(sheet, objCenterp) {
+  sheet.centerp.x = sheet.rotcenterp.x + objCenterp.x;
+  sheet.centerp.y = sheet.rotcenterp.y + objCenterp.y;
+  sheet.centerp.z = sheet.rotcenterp.z + objCenterp.z;
+}

@@ -160,9 +160,7 @@ SheetObject.prototype.move = function(vector, base) {
   for (let i = 0; i < this.sheets.length; i++) {
     const s = this.sheets[i];
 
-    s.centerp.x = s.rotcenterp.x + this.centerp.x;
-    s.centerp.y = s.rotcenterp.y + this.centerp.y;
-    s.centerp.z = s.rotcenterp.z + this.centerp.z;
+    sheetutil.updateSheetCenterp(s, this.centerp);
 
     calc.calculateSheetData(s);
 
@@ -248,9 +246,7 @@ SheetObject.prototype.rotate = function(axis, angle, base) {
 
     }
 
-    s.centerp.x = s.rotcenterp.x + this.centerp.x;
-    s.centerp.y = s.rotcenterp.y + this.centerp.y;
-    s.centerp.z = s.rotcenterp.z + this.centerp.z;
+    sheetutil.updateSheetCenterp(s, this.centerp);
 
     calc.calculateSheetData(s);
     shadows.calculateSheetShade(s);
@@ -277,9 +273,7 @@ SheetObject.prototype.setOrientation = function(rot) {
 
     s.rotcenterp = geometry.rotatePoint(s.startcenterp, this.rot.alpha, this.rot.beta, this.rot.gamma);
 
-    s.centerp.x = s.rotcenterp.x + this.centerp.x;
-    s.centerp.y = s.rotcenterp.y + this.centerp.y;
-    s.centerp.z = s.rotcenterp.z + this.centerp.z;
+    sheetutil.updateSheetCenterp(s, this.centerp);
 
     calc.calculateSheetData(s);
     shadows.calculateSheetShade(s);
@@ -325,9 +319,7 @@ SheetObject.prototype.setSheetPos = function(sheet, sheetpos, sheetrot) {
   s.normalp = geometry.rotatePoint(s.normalpstart, rot.alpha, rot.beta, rot.gamma);
   s.rotcenterp = geometry.rotatePoint(s.startcenterp, rot.alpha, rot.beta, rot.gamma);
 
-  s.centerp.x = s.rotcenterp.x + this.centerp.x;
-  s.centerp.y = s.rotcenterp.y + this.centerp.y;
-  s.centerp.z = s.rotcenterp.z + this.centerp.z;
+  sheetutil.updateSheetCenterp(s, this.centerp);
 
   calc.calculateSheetData(s);
   shadows.calculateSheetShade(s);
@@ -369,9 +361,7 @@ SheetObject.prototype.rotateSheet = function(sheet, rotationCenter, rotationAxis
   s.normalp = geometry.rotateAroundAxis(s.normalp, rotationAxis, angle);
   s.rotcenterp = geometry.rotateAroundArbitraryAxis(s.rotcenterp, rotationCenter, rotationAxis, angle);
 
-  s.centerp.x = s.rotcenterp.x + this.centerp.x;
-  s.centerp.y = s.rotcenterp.y + this.centerp.y;
-  s.centerp.z = s.rotcenterp.z + this.centerp.z;
+  sheetutil.updateSheetCenterp(s, this.centerp);
 
   calc.calculateSheetData(s);
   shadows.calculateSheetShade(s);
