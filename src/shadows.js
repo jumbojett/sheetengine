@@ -5,6 +5,7 @@
 import { state } from './core.js';
 import * as geometry from './geometry.js';
 import * as transforms from './transforms.js';
+import { scene } from './scene.js';
 
 export let config = {
   baseshadowCanvas: null,
@@ -41,9 +42,9 @@ export function calculateSheetBaseShadow(sheet) {
   s.baseShadoweData = calculateSheetDataSingle(centerpsect, p0sect, p1sect, p2sect, transforms.transformPoint, transforms.transformPointz, config.baseShadowCenter, s.corners);
 
   // Adjust for scene center when available
-  if (window.scene) {
-    s.baseShadoweData.translatex -= window.scene.center.u;
-    s.baseShadoweData.translatey -= window.scene.center.v;
+  if (scene.center) {
+    s.baseShadoweData.translatex -= scene.center.u;
+    s.baseShadoweData.translatey -= scene.center.v;
   }
 }
 
@@ -147,8 +148,8 @@ function drawBaseShadowTexture(context, canvas) {
 export function drawBaseRectShadow() {
   state.context.save();
   state.context.globalAlpha = config.shadowAlpha;
-  if (window.scene) {
-    state.context.drawImage(config.baseshadowCanvas, state.canvasCenter.u - window.scene.tilesize.x, state.canvasCenter.v - 2 * window.scene.tilesize.y);
+  if (scene.tilesize) {
+    state.context.drawImage(config.baseshadowCanvas, state.canvasCenter.u - scene.tilesize.x, state.canvasCenter.v - 2 * scene.tilesize.y);
   }
   state.context.restore();
 }

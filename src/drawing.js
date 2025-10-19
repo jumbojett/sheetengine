@@ -255,10 +255,10 @@ export function drawSheets(context, viewport) {
 
 export function getPointuv(p) {
   const puv = transforms.transformPoint(p);
-  if (window.scene) {
+  if (scene.center) {
     return {
-      u: puv.u + state.canvasCenter.u - window.scene.center.u,
-      v: puv.v + state.canvasCenter.v - window.scene.center.v
+      u: puv.u + state.canvasCenter.u - scene.center.u,
+      v: puv.v + state.canvasCenter.v - scene.center.v
     };
   }
   return { u: puv.u + state.canvasCenter.u, v: puv.v + state.canvasCenter.v };
@@ -298,8 +298,8 @@ function drawScenePart(options) {
   const maxu = viewPort.u + viewPort.w + distance;
   const maxv = viewPort.v + viewPort.h + distance;
 
-  if (window.scene) {
-    const shadowrel = { u: -u + window.scene.center.u + state.canvasCenter.u - shadows.config.baseShadowCenter.u, v: -v + window.scene.center.v + state.canvasCenter.v - shadows.config.baseShadowCenter.v };
+  if (scene.center) {
+    const shadowrel = { u: -u + scene.center.u + state.canvasCenter.u - shadows.config.baseShadowCenter.u, v: -v + scene.center.v + state.canvasCenter.v - shadows.config.baseShadowCenter.v };
     shadows.initBaseRectShadow(targetBaseShadowContext, { w: viewPort.w, h: viewPort.h }, shadowrel, { minu, maxu, minv, maxv }, { drawRect });
     targetContext.save();
     targetContext.globalAlpha = shadows.config.shadowAlpha;
@@ -383,9 +383,9 @@ export function drawScene(full) {
 
   if (state.backgroundcanvas) {
     state.context.clearRect(0, 0, state.canvas.width, state.canvas.height);
-    if (window.scene) {
-      const offsetu = -window.scene.center.u - state.backgroundcanvas.width / 2 + state.canvas.width / 2 + state.backgroundtranslate.u;
-      const offsetv = -window.scene.center.v - state.backgroundcanvas.height / 2 + state.canvas.height / 2 + state.backgroundtranslate.v;
+    if (scene.center) {
+      const offsetu = -scene.center.u - state.backgroundcanvas.width / 2 + state.canvas.width / 2 + state.backgroundtranslate.u;
+      const offsetv = -scene.center.v - state.backgroundcanvas.height / 2 + state.canvas.height / 2 + state.backgroundtranslate.v;
       state.context.drawImage(state.backgroundcanvas, offsetu, offsetv);
     }
   }
