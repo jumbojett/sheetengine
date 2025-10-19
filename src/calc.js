@@ -145,20 +145,10 @@ function limitToCorner(sheet, c, index) {
  * Define sheet parameters
  */
 export function defineSheetParams(sheet) {
-  sheet.p0orig = { x: -sheet.width / 2, y: 0, z: sheet.height / 2 };
-  sheet.p1orig = { x: 1, y: 0, z: 0 };
-  sheet.p2orig = { x: 0, y: 0, z: -1 };
-  sheet.normalporig = { x: 0, y: 1, z: 0 };
+  sheetutil.initializeSheetProperties(sheet, sheet.rot);
 
   if (!sheet.objectsheet) {
-    const alpha = sheet.rot.alphaD * Math.PI / 180;
-    const beta = sheet.rot.betaD * Math.PI / 180;
-    const gamma = sheet.rot.gammaD * Math.PI / 180;
-
-    sheet.p0 = sheet.p0start = geometry.rotatePoint(sheet.p0orig, alpha, beta, gamma);
-    sheet.p1 = sheet.p1start = geometry.rotatePoint(sheet.p1orig, alpha, beta, gamma);
-    sheet.p2 = sheet.p2start = geometry.rotatePoint(sheet.p2orig, alpha, beta, gamma);
-    sheet.normalp = sheet.normalpstart = geometry.rotatePoint(sheet.normalporig, alpha, beta, gamma);
+    sheetutil.initializeSheetOrientation(sheet);
   }
 
   sheet.maxdiag = Math.ceil(Math.sqrt(sheet.width * sheet.width + sheet.height * sheet.height) / 2);
