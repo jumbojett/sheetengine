@@ -11,12 +11,9 @@ import * as sheetutil from './sheetutil.js';
 
 export class Sheet {
   constructor(centerp, rot, size) {
-    const rotclone = sheetutil.fillRot(rot);
-
     this.width = size.w;
     this.height = size.h;
     this.centerp = geometry.clonePoint(centerp);
-    this.rot = { alphaD: rotclone.alphaD, betaD: rotclone.betaD, gammaD: rotclone.gammaD };
 
     this.objectsheet = false;
     this.skipDensityMap = false;
@@ -43,11 +40,8 @@ export class Sheet {
     this.compositecanvas = drawing.createCanvas(this.width, this.height);
     this.compositecontext = this.compositecanvas.getContext('2d');
 
-    // Initialize sheet parameters inline
-    this.p0orig = { x: -this.width / 2, y: 0, z: this.height / 2 };
-    this.p1orig = { x: 1, y: 0, z: 0 };
-    this.p2orig = { x: 0, y: 0, z: -1 };
-    this.normalporig = { x: 0, y: 1, z: 0 };
+    // Initialize common sheet properties and parameters
+    sheetutil.initializeSheetProperties(this, rot);
 
     if (!this.objectsheet) {
       sheetutil.initializeSheetOrientation(this);

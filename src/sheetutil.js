@@ -37,6 +37,22 @@ export function checkInboundsPolygon(corners, myx, myy) {
 }
 
 /**
+ * Initialize common sheet properties from rotation object
+ * @param {Object} sheet - Sheet object to initialize
+ * @param {Object} rot - Rotation object
+ */
+export function initializeSheetProperties(sheet, rot) {
+  const rotclone = fillRot(rot);
+  sheet.rot = { alphaD: rotclone.alphaD, betaD: rotclone.betaD, gammaD: rotclone.gammaD };
+  
+  // Initialize sheet parameters
+  sheet.p0orig = { x: -sheet.width / 2, y: 0, z: sheet.height / 2 };
+  sheet.p1orig = { x: 1, y: 0, z: 0 };
+  sheet.p2orig = { x: 0, y: 0, z: -1 };
+  sheet.normalporig = { x: 0, y: 1, z: 0 };
+}
+
+/**
  * Calculate t-parameter for line-plane intersection
  * @param {Object} normalp - Normal point/plane
  * @param {Object} centerp - Center point on plane

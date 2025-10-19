@@ -11,12 +11,9 @@ import * as sheetutil from './sheetutil.js';
 
 export class BaseSheet {
   constructor(centerp, rot, size) {
-    const rotclone = sheetutil.fillRot(rot);
-
     this.width = size.w;
     this.height = size.h;
     this.centerp = geometry.clonePoint(centerp);
-    this.rot = { alphaD: rotclone.alphaD, betaD: rotclone.betaD, gammaD: rotclone.gammaD };
 
     this.objectsheet = false;
     this.dirty = true;
@@ -29,12 +26,8 @@ export class BaseSheet {
     this.shadowtempcanvas = drawing.createCanvas(this.width, this.height);
     this.shadowtempcontext = this.shadowtempcanvas.getContext('2d');
     
-    // Initialize sheet parameters inline
-    this.p0orig = { x: -this.width / 2, y: 0, z: this.height / 2 };
-    this.p1orig = { x: 1, y: 0, z: 0 };
-    this.p2orig = { x: 0, y: 0, z: -1 };
-    this.normalporig = { x: 0, y: 1, z: 0 };
-
+    // Initialize common sheet properties and parameters
+    sheetutil.initializeSheetProperties(this, rot);
     sheetutil.initializeSheetOrientation(this);
     this.maxdiag = Math.ceil(Math.sqrt(this.width * this.width + this.height * this.height) / 2);
 
