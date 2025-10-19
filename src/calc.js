@@ -7,6 +7,7 @@ import { state, internal } from './core.js';
 import * as geometry from './geometry.js';
 import * as transforms from './transforms.js';
 import * as shadows from './shadows.js';
+import * as sheetutil from './sheetutil.js';
 import { doSheetsIntersect, calculateSheetSections } from './intersections.js';
 import {
   deleteIndexFromConstraints,
@@ -25,58 +26,32 @@ export let calc = {
 let staticsheets = null;
 
 let inboundsCheckZeroThresh = 0.001;
-
 /**
  * Check if a point is within polygon bounds
+ * Re-exported from sheetutil for backward compatibility
  */
-function checkInboundsPolygon(corners, myx, myy) {
-  const areas = [];
-  let allpositive = true;
-  let allnegative = true;
-  let allzero = true;
-  for (let i = 0; i < corners.length; i++) {
-    const j = i === corners.length - 1 ? 0 : i + 1;
-    areas[areas.length] = myx * corners[j].v - corners[j].u * myy - myx * corners[i].v + corners[i].u * myy + corners[j].u * corners[i].v - corners[i].u * corners[j].v;
-    if ((areas[areas.length - 1]) > inboundsCheckZeroThresh) {
-      allnegative = false;
-      allzero = false;
-    }
-    if ((areas[areas.length - 1]) < -inboundsCheckZeroThresh) {
-      allpositive = false;
-      allzero = false;
-    }
-  }
-  return { inbounds: (allnegative || allpositive) && !allzero, areas: areas, allzero: allzero };
-}
-
-/**
- * Calculate u and v difference vectors for sheet
- */
-function calcUdifVdif(sheet) {
-  const scalew = sheet.width / 2;
-  const scaleh = sheet.height / 2;
-  sheet.udif = { x: sheet.p1.x * scalew, y: sheet.p1.y * scalew, z: sheet.p1.z * scalew };
-  sheet.vdif = { x: sheet.p2.x * scaleh, y: sheet.p2.y * scaleh, z: sheet.p2.z * scaleh };
+export function checkInboundsPolygon(corners, myx, myy) {
+  return sheetutil.checkInboundsPolygon(corners, myx, myy);
 }
 
 /**
  * Calculate sheet transformation data
  */
-function calculateSheetData(sheet) {
+export function calculateSheetData(sheet) {
   const centerp = sheet.centerp;
   const p0 = sheet.p0;
   const p1 = sheet.p1;
   const p2 = sheet.p2;
 
   // corners
-  calcUdifVdif(sheet);
-  sheet.corners = calculateCornersFromCenter(centerp, sheet.udif, sheet.vdif);
+  sheetutil.calcUdifVdif(sheet);
+  sheet.corners = sheetutil.calculateCornersFromCenter(centerp, sheet.udif, sheet.vdif);
 
   // inverse basematrix
   sheet.A1 = geometry.getBaseMatrixInverse(sheet.p1, sheet.p2, sheet.normalp);
 
   // transformation-specific data
-  sheet.data = calculateSheetDataSingle(centerp, p0, p1, p2, transforms.transformPoint, transforms.transformPointz, state.canvasCenter, sheet.corners);
+  sheet.data = sheetutil.calculateSheetDataSingle(centerp, p0, p1, p2, transforms.transformPoint, transforms.transformPointz, state.canvasCenter, sheet.corners);
 
   // calculate shadows cast on baserect
   if (shadows.config.drawShadows)
@@ -87,69 +62,11 @@ function calculateSheetData(sheet) {
 }
 
 /**
- * Calculate single sheet transformation data
- */
-function calculateSheetDataSingle(centerp, p0rot, p1rot, p2rot, transformFunction, transformFunctionz, canvasCenter, corners) {
-  // we calculate the new position of the center
-  const centerpuv = transformFunction(centerp);
-
-  // from the angles we calculate 3 cornerpoints of the sheet: p0 is top left
-  const p0rotScale = { x: p0rot.x, y: p0rot.y, z: p0rot.z };
-  const p1rotScale = { x: p1rot.x, y: p1rot.y, z: p1rot.z };
-  const p2rotScale = { x: p2rot.x, y: p2rot.y, z: p2rot.z };
-
-  const p0 = transformFunction(p0rotScale);
-  const p1 = transformFunction(p1rotScale);
-  const p2 = transformFunction(p2rotScale);
-
-  // p1 and p2 are the cornerpoints of the square, so that 0,0 is lower left, p1 is lower right and p2 is upper left point
-  // p1 and p2 will define the transformation with respect to 0,0, and the whole thing should be translated to p0
-
-  const translatex = canvasCenter.u + p0.u + centerpuv.u;
-  const translatey = canvasCenter.v + p0.v + centerpuv.v;
-
-  const ta = p1.u;
-  const tb = p1.v;
-  const tc = p2.u;
-  const td = p2.v;
-
-  if (corners == null)
-    return { p0uv: p0, p1uv: p1, p2uv: p2, translatex: translatex, translatey: translatey, ta: ta, tb: tb, tc: tc, td: td, centerpuv: centerpuv };
-
-  // cornerpoints
-  const c = [];
-  c[0] = transforms.transformPointuvz(corners[0], transformFunctionz, canvasCenter);
-  c[1] = transforms.transformPointuvz(corners[1], transformFunctionz, canvasCenter);
-  c[2] = transforms.transformPointuvz(corners[2], transformFunctionz, canvasCenter);
-  c[3] = transforms.transformPointuvz(corners[3], transformFunctionz, canvasCenter);
-
-  const umax = Math.max(c[0].u, c[1].u, c[2].u, c[3].u);
-  const umin = Math.min(c[0].u, c[1].u, c[2].u, c[3].u);
-  const vmax = Math.max(c[0].v, c[1].v, c[2].v, c[3].v);
-  const vmin = Math.min(c[0].v, c[1].v, c[2].v, c[3].v);
-  const zmax = Math.max(c[0].z, c[1].z, c[2].z, c[3].z);
-  const zmin = Math.min(c[0].z, c[1].z, c[2].z, c[3].z);
-  return { p0uv: p0, p1uv: p1, p2uv: p2, translatex: translatex, translatey: translatey, ta: ta, tb: tb, tc: tc, td: td, centerpuv: centerpuv, cornersuv: c, umax: umax, umin: umin, vmax: vmax, vmin: vmin, zmax: zmax, zmin: zmin };
-}
-
-/**
- * Calculate corner positions from center point
- */
-function calculateCornersFromCenter(centerp, udif, vdif) {
-  const corners = [];
-  corners[0] = { x: -udif.x - vdif.x + centerp.x, y: -udif.y - vdif.y + centerp.y, z: -udif.z - vdif.z + centerp.z };
-  corners[1] = { x: +udif.x - vdif.x + centerp.x, y: +udif.y - vdif.y + centerp.y, z: +udif.z - vdif.z + centerp.z };
-  corners[2] = { x: +udif.x + vdif.x + centerp.x, y: +udif.y + vdif.y + centerp.y, z: +udif.z + vdif.z + centerp.z };
-  corners[3] = { x: -udif.x + vdif.x + centerp.x, y: -udif.y + vdif.y + centerp.y, z: -udif.z + vdif.z + centerp.z };
-  return corners;
-}
-
-/**
  * Limit sheet corners to bounds
  */
-function limitToCorners(sheet) {
-  calcUdifVdif(sheet);
-  sheet.corners = calculateCornersFromCenter(sheet.centerp, sheet.udif, sheet.vdif);
+export function limitToCorners(sheet) {
+  sheetutil.calcUdifVdif(sheet);
+  sheet.corners = sheetutil.calculateCornersFromCenter(sheet.centerp, sheet.udif, sheet.vdif);
 
   if (!calc.allowLimitToCorners)
     return;
@@ -227,7 +144,7 @@ function limitToCorner(sheet, c, index) {
 /**
  * Define sheet parameters
  */
-function defineSheetParams(sheet) {
+export function defineSheetParams(sheet) {
   sheet.p0orig = { x: -sheet.width / 2, y: 0, z: sheet.height / 2 };
   sheet.p1orig = { x: 1, y: 0, z: 0 };
   sheet.p2orig = { x: 0, y: 0, z: -1 };
@@ -438,7 +355,7 @@ function getStaticSheets() {
 /**
  * Calculate changed sheets (incremental update)
  */
-function calculateChangedSheets() {
+export function calculateChangedSheets() {
   const start1 = +new Date();
 
   // 1. gather sheets whose polygons are to be recalculated
@@ -554,7 +471,7 @@ function calculateChangedSheets() {
 /**
  * Calculate all sheets (full recalculation)
  */
-function calculateAllSheets() {
+export function calculateAllSheets() {
   for (let i = 0; i < state.sheets.length; i++) {
     const s = state.sheets[i];
     s.dimmed = 0;
@@ -609,7 +526,7 @@ function calculateAllSheets() {
 /**
  * Delete sheets marked for deletion
  */
-function deleteSheets() {
+export function deleteSheets() {
   if (!state.sheetsbeingdeleted)
     return;
 
@@ -773,14 +690,3 @@ export function redefineIntersections(obj) {
     }
   }
 }
-
-// Export named functions directly (not assigned to calc to avoid frozen export issues)
-export {
-  checkInboundsPolygon,
-  calculateSheetData,
-  calculateChangedSheets,
-  calculateAllSheets,
-  deleteSheets,
-  defineSheetParams,
-  limitToCorners
-};

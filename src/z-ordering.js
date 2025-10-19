@@ -5,6 +5,7 @@
 import { state } from './core.js';
 import * as geometry from './geometry.js';
 import * as shadows from './shadows.js';
+import * as sheetutil from './sheetutil.js';
 
 export function calculatePolygonOrder(polygon) {
   calculatePolygonOrderForCam(polygon, 0);
@@ -130,7 +131,7 @@ function isPolygonFront(a, b, asheet, bsheet, aData, bData, viewSource, shadow) 
   for (let i = 0; i < aData.pointsuv.length; i++) {
     const t = geometry.getTForSheetLineCrossing(bsheet.normalp, bsheet.centerp, a.points[i], viewSource);
     if (t < -zOrderDistanceThreshold) {
-      const res = checkInboundsPolygon(bData.pointsuv, aData.pointsuv[i].u, aData.pointsuv[i].v);
+      const res = sheetutil.checkInboundsPolygon(bData.pointsuv, aData.pointsuv[i].u, aData.pointsuv[i].v);
       if (res.inbounds) return true;
     }
   }
@@ -138,7 +139,7 @@ function isPolygonFront(a, b, asheet, bsheet, aData, bData, viewSource, shadow) 
   for (let i = 0; i < aData.midpointsuv.length; i++) {
     const t = geometry.getTForSheetLineCrossing(bsheet.normalp, bsheet.centerp, a.midpoints[i], viewSource);
     if (t < -zOrderDistanceThreshold) {
-      const res = checkInboundsPolygon(bData.pointsuv, aData.midpointsuv[i].u, aData.midpointsuv[i].v);
+      const res = sheetutil.checkInboundsPolygon(bData.pointsuv, aData.midpointsuv[i].u, aData.midpointsuv[i].v);
       if (res.inbounds) return true;
     }
   }
@@ -146,7 +147,7 @@ function isPolygonFront(a, b, asheet, bsheet, aData, bData, viewSource, shadow) 
   for (let i = 0; i < bData.pointsuv.length; i++) {
     const t = geometry.getTForSheetLineCrossing(asheet.normalp, asheet.centerp, b.points[i], viewSource);
     if (t > zOrderDistanceThreshold) {
-      const res = checkInboundsPolygon(aData.pointsuv, bData.pointsuv[i].u, bData.pointsuv[i].v);
+      const res = sheetutil.checkInboundsPolygon(aData.pointsuv, bData.pointsuv[i].u, bData.pointsuv[i].v);
       if (res.inbounds) return true;
     }
   }
@@ -154,34 +155,12 @@ function isPolygonFront(a, b, asheet, bsheet, aData, bData, viewSource, shadow) 
   for (let i = 0; i < bData.midpointsuv.length; i++) {
     const t = geometry.getTForSheetLineCrossing(asheet.normalp, asheet.centerp, b.midpoints[i], viewSource);
     if (t > zOrderDistanceThreshold) {
-      const res = checkInboundsPolygon(aData.pointsuv, bData.midpointsuv[i].u, bData.midpointsuv[i].v);
+      const res = sheetutil.checkInboundsPolygon(aData.pointsuv, bData.midpointsuv[i].u, bData.midpointsuv[i].v);
       if (res.inbounds) return true;
     }
   }
 
   return false;
-}
-
-let inboundsCheckZeroThresh = 0.001;
-
-function checkInboundsPolygon(corners, myx, myy) {
-  const areas = [];
-  let allpositive = true;
-  let allnegative = true;
-  let allzero = true;
-  for (let i = 0; i < corners.length; i++) {
-    const j = i == corners.length - 1 ? 0 : i + 1;
-    areas[areas.length] = myx * corners[j].v - corners[j].u * myy - myx * corners[i].v + corners[i].u * myy + corners[j].u * corners[i].v - corners[i].u * corners[j].v;
-    if ((areas[areas.length - 1]) > inboundsCheckZeroThresh) {
-      allnegative = false;
-      allzero = false;
-    }
-    if ((areas[areas.length - 1]) < -inboundsCheckZeroThresh) {
-      allpositive = false;
-      allzero = false;
-    }
-  }
-  return { inbounds: (allnegative || allpositive) && !allzero, areas, allzero };
 }
 
 export function clearDimmedFlags() {

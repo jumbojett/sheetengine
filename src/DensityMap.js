@@ -3,6 +3,7 @@
  */
 
 import * as geometry from './geometry.js';
+import * as sheetutil from './sheetutil.js';
 
 export class DensityMap {
   constructor(granularity) {
@@ -17,8 +18,8 @@ export class DensityMap {
     const y = Math.round(p.y / gran);
     const z = Math.round(p.z / gran);
 
-    if (map['x' + x + 'y' + y + 'z' + z])
-      return map['x' + x + 'y' + y + 'z' + z];
+    if (map[sheetutil.calculateGridKey(x, y, z)])
+      return map[sheetutil.calculateGridKey(x, y, z)];
 
     return 0;
   }
@@ -30,11 +31,11 @@ export class DensityMap {
     const y = Math.round(p.y / gran);
     const z = Math.floor(p.z / gran);
 
-    this.add('x' + x + 'y' + y + 'z' + z);
-    this.add('x' + (x + 1) + 'y' + (y) + 'z' + (z));
-    this.add('x' + (x) + 'y' + (y + 1) + 'z' + (z));
-    this.add('x' + (x - 1) + 'y' + (y) + 'z' + (z));
-    this.add('x' + (x) + 'y' + (y - 1) + 'z' + (z));
+    this.add(sheetutil.calculateGridKey(x, y, z));
+    this.add(sheetutil.calculateGridKey(x + 1, y, z));
+    this.add(sheetutil.calculateGridKey(x, y + 1, z));
+    this.add(sheetutil.calculateGridKey(x - 1, y, z));
+    this.add(sheetutil.calculateGridKey(x, y - 1, z));
   }
 
   remove(p) {
@@ -44,11 +45,11 @@ export class DensityMap {
     const y = Math.round(p.y / gran);
     const z = Math.floor(p.z / gran);
 
-    this.sub('x' + x + 'y' + y + 'z' + z);
-    this.sub('x' + (x + 1) + 'y' + (y) + 'z' + (z));
-    this.sub('x' + (x) + 'y' + (y + 1) + 'z' + (z));
-    this.sub('x' + (x - 1) + 'y' + (y) + 'z' + (z));
-    this.sub('x' + (x) + 'y' + (y - 1) + 'z' + (z));
+    this.sub(sheetutil.calculateGridKey(x, y, z));
+    this.sub(sheetutil.calculateGridKey(x + 1, y, z));
+    this.sub(sheetutil.calculateGridKey(x, y + 1, z));
+    this.sub(sheetutil.calculateGridKey(x - 1, y, z));
+    this.sub(sheetutil.calculateGridKey(x, y - 1, z));
   }
 
   add(id) {

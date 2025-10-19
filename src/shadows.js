@@ -5,6 +5,7 @@
 import { state } from './core.js';
 import * as geometry from './geometry.js';
 import * as transforms from './transforms.js';
+import * as sheetutil from './sheetutil.js';
 import { scene } from './scene.js';
 
 export let config = {
@@ -24,9 +25,11 @@ export function calculateSheetBaseShadow(sheet) {
   const s = sheet;
   const l = config.lightSource;
   const centerp = { x: s.centerp.x, y: s.centerp.y, z: s.centerp.z };
-  const p0 = { x: centerp.x + s.p0.x, y: centerp.y + s.p0.y, z: centerp.z + s.p0.z };
-  const p1 = { x: centerp.x + s.p1.x, y: centerp.y + s.p1.y, z: centerp.z + s.p1.z };
-  const p2 = { x: centerp.x + s.p2.x, y: centerp.y + s.p2.y, z: centerp.z + s.p2.z };
+  
+  const pts = sheetutil.calculateSheetPoints(centerp, s.p0, s.p1, s.p2);
+  const p0 = pts.p0;
+  const p1 = pts.p1;
+  const p2 = pts.p2;
 
   const tc = centerp.z / -l.z;
   const t0 = p0.z / -l.z;
@@ -38,50 +41,14 @@ export function calculateSheetBaseShadow(sheet) {
   const p1sect = { x: p1.x + l.x * t1 - centerpsect.x, y: p1.y + l.y * t1 - centerpsect.y, z: p1.z + l.z * t1 - centerpsect.z };
   const p2sect = { x: p2.x + l.x * t2 - centerpsect.x, y: p2.y + l.y * t2 - centerpsect.y, z: p2.z + l.z * t2 - centerpsect.z };
 
-  // Import calculateSheetDataSingle from calc module when available
-  s.baseShadoweData = calculateSheetDataSingle(centerpsect, p0sect, p1sect, p2sect, transforms.transformPoint, transforms.transformPointz, config.baseShadowCenter, s.corners);
+  // Use shared calculateSheetDataSingle from sheetutil
+  s.baseShadoweData = sheetutil.calculateSheetDataSingle(centerpsect, p0sect, p1sect, p2sect, transforms.transformPoint, transforms.transformPointz, config.baseShadowCenter, s.corners);
 
   // Adjust for scene center when available
   if (scene.center) {
     s.baseShadoweData.translatex -= scene.center.u;
     s.baseShadoweData.translatey -= scene.center.v;
   }
-}
-
-function calculateSheetDataSingle(centerp, p0rot, p1rot, p2rot, transformFunction, transformFunctionz, canvasCenter, corners) {
-  const centerpuv = transformFunction(centerp);
-  const p0rotScale = { x: p0rot.x, y: p0rot.y, z: p0rot.z };
-  const p1rotScale = { x: p1rot.x, y: p1rot.y, z: p1rot.z };
-  const p2rotScale = { x: p2rot.x, y: p2rot.y, z: p2rot.z };
-
-  const p0 = transformFunction(p0rotScale);
-  const p1 = transformFunction(p1rotScale);
-  const p2 = transformFunction(p2rotScale);
-
-  const translatex = canvasCenter.u + p0.u + centerpuv.u;
-  const translatey = canvasCenter.v + p0.v + centerpuv.v;
-  const ta = p1.u;
-  const tb = p1.v;
-  const tc = p2.u;
-  const td = p2.v;
-
-  if (corners == null)
-    return { p0uv: p0, p1uv: p1, p2uv: p2, translatex, translatey, ta, tb, tc, td, centerpuv };
-
-  const c = [];
-  c[0] = transforms.transformPointuvz(corners[0], transformFunctionz, canvasCenter);
-  c[1] = transforms.transformPointuvz(corners[1], transformFunctionz, canvasCenter);
-  c[2] = transforms.transformPointuvz(corners[2], transformFunctionz, canvasCenter);
-  c[3] = transforms.transformPointuvz(corners[3], transformFunctionz, canvasCenter);
-
-  const umax = Math.max(c[0].u, c[1].u, c[2].u, c[3].u);
-  const umin = Math.min(c[0].u, c[1].u, c[2].u, c[3].u);
-  const vmax = Math.max(c[0].v, c[1].v, c[2].v, c[3].v);
-  const vmin = Math.min(c[0].v, c[1].v, c[2].v, c[3].v);
-  const zmax = Math.max(c[0].z, c[1].z, c[2].z, c[3].z);
-  const zmin = Math.min(c[0].z, c[1].z, c[2].z, c[3].z);
-
-  return { p0uv: p0, p1uv: p1, p2uv: p2, translatex, translatey, ta, tb, tc, td, centerpuv, cornersuv: c, umax, umin, vmax, vmin, zmax, zmin };
 }
 
 export function checkDirtyShadowConstraint(prev, dirtySheets) {
@@ -242,9 +209,11 @@ function calculateShadowData(sheet, shadowcaster) {
   const l = config.lightSource;
 
   const centerp = { x: s.centerp.x, y: s.centerp.y, z: s.centerp.z };
-  const p0 = { x: s.centerp.x + s.p0.x, y: s.centerp.y + s.p0.y, z: s.centerp.z + s.p0.z };
-  const p1 = { x: s.centerp.x + s.p1.x, y: s.centerp.y + s.p1.y, z: s.centerp.z + s.p1.z };
-  const p2 = { x: s.centerp.x + s.p2.x, y: s.centerp.y + s.p2.y, z: s.centerp.z + s.p2.z };
+  
+  const pts = sheetutil.calculateSheetPoints(s.centerp, s.p0, s.p1, s.p2);
+  const p0 = pts.p0;
+  const p1 = pts.p1;
+  const p2 = pts.p2;
 
   const tc = getTForSheetLineCrossing(sheet.normalp, sheet.centerp, centerp, l);
   const t0 = getTForSheetLineCrossing(sheet.normalp, sheet.centerp, p0, l);
@@ -256,7 +225,7 @@ function calculateShadowData(sheet, shadowcaster) {
   const p1sect = { x: p1.x + l.x * t1 - centerpsect.x, y: p1.y + l.y * t1 - centerpsect.y, z: p1.z + l.z * t1 - centerpsect.z };
   const p2sect = { x: p2.x + l.x * t2 - centerpsect.x, y: p2.y + l.y * t2 - centerpsect.y, z: p2.z + l.z * t2 - centerpsect.z };
 
-  const eData = calculateSheetDataSingle(centerpsect, p0sect, p1sect, p2sect, transforms.transformPoint, null, state.canvasCenter, null);
+  const eData = sheetutil.calculateSheetDataSingle(centerpsect, p0sect, p1sect, p2sect, transforms.transformPoint, null, state.canvasCenter, null);
 
   const A1 = geometry.getBaseMatrixInverse({ x: sheet.data.ta, y: sheet.data.tb, z: 0 }, { x: sheet.data.tc, y: sheet.data.td, z: 0 }, { x: sheet.data.translatex, y: sheet.data.translatey, z: 1 });
   const C = geometry.multiplyMatrices(A1.b1, A1.b2, A1.b3, { x: eData.ta, y: eData.tb, z: 0 }, { x: eData.tc, y: eData.td, z: 0 }, { x: eData.translatex, y: eData.translatey, z: 1 });
