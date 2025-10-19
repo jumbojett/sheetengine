@@ -212,8 +212,11 @@ SheetObject.prototype.rotate = function(axis, angle, base) {
 
     sheetutil.rotateSheetPoints(s, axis, angle, base);
 
-    if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
-      sheetutil.rotateSheetPolygons(s, axis, angle, true);
+    if (s.startpolygons) {
+      if (base) {
+        // Always rotate startpolygons for base rotation, regardless of intersection settings
+        sheetutil.rotateSheetPolygons(s, axis, angle, true);
+      }
     } else if (s.polygons && !state.objectsintersect && !this.intersectionsenabled && !base) {
       // For non-base rotation with current polygons, rotate relative to object center
       const polygonArray = s.polygons;
