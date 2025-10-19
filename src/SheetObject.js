@@ -210,40 +210,21 @@ SheetObject.prototype.rotate = function(axis, angle, base) {
   for (let i = 0; i < this.sheets.length; i++) {
     const s = this.sheets[i];
 
-    if (base) {
-      s.p0 = geometry.rotateAroundAxis(s.p0start, axis, angle);
-      s.p1 = geometry.rotateAroundAxis(s.p1start, axis, angle);
-      s.p2 = geometry.rotateAroundAxis(s.p2start, axis, angle);
-      s.normalp = geometry.rotateAroundAxis(s.normalpstart, axis, angle);
-      s.rotcenterp = geometry.rotateAroundAxis(s.startcenterp, axis, angle);
+    sheetutil.rotateSheetPoints(s, axis, angle, base);
 
-      if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
-        for (let j = 0; j < s.startpolygons.length; j++) {
-          const startpoly = s.startpolygons[j];
-          for (let p = 0; p < startpoly.points.length; p++) {
-            startpoly.points[p] = geometry.rotateAroundAxis(startpoly.points[p], axis, angle);
-          }
+    if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
+      sheetutil.rotateSheetPolygons(s, axis, angle, true);
+    } else if (s.polygons && !state.objectsintersect && !this.intersectionsenabled && !base) {
+      // For non-base rotation with current polygons, rotate relative to object center
+      const polygonArray = s.polygons;
+      for (let j = 0; j < polygonArray.length; j++) {
+        const poly = polygonArray[j];
+        for (let p = 0; p < poly.points.length; p++) {
+          let pp = geometry.subPoint(poly.points[p], this.centerp);
+          pp = geometry.rotateAroundAxis(pp, axis, angle);
+          poly.points[p] = geometry.addPoint(pp, this.centerp);
         }
       }
-
-    } else {
-      s.p0 = geometry.rotateAroundAxis(s.p0, axis, angle);
-      s.p1 = geometry.rotateAroundAxis(s.p1, axis, angle);
-      s.p2 = geometry.rotateAroundAxis(s.p2, axis, angle);
-      s.normalp = geometry.rotateAroundAxis(s.normalp, axis, angle);
-      s.rotcenterp = geometry.rotateAroundAxis(s.rotcenterp, axis, angle);
-
-      if (s.polygons && !state.objectsintersect && !this.intersectionsenabled) {
-        for (let j = 0; j < s.polygons.length; j++) {
-          const poly = s.polygons[j];
-          for (let p = 0; p < poly.points.length; p++) {
-            let pp = geometry.subPoint(poly.points[p], this.centerp);
-            pp = geometry.rotateAroundAxis(pp, axis, angle);
-            poly.points[p] = geometry.addPoint(pp, this.centerp);
-          }
-        }
-      }
-
     }
 
     sheetutil.updateSheetCenterp(s, this.centerp);
@@ -337,12 +318,7 @@ SheetObject.prototype.rotateSheet = function(sheet, rotationCenter, rotationAxis
   const s = sheet;
 
   if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
-    for (let j = 0; j < s.startpolygons.length; j++) {
-      const startpoly = s.startpolygons[j];
-      for (let p = 0; p < startpoly.points.length; p++) {
-        startpoly.points[p] = geometry.rotateAroundArbitraryAxis(startpoly.points[p], rotationCenter, rotationAxis, angle);
-      }
-    }
+    sheetutil.rotateSheetPolygonsArbitrary(s, rotationCenter, rotationAxis, angle, true);
   }
 
   s.p0start = geometry.rotateAroundAxis(s.p0start, rotationAxis, angle);

@@ -408,3 +408,63 @@ export function updateSheetCenterp(sheet, objCenterp) {
   sheet.centerp.y = sheet.rotcenterp.y + objCenterp.y;
   sheet.centerp.z = sheet.rotcenterp.z + objCenterp.z;
 }
+
+/**
+ * Rotate sheet base points (p0, p1, p2, normalp, rotcenterp) around an axis
+ * Used in both absolute and relative rotation operations
+ * @param {Object} sheet - Sheet object to rotate
+ * @param {Object} axis - Rotation axis
+ * @param {number} angle - Rotation angle
+ * @param {boolean} useStartPoints - If true, rotate from start points; else rotate current points
+ */
+export function rotateSheetPoints(sheet, axis, angle, useStartPoints = false) {
+  if (useStartPoints) {
+    sheet.p0 = geometry.rotateAroundAxis(sheet.p0start, axis, angle);
+    sheet.p1 = geometry.rotateAroundAxis(sheet.p1start, axis, angle);
+    sheet.p2 = geometry.rotateAroundAxis(sheet.p2start, axis, angle);
+    sheet.normalp = geometry.rotateAroundAxis(sheet.normalpstart, axis, angle);
+    sheet.rotcenterp = geometry.rotateAroundAxis(sheet.startcenterp, axis, angle);
+  } else {
+    sheet.p0 = geometry.rotateAroundAxis(sheet.p0, axis, angle);
+    sheet.p1 = geometry.rotateAroundAxis(sheet.p1, axis, angle);
+    sheet.p2 = geometry.rotateAroundAxis(sheet.p2, axis, angle);
+    sheet.normalp = geometry.rotateAroundAxis(sheet.normalp, axis, angle);
+    sheet.rotcenterp = geometry.rotateAroundAxis(sheet.rotcenterp, axis, angle);
+  }
+}
+
+/**
+ * Rotate polygon points around an axis or arbitrary point
+ * @param {Object} sheet - Sheet object containing polygons
+ * @param {Object} axis - Rotation axis (or center for arbitrary rotation)
+ * @param {number} angle - Rotation angle
+ * @param {boolean} useStartPolygons - If true, rotate startpolygons; else rotate polygons
+ * @param {Object} arbitraryCenter - If provided, rotate around this point instead of axis
+ */
+export function rotateSheetPolygons(sheet, axis, angle, useStartPolygons = false, arbitraryCenter = null) {
+  const polygonArray = useStartPolygons ? sheet.startpolygons : sheet.polygons;
+  if (!polygonArray) return;
+  
+  const rotateFunc = arbitraryCenter ? 
+    (point) => geometry.rotateAroundArbitraryAxis(point, arbitraryCenter, axis, angle) :
+    (point) => geometry.rotateAroundAxis(point, axis, angle);
+  
+  for (let j = 0; j < polygonArray.length; j++) {
+    const poly = polygonArray[j];
+    for (let p = 0; p < poly.points.length; p++) {
+      poly.points[p] = rotateFunc(poly.points[p]);
+    }
+  }
+}
+
+/**
+ * Rotate polygon points around an arbitrary point (center + axis)
+ * @param {Object} sheet - Sheet object containing polygons
+ * @param {Object} center - Center point for rotation
+ * @param {Object} axis - Rotation axis
+ * @param {number} angle - Rotation angle
+ * @param {boolean} useStartPolygons - If true, rotate startpolygons; else rotate polygons
+ */
+export function rotateSheetPolygonsArbitrary(sheet, center, axis, angle, useStartPolygons = false) {
+  rotateSheetPolygons(sheet, axis, angle, useStartPolygons, center);
+}
