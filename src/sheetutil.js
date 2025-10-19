@@ -37,6 +37,20 @@ export function checkInboundsPolygon(corners, myx, myy) {
 }
 
 /**
+ * Fill rotation object with default values
+ * @param {Object} rot - Rotation object with alphaD, betaD, gammaD
+ * @returns {Object} Filled rotation object
+ */
+export function fillRot(rot) {
+  if (!rot) return { alphaD: 0, betaD: 0, gammaD: 0 };
+  return {
+    alphaD: rot.alphaD || 0,
+    betaD: rot.betaD || 0,
+    gammaD: rot.gammaD || 0
+  };
+}
+
+/**
  * Initialize common sheet properties from rotation object
  * @param {Object} sheet - Sheet object to initialize
  * @param {Object} rot - Rotation object
@@ -108,7 +122,7 @@ export function calculateSectionPoints(centerp, p0, p1, p2, tparams, l) {
 }
 
 /**
- * Calculate spatial grid key for density map
+ * Calculate grid key for density map
  * @param {number} x - X coordinate
  * @param {number} y - Y coordinate
  * @param {number} z - Z coordinate
@@ -119,19 +133,25 @@ export function calculateGridKey(x, y, z) {
 }
 
 /**
- * Fill rotation object with default values
- * @param {Object} rot - Rotation object with alphaD, betaD, gammaD
- * @returns {Object} Filled rotation object
+ * Calculate 3D points from center and sheet vectors
+ * @param {Object} centerp - Center point
+ * @param {Object} p0 - P0 vector
+ * @param {Object} p1 - P1 vector
+ * @param {Object} p2 - P2 vector
+ * @returns {Object} Object with p0, p1, p2 calculated points
  */
-export function fillRot(rot) {
-  if (!rot) return { alphaD: 0, betaD: 0, gammaD: 0 };
+export function calculateSheetPoints(centerp, p0, p1, p2) {
   return {
-    alphaD: rot.alphaD || 0,
-    betaD: rot.betaD || 0,
-    gammaD: rot.gammaD || 0
+    p0: { x: centerp.x + p0.x, y: centerp.y + p0.y, z: centerp.z + p0.z },
+    p1: { x: centerp.x + p1.x, y: centerp.y + p1.y, z: centerp.z + p1.z },
+    p2: { x: centerp.x + p2.x, y: centerp.y + p2.y, z: centerp.z + p2.z }
   };
 }
 
+/**
+ * Calculate spatial grid key for density map
+ * @param {number} x - X coordinate
+ * @param {number} y - Y coordinate
 /**
  * Calculate corner positions from center point and udif/vdif
  * @param {Object} centerp - Center point
