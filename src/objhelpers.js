@@ -6,6 +6,7 @@
 import { state } from './core.js';
 import * as geometry from './geometry.js';
 import * as drawing from './drawing.js';
+import * as sheetutil from './sheetutil.js';
 import { calculateSheetSections } from './intersections.js';
 import { Sheet } from './Sheet.js';
 import { SheetObject } from './SheetObject.js';
@@ -117,17 +118,6 @@ function fillRot(rot) {
 }
 
 /**
- * Calculate rotation vector from rotation angles
- */
-function calcRotVector(rot, rotvectorstart) {
-  const rotvector = [];
-  rotvector[0] = geometry.rotatePoint(rotvectorstart[0], rot.alpha, rot.beta, rot.gamma);
-  rotvector[1] = geometry.rotatePoint(rotvectorstart[1], rot.alpha, rot.beta, rot.gamma);
-  rotvector[2] = geometry.rotatePoint(rotvectorstart[2], rot.alpha, rot.beta, rot.gamma);
-  return rotvector;
-}
-
-/**
  * Get thumbnail image string for object
  */
 function getThumbnailString(imgSrcPath, callback) {
@@ -209,7 +199,6 @@ objhelpers.defineObject = defineObject;
 objhelpers.getThumbnailString = getThumbnailString;
 objhelpers.getCurrentSheetsObject = getCurrentSheetsObject;
 objhelpers.getCurrentSheetsObjectStr = getCurrentSheetsObjectStr;
-objhelpers.calcRotVector = calcRotVector;
 
 // Export named functions
 export {
@@ -217,7 +206,6 @@ export {
   defineAppObjects,
   drawObjectToScene,
   fillRot,
-  calcRotVector,
   fromRadian,
   fromDegree,
   getCurrentSheetsObject,

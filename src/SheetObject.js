@@ -8,23 +8,10 @@ import * as geometry from './geometry.js';
 import * as transforms from './transforms.js';
 import * as shadows from './shadows.js';
 import * as calc from './calc.js';
+import * as sheetutil from './sheetutil.js';
 import * as objhelpers from './objhelpers.js';
 import { calculateSheetSections } from './intersections.js';
 import * as drawing from './drawing.js';
-
-/**
- * Calculate rotation vector from rotation angles
- * @param {Object} rot - Rotation angles {alpha, beta, gamma}
- * @param {Array} rotvectorstart - Starting rotation vectors
- * @returns {Array} Calculated rotation vectors
- */
-function calcRotVector(rot, rotvectorstart) {
-  let rotvector = [];
-  rotvector[0] = geometry.rotatePoint(rotvectorstart[0], rot.alpha, rot.beta, rot.gamma);
-  rotvector[1] = geometry.rotatePoint(rotvectorstart[1], rot.alpha, rot.beta, rot.gamma);
-  rotvector[2] = geometry.rotatePoint(rotvectorstart[2], rot.alpha, rot.beta, rot.gamma);
-  return rotvector;
-}
 
 /**
  * SheetObject class - represents a 3D object composed of multiple sheets
@@ -82,7 +69,7 @@ export function SheetObject(centerp, rot, sheets, canvasSize, intersectionsenabl
   this.centerp = centerp;
   this.rot = objhelpers.fillRot(rot);
   this.rotvectorstart = [{ x: 1, y: 0, z: 0 }, { x: 0, y: 0, z: -1 }, { x: 0, y: 1, z: 0 }];
-  this.rotvector = calcRotVector(this.rot, this.rotvectorstart);
+  this.rotvector = sheetutil.calcRotVector(this.rot, this.rotvectorstart);
   this.sheets = sheets;
   this.hidden = false;
   this.intersectionsredefine = false;
@@ -298,7 +285,7 @@ SheetObject.prototype.rotate = function(axis, angle, base) {
  */
 SheetObject.prototype.setOrientation = function(rot) {
   this.rot = objhelpers.fillRot(rot);
-  this.rotvector = calcRotVector(this.rot, this.rotvectorstart);
+  this.rotvector = sheetutil.calcRotVector(this.rot, this.rotvectorstart);
 
   for (let i = 0; i < this.sheets.length; i++) {
     const s = this.sheets[i];

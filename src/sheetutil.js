@@ -37,6 +37,20 @@ export function checkInboundsPolygon(corners, myx, myy) {
 }
 
 /**
+ * Calculate rotation vector from rotation angles
+ * @param {Object} rot - Rotation object with alpha, beta, gamma angles (in radians)
+ * @param {Array} rotvectorstart - Starting vector array [v0, v1, v2]
+ * @returns {Array} Rotated vector array [v0rot, v1rot, v2rot]
+ */
+export function calcRotVector(rot, rotvectorstart) {
+  const rotvector = [];
+  rotvector[0] = geometry.rotatePoint(rotvectorstart[0], rot.alpha, rot.beta, rot.gamma);
+  rotvector[1] = geometry.rotatePoint(rotvectorstart[1], rot.alpha, rot.beta, rot.gamma);
+  rotvector[2] = geometry.rotatePoint(rotvectorstart[2], rot.alpha, rot.beta, rot.gamma);
+  return rotvector;
+}
+
+/**
  * Initialize shadow canvas pair for a sheet
  * @param {Object} sheet - Sheet object
  * @param {Object} drawing - Drawing module for canvas creation
@@ -172,6 +186,22 @@ export function calculateSectionPoints(centerp, p0, p1, p2, tparams, l) {
  */
 export function calculateGridKey(x, y, z) {
   return 'x' + x + 'y' + y + 'z' + z;
+}
+
+/**
+ * Calculate grid coordinates from 3D point and granularity
+ * @param {Object} p - Point object with x, y, z coordinates
+ * @param {number} granularity - Grid granularity
+ * @param {boolean} useFloor - Use floor instead of round
+ * @returns {Object} Grid coordinates {x, y, z}
+ */
+export function calculateGridCoordinates(p, granularity, useFloor = false) {
+  const fn = useFloor ? Math.floor : Math.round;
+  return {
+    x: fn(p.x / granularity),
+    y: fn(p.y / granularity),
+    z: fn(p.z / granularity)
+  };
 }
 
 /**
