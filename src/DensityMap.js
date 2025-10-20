@@ -116,22 +116,22 @@ export class DensityMap {
     }
   }
 
-  getTargetHeight(targetp, objectHeight) {
-    const startz = targetp.z + objectHeight;
+  getTargetHeight({z, x, y}, objectHeight) {
+    const startz = z + objectHeight;
     for (let z = startz; z > 0; z--) {
-      const obstacle = this.get({ x: targetp.x, y: targetp.y, z });
+      const obstacle = this.get({ x: x, y: y, z });
       if (obstacle) return z;
     }
     return 0;
   }
 
-  getTargetPoint(targetPos, vector, objHeight, tolerance) {
+  getTargetPoint({x, y, z}, vector, objHeight, tolerance) {
     let allowMove = true;
     let stopFall = false;
     let targetp = {
-      x: targetPos.x + vector.x,
-      y: targetPos.y + vector.y,
-      z: targetPos.z + vector.z
+      x: x + vector.x,
+      y: y + vector.y,
+      z: z + vector.z
     };
     let h = this.getTargetHeight({ x: targetp.x, y: targetp.y, z: targetp.z }, objHeight);
     if (h >= targetp.z) {
@@ -142,9 +142,9 @@ export class DensityMap {
         vector.x = 0;
         vector.y = 0;
         targetp = {
-          x: targetPos.x,
-          y: targetPos.y,
-          z: targetPos.z + vector.z
+          x: x,
+          y: y,
+          z: z + vector.z
         };
         h = this.getTargetHeight({ x: targetp.x, y: targetp.y, z: targetp.z }, objHeight);
         if (h >= targetp.z) {

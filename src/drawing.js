@@ -347,16 +347,13 @@ export function drawScene(full) {
       drawBaseRectsAndShadows(state.context, false);
     }
     if (state.drawObjectContour) {
-      for (let i = 0; i < state.objects.length; i++) {
-        const obj = state.objects[i];
+      for (const obj of state.objects) {
         obj.canvasdirty = true;
         obj.draw();
       }
     }
   } else {
-    for (let i = 0; i < state.sheets.length; i++) {
-      const s = state.sheets[i];
-
+    for (const s of state.sheets) {
       const dimmedChanged = s.dimmed != s.dimmedprev;
       s.dimmedprev = s.dimmed;
 
@@ -377,8 +374,7 @@ export function drawScene(full) {
       }
     }
 
-    for (let i = 0; i < state.objects.length; i++) {
-      const obj = state.objects[i];
+    for (const obj of state.objects) {
       obj.draw();
     }
   }
@@ -394,8 +390,7 @@ export function drawScene(full) {
 }
 
 function drawBaseRects(context) {
-  for (let i = 0; i < state.basesheets.length; i++) {
-    const basesheet = state.basesheets[i];
+  for (const basesheet of state.basesheets) {
     drawRect(basesheet.data, context, (ctx, canvas) => {
       ctx.fillStyle = basesheet.color;
       ctx.fillRect(0, 0, basesheet.width, basesheet.height);

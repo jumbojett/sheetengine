@@ -45,9 +45,7 @@ export function calculateSheetBaseShadow(sheet) {
 }
 
 export function checkDirtyShadowConstraint(prev, dirtySheets) {
-  for (let i = 0; i < state.sheets.length; i++) {
-    const sheet = state.sheets[i];
-
+  for (const sheet of state.sheets) {
     if (sheet.dirty) continue;
     if (sheet.hidden) continue;
 
@@ -57,8 +55,7 @@ export function checkDirtyShadowConstraint(prev, dirtySheets) {
       if (sheet.shadowdirty) continue;
     }
 
-    for (let j = 0; j < sheet.polygons.length; j++) {
-      const sheetpoly = sheet.polygons[j];
+    for (const sheetpoly of sheet.polygons) {
       const shadowconstraints = prev ? sheetpoly.prevshadowconstraints : sheetpoly.shadowconstraints;
       if (shadowconstraints == null) {
         sheet.shadowdirty = true;
@@ -66,7 +63,7 @@ export function checkDirtyShadowConstraint(prev, dirtySheets) {
       }
       for (let k = 0; k < shadowconstraints.length; k++) {
         const sheetconstraint = state.polygons[shadowconstraints[k]].sheetindex;
-        if (dirtySheets.indexOf(sheetconstraint) != -1) {
+        if (dirtySheets.includes(sheetconstraint)) {
           sheet.shadowdirty = true;
           break;
         }
@@ -81,8 +78,7 @@ export function initBaseRectShadow(ctx, size, rel, viewport, drawing) {
 
   ctx.clearRect(0, 0, size.w, size.h);
 
-  for (let i = 0; i < state.sheets.length; i++) {
-    const s = state.sheets[i];
+  for (const s of state.sheets) {
     if (s.hidden) continue;
     if (!s.castshadows) continue;
 
@@ -123,15 +119,14 @@ export function drawSheetShadow(sheet) {
     sheet.shadowtempcontext.clearRect(0, 0, sheet.width, sheet.height);
     sheet.shadowData = [];
 
-    for (let j = 0; j < sheet.polygons.length; j++) {
-      const sheetpoly = sheet.polygons[j];
+    for (const sheetpoly of sheet.polygons) {
       const shadowconstraints = sheetpoly.shadowconstraints;
 
       const sheetsconstraints = [];
       for (let k = 0; k < shadowconstraints.length; k++) {
         const shadowcaster = state.polygons[shadowconstraints[k]].sheetindex;
 
-        if (sheetsconstraints.indexOf(shadowcaster) != -1) continue;
+        if (sheetsconstraints.includes(shadowcaster)) continue;
         sheetsconstraints.push(shadowcaster);
 
         const shadowcastersheet = state.sheets[shadowcaster];
@@ -190,8 +185,7 @@ export function drawSheetShadow(sheet) {
 }
 
 export function calculateSheetsShadows(calculateAll) {
-  for (let i = 0; i < state.sheets.length; i++) {
-    const sheet = state.sheets[i];
+  for (const sheet of state.sheets) {
     if (sheet.shadowdirty || sheet.dirty || calculateAll)
       drawSheetShadow(sheet);
   }

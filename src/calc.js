@@ -194,8 +194,7 @@ function gatherDirtySheets() {
 
     // - former intersectOR sheets
     if (currentsheet.intersectors != null) {
-      for (let j = 0; j < currentsheet.intersectors.length; j++) {
-        const idx = currentsheet.intersectors[j];
+      for (const idx of currentsheet.intersectors) {
         state.sheets[idx].madedirty = true;
       }
     }
@@ -225,7 +224,7 @@ function gatherDirtySheets() {
 
       // - former intersecTED sheets
       if (othersheet.intersectors != null) {
-        if (othersheet.intersectors.indexOf(i) !== -1)
+        if (othersheet.intersectors.includes(i))
           othersheet.madedirty = true;
       }
     }
@@ -234,32 +233,32 @@ function gatherDirtySheets() {
   const movedSheets = [];
   const dirtySheets = [];
   const dirtySheetsRedefinePolygons = [];
-  for (let i = 0; i < state.sheets.length; i++) {
-    const sheet = state.sheets[i];
 
+  state.sheets.forEach(({dirty, madedirty, objectsheet, object}, i) => {
     if (state.objectsintersect) {
       // if object intersection is allowed, simple mechanism: we only care about sheets and not objects
-      if (sheet.dirty || sheet.madedirty) {
+      if (dirty || madedirty) {
         dirtySheets.push(i);
         dirtySheetsRedefinePolygons.push(i);
       }
     } else {
       // if objects don't intersect, complex mechanism: all sheets of a dirty object will be included
-      const objdirty = sheet.objectsheet && (sheet.object.intersectionsredefine || sheet.object.intersectionsrecalc) && !sheet.object.intersectionsenabled;
-      if (sheet.dirty || sheet.madedirty || objdirty) {
+      const objdirty = objectsheet && (object.intersectionsredefine || object.intersectionsrecalc) && !object.intersectionsenabled;
+      if (dirty || madedirty || objdirty) {
         dirtySheets.push(i);
 
-        const objectintersection = sheet.objectsheet && !sheet.object.intersectionsenabled;
+        const objectintersection = objectsheet && !object.intersectionsenabled;
         if (!objectintersection)
           dirtySheetsRedefinePolygons.push(i);
       }
     }
 
-    if (sheet.dirty) {
+    if (dirty) {
       movedSheets.push(i);
     }
-  }
-  return { dirtySheets: dirtySheets, movedSheets: movedSheets, dirtySheetsRedefinePolygons: dirtySheetsRedefinePolygons };
+  });
+
+  return { dirtySheets, movedSheets, dirtySheetsRedefinePolygons };
 }
 
 /**
@@ -271,32 +270,30 @@ function deleteDirtyPolygons(dirtySheets) {
 
   // delete references from state.polygons
   const polys = [];
-  for (let j = 0; j < state.polygons.length; j++) {
-    // check if polygon's sheet is among dirty ones
-    const poly = state.polygons[j];
-    const containedIdx = dirtySheets.indexOf(poly.sheetindex);
+
+  // check if polygon's sheet is among dirty ones
+  state.polygons.forEach(({sheetindex, index}, j) => {
+    const containedIdx = dirtySheets.indexOf(sheetindex);
     if (containedIdx !== -1) {
       // delete polygon index from z-order constraints
-      for (let i = 0; i < state.polygons.length; i++) {
-        const actPoly = state.polygons[i];
+      for (const actPoly of state.polygons) {
         // delete from constraint lists
-        deleteIndexFromConstraints(poly.index, actPoly.constraints);
-        deleteIndexFromConstraints(poly.index, actPoly.shadowconstraints);
-        deleteIndexFromConstraints(poly.index, actPoly.prevshadowconstraints);
+        deleteIndexFromConstraints(index, actPoly.constraints);
+        deleteIndexFromConstraints(index, actPoly.shadowconstraints);
+        deleteIndexFromConstraints(index, actPoly.prevshadowconstraints);
       }
     } else {
       polys[polys.length] = state.polygons[j];
     }
-  }
+  });
+
   state.polygons = polys;
 
   // update polygon indexes
   for (let j = 0; j < state.polygons.length; j++) {
     if (state.polygons[j].index !== j) {
-
       // update z-order constraint indexes
-      for (let i = 0; i < state.polygons.length; i++) {
-        const actPoly = state.polygons[i];
+      for (const actPoly of state.polygons) {
         updateIndexInConstraints(state.polygons[j].index, j, actPoly.constraints);
         updateIndexInConstraints(state.polygons[j].index, j, actPoly.shadowconstraints);
         updateIndexInConstraints(state.polygons[j].index, j, actPoly.prevshadowconstraints);
@@ -354,11 +351,12 @@ function getStaticSheets() {
     return staticsheets;
 
   const sheetset = [];
-  for (let i = 0; i < state.sheets.length; i++) {
-    const s = state.sheets[i];
+
+  for (const s of state.sheets) {
     if (!s.objectsheet || s.object.intersectionsenabled)
       sheetset.push(s);
   }
+
   staticsheets = sheetset;
   return staticsheets;
 }
@@ -379,8 +377,7 @@ export function calculateChangedSheets() {
   const start2 = +new Date();
 
   // redraw canvases where canvas changed
-  for (let i = 0; i < state.sheets.length; i++) {
-    const s = state.sheets[i];
+  for (const s of state.sheets) {
     if (s.canvasdirty)
       s.refreshCanvas();
   }
@@ -413,8 +410,7 @@ export function calculateChangedSheets() {
     }
 
     // recalculate/redefine polygons of object sheets
-    for (let idx = 0; idx < state.objects.length; idx++) {
-      const obj = state.objects[idx];
+    for (const obj of state.objects) {
       recalculateObjectIntersections(obj, state);
     }
   }
@@ -466,15 +462,14 @@ export function calculateChangedSheets() {
   deleteSheets();
 
   if (state.debug)
-    console.log((end1 - start1) + ' - ' + (end2 - start2) + ' - ' + (end3 - start3) + ' - ' + (end4 - start4) + ' - ' + (end5 - start5) + ' - ' + (end6 - start6) + ' - ' + (end7 - start7) + ' - ' + (end8 - start8) + ' - ' + (end9 - start9) + ' - ' + (end10 - start10));
+    console.log(`${end1 - start1} - ${end2 - start2} - ${end3 - start3} - ${end4 - start4} - ${end5 - start5} - ${end6 - start6} - ${end7 - start7} - ${end8 - start8} - ${end9 - start9} - ${end10 - start10}`);
 }
 
 /**
  * Calculate all sheets (full recalculation)
  */
 export function calculateAllSheets() {
-  for (let i = 0; i < state.sheets.length; i++) {
-    const s = state.sheets[i];
+  for (const s of state.sheets) {
     s.dimmed = 0;
     s.intersectionParams = [];
 
@@ -482,6 +477,7 @@ export function calculateAllSheets() {
     if (s.canvasdirty)
       s.refreshCanvas();
   }
+
   state.polygons = [];
   // recalculate intersection of static sheets
   staticsheets = null;
@@ -491,8 +487,7 @@ export function calculateAllSheets() {
   }
   // recalculate intersection of object sheets
   if (!state.objectsintersect) {
-    for (let idx = 0; idx < state.objects.length; idx++) {
-      const obj = state.objects[idx];
+    for (const obj of state.objects) {
       recalculateObjectIntersections(obj, state, true);
     }
   }
@@ -503,9 +498,9 @@ export function calculateAllSheets() {
   setPrevShadowConstraints();
   shadows.calculateSheetsShadows(true);
   updateOrderedLists();
+
   // clear dirty flags
-  for (let i = 0; i < state.sheets.length; i++) {
-    const s = state.sheets[i];
+  for (const s of state.sheets) {
     s.dirty = false;
     s.madedirty = false;
   }
@@ -524,77 +519,81 @@ export function deleteSheets() {
   // remove deleted sheets' polygons from state.polygons
   const newpolys = [];
   const deletedpolyidxs = [];
-  for (let p = 0; p < state.polygons.length; p++) {
-    const poly = state.polygons[p];
+
+  state.polygons.forEach((poly, p) => {
     const psheet = state.sheets[poly.sheetindex];
     if (!psheet.deleting)
       newpolys.push(poly);
     else
       deletedpolyidxs.push(p);
-  }
+  });
+
   state.polygons = newpolys;
 
   // remove deleted sheets' polygons from orderedPolygons
   const neworderedpolys = [];
-  for (let p = 0; p < state.orderedPolygons.length; p++) {
-    const polyidx = state.orderedPolygons[p];
-    if (deletedpolyidxs.indexOf(polyidx) === -1)
+
+  for (const polyidx of state.orderedPolygons) {
+    if (!deletedpolyidxs.includes(polyidx))
       neworderedpolys.push(polyidx);
   }
+
   state.orderedPolygons = neworderedpolys;
 
   // remove deleted sheets' polygons from polygons' constraints
-  for (let p = 0; p < state.polygons.length; p++) {
-    const poly = state.polygons[p];
-
+  for (const poly of state.polygons) {
     let newconstraints = [];
-    for (let si = 0; si < poly.constraints.length; si++) {
-      const polyidx = poly.constraints[si];
-      if (deletedpolyidxs.indexOf(polyidx) === -1)
+
+    for (const polyidx of poly.constraints) {
+      if (!deletedpolyidxs.includes(polyidx))
         newconstraints.push(polyidx);
     }
+
     poly.constraints = newconstraints;
 
     let newshadowconstraints = [];
-    for (let si = 0; si < poly.shadowconstraints.length; si++) {
-      const polyidx = poly.shadowconstraints[si];
-      if (deletedpolyidxs.indexOf(polyidx) === -1)
+
+    for (const polyidx of poly.shadowconstraints) {
+      if (!deletedpolyidxs.includes(polyidx))
         newshadowconstraints.push(polyidx);
     }
+
     poly.shadowconstraints = newshadowconstraints;
 
     newshadowconstraints = [];
-    for (let si = 0; si < poly.prevshadowconstraints.length; si++) {
-      const polyidx = poly.prevshadowconstraints[si];
-      if (deletedpolyidxs.indexOf(polyidx) === -1)
+
+    for (const polyidx of poly.prevshadowconstraints) {
+      if (!deletedpolyidxs.includes(polyidx))
         newshadowconstraints.push(polyidx);
     }
+
     poly.prevshadowconstraints = newshadowconstraints;
   }
 
   // remove deleted sheets from state.sheets
   const newsheets = [];
   const deletedsheetidxs = [];
-  for (let s = 0; s < state.sheets.length; s++) {
-    const sheet = state.sheets[s];
+
+  state.sheets.forEach((sheet, s) => {
     if (!sheet.deleting)
       newsheets.push(sheet);
     else
       deletedsheetidxs.push(s);
-  }
+  });
+
   state.sheets = newsheets;
 
   // remove deleted sheet indexes from intersectors
-  for (let s = 0; s < state.sheets.length; s++) {
-    const sheet = state.sheets[s];
+  for (const sheet of state.sheets) {
     if (!sheet.intersectors)
       continue;
     const newintersectors = [];
-    for (let is = 0; is < sheet.intersectors.length; is++) {
-      const isindex = sheet.intersectors[is];
-      if (deletedsheetidxs.indexOf(isindex) === -1)
+
+    for (const isindex of sheet.intersectors) {
+      if (!deletedsheetidxs.includes(isindex))
         newintersectors.push(isindex);
     }
+
     sheet.intersectors = newintersectors;
   }
 
@@ -604,15 +603,13 @@ export function deleteSheets() {
     state.sheets[i].index = i;
     if (oldindex !== i) {
       // adjust indices in polygon array
-      for (let j = 0; j < state.polygons.length; j++) {
-        const poly = state.polygons[j];
+      for (const poly of state.polygons) {
         if (poly.sheetindex === oldindex)
           poly.sheetindex = i;
       }
 
       // adjust indices in intersector array
-      for (let s = 0; s < state.sheets.length; s++) {
-        const sheet = state.sheets[s];
+      for (const sheet of state.sheets) {
         updateIndexInConstraints(oldindex, i, sheet.intersectors);
       }
     }
@@ -626,8 +623,7 @@ export function deleteSheets() {
       updateIndexInConstraints(oldindex, j, state.orderedPolygons);
 
       // update z-order constraint indexes
-      for (let i = 0; i < state.polygons.length; i++) {
-        const actPoly = state.polygons[i];
+      for (const actPoly of state.polygons) {
         updateIndexInConstraints(oldindex, j, actPoly.constraints);
         updateIndexInConstraints(oldindex, j, actPoly.shadowconstraints);
         updateIndexInConstraints(oldindex, j, actPoly.prevshadowconstraints);
@@ -654,15 +650,14 @@ export function deleteObject(obj) {
 /**
  * Redefine intersections for an object
  */
-export function redefineIntersections(obj) {
+export function redefineIntersections({sheets, centerp, rot}) {
   // redefine polygons
-  for (let i = 0; i < obj.sheets.length; i++) {
-    calculateSheetSections(obj.sheets[i], true, obj.sheets);
+  for (let i = 0; i < sheets.length; i++) {
+    calculateSheetSections(sheets[i], true, sheets);
   }
 
   // calculate initial polygons from the redefined current polygonset
-  for (let i = 0; i < obj.sheets.length; i++) {
-    const s = obj.sheets[i];
-    sheetutil.initializeStartPolygons(s, obj.centerp, { alpha: -obj.rot.alpha, beta: -obj.rot.beta, gamma: -obj.rot.gamma });
+  for (const s of sheets) {
+    sheetutil.initializeStartPolygons(s, centerp, { alpha: -rot.alpha, beta: -rot.beta, gamma: -rot.gamma });
   }
 }

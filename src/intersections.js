@@ -157,8 +157,7 @@ function calculatePolygonsForSheet(sheet, sheetset) {
 
   if (!sheetset) sheetset = state.sheets;
 
-  for (let s = 0; s < sheetset.length; s++) {
-    const othersheet = sheetset[s];
+  for (const othersheet of sheetset) {
     if (othersheet.index == sheet.index) continue;
     if (othersheet.hidden) continue;
 
@@ -212,11 +211,12 @@ function calculatePolygonsForSheet(sheet, sheetset) {
 
 function filterPolygons(polygons) {
   const newpoly = [];
-  for (let p = 0; p < polygons.length; p++) {
-    const poly = polygons[p];
+
+  for (const poly of polygons) {
     if (poly.points.length == 2) continue;
     newpoly.push(poly);
   }
+
   return newpoly;
 }
 
@@ -261,16 +261,20 @@ export function calculateSheetSections(sheet, full, sheetset) {
     currentsheet.polygons = filterPolygons(currentsheet.polygons);
   }
 
-  for (let p = 0; p < currentsheet.polygons.length; p++) {
-    const poly = currentsheet.polygons[p];
-    const umin = 10000, umax = -10000, vmin = 10000, vmax = -10000, zmin = 10000, zmax = -10000;
+  for (const poly of currentsheet.polygons) {
+    const umin = 10000;
+    const umax = -10000;
+    const vmin = 10000;
+    const vmax = -10000;
+    const zmin = 10000;
+    const zmax = -10000;
     poly.pointscanvasuv = [];
     poly.data = { umin, umax, vmin, vmax, zmin, zmax, pointsuv: [] };
     poly.shData = { umin, umax, vmin, vmax, zmin, zmax, pointsuv: [] };
 
     const avg = { u: 0, v: 0 };
-    for (let pi = 0; pi < poly.points.length; pi++) {
-      const polypointspi = poly.points[pi];
+
+    poly.points.forEach((polypointspi, pi) => {
       poly.pointscanvasuv[pi] = getPointForCanvasUV(currentsheet, polypointspi);
 
       poly.data.pointsuv[pi] = transforms.transformPointuvz(polypointspi, transforms.transformPointz, state.canvasCenter);
@@ -283,7 +287,7 @@ export function calculateSheetSections(sheet, full, sheetset) {
 
       updateuvzMaxMin(poly.data, pi);
       updateuvzMaxMin(poly.shData, pi);
-    }
+    });
 
     avg.u /= poly.points.length;
     avg.v /= poly.points.length;

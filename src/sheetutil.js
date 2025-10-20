@@ -33,7 +33,7 @@ export function checkInboundsPolygon(corners, myx, myy) {
       allzero = false;
     }
   }
-  return { inbounds: (allnegative || allpositive) && !allzero, areas: areas, allzero: allzero };
+  return { inbounds: (allnegative || allpositive) && !allzero, areas, allzero };
 }
 
 /**
@@ -185,7 +185,7 @@ export function calculateSectionPoints(centerp, p0, p1, p2, tparams, l) {
  * @returns {string} Grid key string
  */
 export function calculateGridKey(x, y, z) {
-  return 'x' + x + 'y' + y + 'z' + z;
+  return `x${x}y${y}z${z}`;
 }
 
 /**
@@ -303,7 +303,7 @@ export function calculateSheetDataSingle(centerp, p0rot, p1rot, p2rot, transform
   const td = p2.v;
 
   if (corners == null)
-    return { p0uv: p0, p1uv: p1, p2uv: p2, translatex: translatex, translatey: translatey, ta: ta, tb: tb, tc: tc, td: td, centerpuv: centerpuv };
+    return { p0uv: p0, p1uv: p1, p2uv: p2, translatex, translatey, ta, tb, tc, td, centerpuv };
 
   // cornerpoints
   const c = [];
@@ -318,7 +318,7 @@ export function calculateSheetDataSingle(centerp, p0rot, p1rot, p2rot, transform
   const vmin = Math.min(c[0].v, c[1].v, c[2].v, c[3].v);
   const zmax = Math.max(c[0].z, c[1].z, c[2].z, c[3].z);
   const zmin = Math.min(c[0].z, c[1].z, c[2].z, c[3].z);
-  return { p0uv: p0, p1uv: p1, p2uv: p2, translatex: translatex, translatey: translatey, ta: ta, tb: tb, tc: tc, td: td, centerpuv: centerpuv, cornersuv: c, umax: umax, umin: umin, vmax: vmax, vmin: vmin, zmax: zmax, zmin: zmin };
+  return { p0uv: p0, p1uv: p1, p2uv: p2, translatex, translatey, ta, tb, tc, td, centerpuv, cornersuv: c, umax, umin, vmax, vmin, zmax, zmin };
 }
 
 /**
@@ -370,15 +370,14 @@ export function transformSheetPolygons(sheet, objectCenter, rotation, intersecti
  */
 export function initializeStartPolygons(sheet, centerPoint, rotationInverse = null) {
   if (!sheet.polygons) return;
-  
+
   const startpoly = [];
   const A1 = geometry.getBaseMatrixInverse(sheet.p1start, sheet.p2start, sheet.normalpstart);
-  
-  for (let j = 0; j < sheet.polygons.length; j++) {
-    const poly = sheet.polygons[j];
+
+  for (const poly of sheet.polygons) {
     const points = [];
     const relpoints = [];
-    
+
     for (let p = 0; p < poly.points.length; p++) {
       let pp = geometry.subPoint(poly.points[p], centerPoint);
       
@@ -391,10 +390,10 @@ export function initializeStartPolygons(sheet, centerPoint, rotationInverse = nu
       const relp = geometry.getCoordsInBase(A1, pp);
       relpoints.push(relp);
     }
-    
-    startpoly.push({ points: points, relpoints: relpoints });
+
+    startpoly.push({ points, relpoints });
   }
-  
+
   sheet.startpolygons = startpoly;
   sheet.startpolygonscenterp = geometry.clonePoint(sheet.startcenterp);
 }
@@ -444,13 +443,12 @@ export function rotateSheetPoints(sheet, axis, angle, useStartPoints = false) {
 export function rotateSheetPolygons(sheet, axis, angle, useStartPolygons = false, arbitraryCenter = null) {
   const polygonArray = useStartPolygons ? sheet.startpolygons : sheet.polygons;
   if (!polygonArray) return;
-  
+
   const rotateFunc = arbitraryCenter ? 
     (point) => geometry.rotateAroundArbitraryAxis(point, arbitraryCenter, axis, angle) :
     (point) => geometry.rotateAroundAxis(point, axis, angle);
-  
-  for (let j = 0; j < polygonArray.length; j++) {
-    const poly = polygonArray[j];
+
+  for (const poly of polygonArray) {
     for (let p = 0; p < poly.points.length; p++) {
       poly.points[p] = rotateFunc(poly.points[p]);
     }

@@ -10,9 +10,9 @@ import * as drawing from './drawing.js';
 import * as sheetutil from './sheetutil.js';
 
 export class BaseSheet {
-  constructor(centerp, rot, size) {
-    this.width = size.w;
-    this.height = size.h;
+  constructor(centerp, rot, {w, h}) {
+    this.width = w;
+    this.height = h;
     this.centerp = geometry.clonePoint(centerp);
 
     this.objectsheet = false;

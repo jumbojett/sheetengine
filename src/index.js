@@ -61,7 +61,7 @@ let sheetengine = {
     fromDegree: objhelpers.fromDegree,
     getCurrentSheetsObject: objhelpers.getCurrentSheetsObject,
     getCurrentSheetsObjectStr: objhelpers.getCurrentSheetsObjectStr,
-    redefineIntersections: redefineIntersections
+    redefineIntersections
   },
 
   // Classes

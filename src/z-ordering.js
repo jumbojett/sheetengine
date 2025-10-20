@@ -14,8 +14,8 @@ export function calculatePolygonOrder(polygon) {
 
 function calculatePolygonOrderForCam(polygon, shadow) {
   if (!shadow) polygon.constraints = [];
-  for (let i = 0; i < state.polygons.length; i++) {
-    const polygon2 = state.polygons[i];
+
+  for (const polygon2 of state.polygons) {
     if (polygon2.sheetindex == polygon.sheetindex) continue;
 
     if (state.sheets[polygon2.sheetindex].hidden || state.sheets[polygon.sheetindex].hidden)
@@ -46,7 +46,7 @@ function addPolygonConstraintForCam(polygon, polygon2, shadow) {
   if (!shadow) {
     polygon.constraints.push(polygon2.index);
     if (sheet2.dimSheets && !sheet.dimmingDisabled) {
-      if (sheet2.intersectors.indexOf(sheet.index) == -1)
+      if (!sheet2.intersectors.includes(sheet.index))
         sheet.dimmed = 1;
     }
   } else {
@@ -70,7 +70,7 @@ export function getOrderedList() {
 
       let allConstraintsInOrdered = true;
       for (let j = 0; j < constraints.length; j++) {
-        const key = 'k' + constraints[j];
+        const key = `k${constraints[j]}`;
         if (typeof (ordered[key]) === 'undefined') {
           allConstraintsInOrdered = false;
           break;
@@ -84,7 +84,7 @@ export function getOrderedList() {
     }
 
     for (let i = 0; i < candidates.length; i++) {
-      const key = 'k' + candidates[i];
+      const key = `k${candidates[i]}`;
       ordered[key] = candidates[i];
     }
 
@@ -103,7 +103,7 @@ export function getOrderedList() {
           zmax = state.polygons[unordered[i]].data.zmax;
         }
       }
-      const key = 'k' + unordered[maxidx];
+      const key = `k${unordered[maxidx]}`;
       ordered[key] = unordered[maxidx];
       unordered.splice(maxidx, 1);
       if (unordered.length == 0) break;
@@ -165,30 +165,31 @@ function isPolygonFront(a, b, asheet, bsheet, aData, bData, viewSource, shadow) 
 
 export function clearDimmedFlags() {
   const dimmers = [];
-  for (let i = 0; i < state.sheets.length; i++) {
-    const s = state.sheets[i];
+
+  for (const s of state.sheets) {
     if (s.dimSheets && !s.hidden) {
       for (let j = 0; j < s.polygons.length; j++) {
         dimmers.push(s.polygons[j].index);
       }
     }
   }
+
   if (dimmers.length > 0) {
-    for (let i = 0; i < state.sheets.length; i++) {
-      const s = state.sheets[i];
+    for (const s of state.sheets) {
       if (s.dimmed == 0) continue;
 
       let dirty = false;
-      for (let j = 0; j < s.polygons.length; j++) {
-        const sheetpoly = s.polygons[j];
+
+      for (const sheetpoly of s.polygons) {
         const constraints = sheetpoly.constraints;
         for (let c = 0; c < constraints.length; c++) {
-          if (dimmers.indexOf(constraints[c]) != -1) {
+          if (dimmers.includes(constraints[c])) {
             dirty = true;
             break;
           }
         }
       }
+
       if (!dirty) s.dimmed = 0;
     }
   }

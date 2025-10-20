@@ -68,9 +68,7 @@ function addYards(yards, callback) {
   let newobjects = [];
 
   if (yards) {
-    for (let i = 0; i < yards.length; i++) {
-      const yard = yards[i];
-
+    for (const yard of yards) {
       const offset = { x: (yard.x - scene.yardcenterstart.yardx) * scene.tilewidth, y: (yard.y - scene.yardcenterstart.yardy) * scene.tilewidth, z: 0 };
 
       const basesheet = new BaseSheet(offset, { alphaD: -90, betaD: 0, gammaD: 0 }, { w: scene.tilewidth, h: scene.tilewidth });
@@ -92,7 +90,7 @@ function addYards(yards, callback) {
           const createdObj = objhelpers.defineObject(objdata.name);
           if (!createdObj)
             continue;
-          createdObj.id = 'x' + yard.x + 'y' + yard.y + 'i' + j;
+          createdObj.id = `x${yard.x}y${yard.y}i${j}`;
           yardObjects.push(createdObj);
           newobjects.push(createdObj);
           createdObj.setPosition(geometry.addPoint(objdata.centerp, offset));
@@ -102,8 +100,8 @@ function addYards(yards, callback) {
         }
       }
 
-      const newyard = { sheets: sheets, basesheet: basesheet, x: yard.x, y: yard.y, objects: yardObjects };
-      const key = 'x' + yard.x + 'y' + yard.y;
+      const newyard = { sheets, basesheet, x: yard.x, y: yard.y, objects: yardObjects };
+      const key = `x${yard.x}y${yard.y}`;
       loadedyards[key] = newyard;
     }
   }
@@ -133,8 +131,7 @@ function createSheets(sheetdata, offset) {
   if (sheetdata == null)
     return sheets;
 
-  for (let i = 0; i < sheetdata.length; i++) {
-    const data = sheetdata[i];
+  for (const data of sheetdata) {
     const sheet = new Sheet(
       geometry.addPoint(data.centerp, offset),
       data.rot,
@@ -143,6 +140,7 @@ function createSheets(sheetdata, offset) {
     sheet.canvasdata = data.canvas;
     sheets.push(sheet);
   }
+
   return sheets;
 }
 
@@ -150,7 +148,7 @@ function createSheets(sheetdata, offset) {
  * Create image onload handler
  */
 function imageOnload(sheet, context, img, count, callback) {
-  return function() {
+  return () => {
     context.drawImage(img, 0, 0);
     sheet.canvasChanged();
     state.imgCount++;
@@ -168,8 +166,8 @@ function moveBaseShadows(vector, sheets) {
     return;
 
   const sheetsToMove = sheets ? sheets : state.sheets;
-  for (let i = 0; i < sheetsToMove.length; i++) {
-    const s = sheetsToMove[i];
+
+  for (const s of sheetsToMove) {
     s.baseShadoweData.translatex -= vector.u;
     s.baseShadoweData.translatey -= vector.v;
   }
@@ -245,7 +243,7 @@ function getUrlParams() {
   let e;
   const a = /\+/g;
   const r = /([^&=]+)=?([^&]*)/g;
-  const d = (s) => { return decodeURIComponent(s.replace(a, " ")); };
+  const d = s => decodeURIComponent(s.replace(a, " "));
   const q = window.location.search.substring(1);
 
   const urlParams = {};
@@ -267,7 +265,7 @@ function getUrlLoadInfo() {
  */
 function requestUrl(url, callback) {
   $.ajax({
-    url: url,
+    url,
     cache: false,
     dataType: "json",
     success: callback
@@ -279,7 +277,7 @@ function requestUrl(url, callback) {
  */
 function getYards(urlBase, center, levelsize, appid, callback) {
   scene.yardcenterstart = { yardx: center.yardx, yardy: center.yardy };
-  const url = urlBase + '/yard?x=' + center.yardx + '&y=' + center.yardy + '&levelsize=' + levelsize + '&appid=' + appid + '&appobjects=1';
+  const url = `${urlBase}/yard?x=${center.yardx}&y=${center.yardy}&levelsize=${levelsize}&appid=${appid}&appobjects=1`;
   requestUrl(url, (yardsAndObjects) => {
     if (yardsAndObjects) {
       if (yardsAndObjects.center) {
@@ -316,7 +314,7 @@ function getNewYards(urlBase, center, levelsize, appid, callback) {
     for (let y = oldc.y1; y <= oldc.y2; y++) {
       if (x < newc.x1 || x > newc.x2 ||
         y < newc.y1 || y > newc.y2)
-        yardsToRemove.push({ x: x, y: y });
+        yardsToRemove.push({ x, y });
     }
   }
 
@@ -326,17 +324,17 @@ function getNewYards(urlBase, center, levelsize, appid, callback) {
     for (let y = newc.y1; y <= newc.y2; y++) {
       if (x < oldc.x1 || x > oldc.x2 ||
         y < oldc.y1 || y > oldc.y2)
-        yardsToAdd.push({ x: x, y: y });
+        yardsToAdd.push({ x, y });
     }
   }
 
   let yardsStr = '';
   for (let i = 0; i < yardsToAdd.length; i++) {
-    yardsStr += yardsToAdd[i].x + ',' + yardsToAdd[i].y;
+    yardsStr += `${yardsToAdd[i].x},${yardsToAdd[i].y}`;
     if (i < yardsToAdd.length - 1)
       yardsStr += ';';
   }
-  const url = urlBase + '/yard?x=' + scene.yardcenterstart.yardx + '&y=' + scene.yardcenterstart.yardy + '&yards=' + yardsStr + '&appid=' + appid + '&appobjects=0';
+  const url = `${urlBase}/yard?x=${scene.yardcenterstart.yardx}&y=${scene.yardcenterstart.yardy}&yards=${yardsStr}&appid=${appid}&appobjects=0`;
   requestUrl(url, (yardsAndObjects) => {
     const oldcenter2 = { x: oldcenter.yardx * scene.tilewidth, y: oldcenter.yardy * scene.tilewidth, z: 0 };
     const newcenter2 = { x: newcenter.yardx * scene.tilewidth, y: newcenter.yardy * scene.tilewidth, z: 0 };
@@ -363,8 +361,7 @@ function getNewYards(urlBase, center, levelsize, appid, callback) {
  */
 function removeYard(yard) {
   // remove yard sheets
-  for (let s = 0; s < yard.sheets.length; s++) {
-    const sheet = yard.sheets[s];
+  for (const sheet of yard.sheets) {
     sheet.destroy();
   }
 
@@ -374,8 +371,7 @@ function removeYard(yard) {
     state.basesheets.splice(bidx, 1);
 
   // remove yard objects
-  for (let o = 0; o < yard.objects.length; o++) {
-    const obj = yard.objects[o];
+  for (const obj of yard.objects) {
     const idx = state.objects.indexOf(obj);
     if (idx !== -1)
       state.objects.splice(idx, 1);
@@ -384,7 +380,7 @@ function removeYard(yard) {
   }
 
   // remove yard
-  delete loadedyards['x' + yard.x + 'y' + yard.y];
+  delete loadedyards[`x${yard.x}y${yard.y}`];
 
   // adjust sheet indexes
   for (let i = 0; i < state.sheets.length; i++) {
@@ -397,9 +393,8 @@ function removeYard(yard) {
  */
 function newYardsAdded(newsheets, removedsheets, removedobjects, yardsToRemove) {
   // remove yard
-  for (let i = 0; i < yardsToRemove.length; i++) {
-    const y = yardsToRemove[i];
-    const key = 'x' + y.x + 'y' + y.y;
+  for (const y of yardsToRemove) {
+    const key = `x${y.x}y${y.y}`;
     const yard = loadedyards[key];
     if (!yard)
       continue;

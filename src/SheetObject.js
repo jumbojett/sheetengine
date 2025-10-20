@@ -23,8 +23,7 @@ import * as drawing from './drawing.js';
  * @param {boolean} intersectionsenabled - Whether intersections are enabled
  */
 export function SheetObject(centerp, rot, sheets, canvasSize, intersectionsenabled) {
-  for (let i = 0; i < sheets.length; i++) {
-    const s = sheets[i];
+  for (const s of sheets) {
     s.objectsheet = true;
     s.object = this;
 
@@ -65,7 +64,7 @@ export function SheetObject(centerp, rot, sheets, canvasSize, intersectionsenabl
   if (state.temppartcanvas && (canvasSize.w > state.tempCanvasSize.w || canvasSize.h > state.tempCanvasSize.h)) {
     const w = Math.max(canvasSize.w, state.tempCanvasSize.w);
     const h = Math.max(canvasSize.h, state.tempCanvasSize.h);
-    state.tempCanvasSize = { w: w, h: h };
+    state.tempCanvasSize = { w, h };
     state.temppartcanvas.width = w;
     state.temppartcanvas.height = h;
     state.temppartshadowcanvas.width = w;
@@ -86,12 +85,12 @@ export function SheetObject(centerp, rot, sheets, canvasSize, intersectionsenabl
  * Set dimming for object sheets
  */
 SheetObject.prototype.setDimming = function(dimSheets, dimmingDisabled) {
-  for (let i = 0; i < this.sheets.length; i++) {
-    const s = this.sheets[i];
+  for (const s of this.sheets) {
     s.dimSheets = dimSheets;
     s.dimmingDisabled = dimmingDisabled;
     s.dirty = true;
   }
+
   this.intersectionsrecalc = true;
   this.canvasdirty = true;
 };
@@ -100,10 +99,10 @@ SheetObject.prototype.setDimming = function(dimSheets, dimmingDisabled) {
  * Set shadow properties for object sheets
  */
 SheetObject.prototype.setShadows = function(castshadows, allowshadows) {
-  for (let i = 0; i < this.sheets.length; i++) {
-    const s = this.sheets[i];
+  for (const s of this.sheets) {
     s.setShadows(castshadows, allowshadows);
   }
+
   this.intersectionsrecalc = true;
   this.canvasdirty = true;
 };
@@ -112,8 +111,7 @@ SheetObject.prototype.setShadows = function(castshadows, allowshadows) {
  * Set collision detection for object
  */
 SheetObject.prototype.setCollision = function(collisionEnabled) {
-  for (let i = 0; i < this.sheets.length; i++) {
-    const s = this.sheets[i];
+  for (const s of this.sheets) {
     s.skipDensityMap = !collisionEnabled;
   }
 };
@@ -123,10 +121,11 @@ SheetObject.prototype.setCollision = function(collisionEnabled) {
  */
 SheetObject.prototype.destroy = function() {
   this.hide();
-  for (let s = 0; s < this.sheets.length; s++) {
-    const sheet = this.sheets[s];
+
+  for (const sheet of this.sheets) {
     sheet.deleting = true;
   }
+
   state.sheetsbeingdeleted = true;
   this.deleting = true;
 };
@@ -157,18 +156,14 @@ SheetObject.prototype.move = function(vector, base) {
   const diffy = this.centerp.y - this.oldcenterp.y;
   const diffz = this.centerp.z - this.oldcenterp.z;
 
-  for (let i = 0; i < this.sheets.length; i++) {
-    const s = this.sheets[i];
-
+  for (const s of this.sheets) {
     sheetutil.updateSheetCenterp(s, this.centerp);
 
     calc.calculateSheetData(s);
 
     if (s.polygons && !state.objectsintersect && !this.intersectionsenabled) {
-      for (let j = 0; j < s.polygons.length; j++) {
-        const poly = s.polygons[j];
-        for (let p = 0; p < poly.points.length; p++) {
-          const pp = poly.points[p];
+      for (const poly of s.polygons) {
+        for (const pp of poly.points) {
           pp.x += diffx;
           pp.y += diffy;
           pp.z += diffz;
@@ -207,9 +202,7 @@ SheetObject.prototype.rotate = function(axis, angle, base) {
   }
   this.rot = geometry.inverseRPY(this.rotvector[0], this.rotvector[1], this.rotvector[2]);
 
-  for (let i = 0; i < this.sheets.length; i++) {
-    const s = this.sheets[i];
-
+  for (const s of this.sheets) {
     sheetutil.rotateSheetPoints(s, axis, angle, base);
 
     if (s.startpolygons) {
@@ -220,8 +213,8 @@ SheetObject.prototype.rotate = function(axis, angle, base) {
     } else if (s.polygons && !state.objectsintersect && !this.intersectionsenabled && !base) {
       // For non-base rotation with current polygons, rotate relative to object center
       const polygonArray = s.polygons;
-      for (let j = 0; j < polygonArray.length; j++) {
-        const poly = polygonArray[j];
+
+      for (const poly of polygonArray) {
         for (let p = 0; p < poly.points.length; p++) {
           let pp = geometry.subPoint(poly.points[p], this.centerp);
           pp = geometry.rotateAroundAxis(pp, axis, angle);
@@ -249,9 +242,7 @@ SheetObject.prototype.setOrientation = function(rot) {
   this.rot = objhelpers.fillRot(rot);
   this.rotvector = sheetutil.calcRotVector(this.rot, this.rotvectorstart);
 
-  for (let i = 0; i < this.sheets.length; i++) {
-    const s = this.sheets[i];
-
+  for (const s of this.sheets) {
     s.p0 = geometry.rotatePoint(s.p0start, this.rot.alpha, this.rot.beta, this.rot.gamma);
     s.p1 = geometry.rotatePoint(s.p1start, this.rot.alpha, this.rot.beta, this.rot.gamma);
     s.p2 = geometry.rotatePoint(s.p2start, this.rot.alpha, this.rot.beta, this.rot.gamma);
@@ -288,8 +279,8 @@ SheetObject.prototype.setSheetPos = function(sheet, sheetpos, sheetrot) {
 
   if (s.startpolygons && !state.objectsintersect && !this.intersectionsenabled) {
     const diffp = geometry.subPoint(sheetpos, s.startpolygonscenterp);
-    for (let j = 0; j < s.startpolygons.length; j++) {
-      const startpoly = s.startpolygons[j];
+
+    for (const startpoly of s.startpolygons) {
       for (let p = 0; p < startpoly.points.length; p++) {
         const relp = startpoly.relpoints[p];
         startpoly.points[p] = geometry.getPointInBase(relp, s.p1start, s.p2start, s.normalpstart);
@@ -391,9 +382,8 @@ SheetObject.prototype.hide = function() {
  */
 SheetObject.prototype.getString = function() {
   const sheets = [];
-  for (let i = 0; i < this.sheets.length; i++) {
-    const s = this.sheets[i];
 
+  for (const s of this.sheets) {
     sheets.push({
       centerp: s.centerp,
       rot: { alphaD: s.rot.alphaD, betaD: s.rot.betaD, gammaD: s.rot.gammaD },
@@ -402,7 +392,8 @@ SheetObject.prototype.getString = function() {
       canvas: s.canvas.toDataURL()
     });
   }
-  const retobj = { name: 'my object', thumbnail: '', hidden: false, intersectionsenabled: this.intersectionsenabled, canvasSize: this.canvasSize, sheets: sheets };
+
+  const retobj = { name: 'my object', thumbnail: '', hidden: false, intersectionsenabled: this.intersectionsenabled, canvasSize: this.canvasSize, sheets };
   return JSON.stringify(retobj);
 };
 
@@ -428,7 +419,7 @@ SheetObject.prototype.draw = function() {
     const w = du;
     const h = dv;
     drawing.drawScenePart({
-      viewPort: { u: u, v: v, w: w, h: h }
+      viewPort: { u, v, w, h }
     });
     const canvas = state.backgroundcanvas ? state.backgroundcanvas : state.canvas;
     const context = state.backgroundcanvas ? state.backgroundcontext : state.context;

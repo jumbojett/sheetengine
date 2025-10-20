@@ -22,7 +22,7 @@ function drawObjectToScene(obj, centerpuv) {
   const w = obj.canvasSize.w;
   const h = obj.canvasSize.h;
   drawing.drawScenePart({
-    viewPort: { u: u, v: v, w: w, h: h }
+    viewPort: { u, v, w, h }
   });
   const canvas = state.backgroundcanvas ? state.backgroundcanvas : state.canvas;
   const context = state.backgroundcanvas ? state.backgroundcontext : state.context;
@@ -44,8 +44,8 @@ function drawObjectToScene(obj, centerpuv) {
  */
 function defineAppObjects(appobjects) {
   state.appobjects = {};
-  for (let i = 0; i < appobjects.length; i++) {
-    const obj = appobjects[i];
+
+  for (const obj of appobjects) {
     state.appobjects[obj.name] = obj;
   }
 }
@@ -143,7 +143,7 @@ function getCurrentSheetsObject() {
   const currentSheet = state.sheets[state.currentSheet];
   const group = currentSheet.group;
   const sheets = [];
-  
+
   // Helper to create sheet data object
   const createSheetData = (sheet) => ({
     centerp: sheet.centerp,
@@ -152,10 +152,9 @@ function getCurrentSheetsObject() {
     height: sheet.height,
     canvas: sheet.canvas.toDataURL()
   });
-  
+
   if (typeof (group) !== 'undefined' && group !== null) {
-    for (let i = 0; i < state.sheets.length; i++) {
-      const s = state.sheets[i];
+    for (const s of state.sheets) {
       if (s.group !== group)
         continue;
       sheets.push(createSheetData(s));
@@ -165,22 +164,23 @@ function getCurrentSheetsObject() {
   }
 
   let maxdist = 0;
-  for (let i = 0; i < sheets.length; i++) {
-    const sheet = sheets[i];
+
+  for (const sheet of sheets) {
     const w2 = sheet.width / 2;
     const h2 = sheet.height / 2;
     const dist = Math.sqrt(w2 * w2 + h2 * h2) + geometry.pointDist(sheet.centerp, { x: 0, y: 0, z: 0 });
     if (dist > maxdist)
       maxdist = dist;
   }
+
   const w = Math.round(maxdist * 2);
   const h = w;
   const relu = Math.round(maxdist);
   const relv = Math.round(maxdist);
 
-  const canvasSize = { w: w, h: h, relu: relu, relv: relv };
+  const canvasSize = { w, h, relu, relv };
 
-  return { name: 'my object', thumbnail: '', hidden: false, intersectionsenabled: true, canvasSize: canvasSize, sheets: sheets };
+  return { name: 'my object', thumbnail: '', hidden: false, intersectionsenabled: true, canvasSize, sheets };
 }
 
 /**
