@@ -1,0 +1,455 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <style>
+    .main{width:1000px; margin:50px auto 0 auto;line-height:1.5;font-family: sans-serif;}
+    .header{font:38px sans-serif;margin-bottom:20px;}
+    .subtitle{font:16px sans-serif;color:#666;margin-bottom:10px;}
+    .code{margin:0px 40px 10px 40px;width:1000px;font-family:monospace;white-space: pre;background:#f5f5f5;padding:10px;}
+    .content{margin:20px 0 60px;max-width:1000px;}
+    #maincanvas{border:2px solid #333;background:#e8e8e8;display:block;margin:0 auto;}
+    .stats{margin:10px 0;font-size:12px;color:#666;}
+    .info{background:#f0f0f0;padding:15px;margin:20px 0;border-left:4px solid #4CAF50;}
+  </style>
+  <body>
+    <script src="/dist/sheetengine.js"></script>
+    
+    <div class="main">
+      <div class="header">
+        🌍 The Floating Sky Archipelago
+      </div>
+      
+      <div class="subtitle">
+        An interactive 3D isometric world with floating islands, structures, and characters
+      </div>
+      
+      <canvas id="maincanvas" width="1000" height="600"></canvas>
+      
+      <div class="stats">
+        <strong>Controls:</strong> Click to set character destination | Hover over structures to highlight | Watch the NPCs wander
+      </div>
+      
+      <div class="info">
+        <strong>🎮 Features:</strong>
+        <ul style="margin: 5px 0; padding-left: 20px;">
+          <li>Multiple floating islands with varied terrain</li>
+          <li>Interactive player character that pathfinds</li>
+          <li>AI-controlled NPCs with wandering behavior</li>
+          <li>Layered architecture with towers, walls, and decorations</li>
+          <li>Dynamic lighting and shadows</li>
+          <li>Interactive object selection with visual feedback</li>
+          <li>Smooth animation and movement</li>
+        </ul>
+      </div>
+      
+      <div class="content">
+        <h3>Scene Description</h3>
+        <p>
+          Welcome to the Floating Sky Archipelago! This interactive world showcases SheetEngine's capabilities for creating 
+          detailed 3D isometric environments. The scene features multiple floating islands connected by bridges, each with 
+          its own architecture and purpose. Navigate the player character by clicking on the terrain, interact with NPCs, 
+          and explore the intricate structures that make up this sky realm.
+        </p>
+        
+        <h3>Island Features</h3>
+        <p>
+          <strong>Central Hub:</strong> The main island with a central tower, marketplace, and defensive walls<br/>
+          <strong>West Island:</strong> A quiet agricultural area with fields and a windmill<br/>
+          <strong>East Island:</strong> A research tower with observation decks<br/>
+          <strong>North Platform:</strong> A viewing platform overlooking the archipelago<br/>
+          <strong>South Platform:</strong> A docking area for sky vessels
+        </p>
+      </div>
+    </div>
+
+    <script>
+      var canvasElement = document.getElementById('maincanvas');
+      sheetengine.scene.init(canvasElement, {w:1000,h:600});
+      
+      // Set a nice sky-themed background
+      sheetengine.backgroundColor = '#87CEEB';
+
+      // ===== TERRAIN GENERATION =====
+      
+      // Main central island - large flat base with elevation
+      function createIslandBase(centerX, centerY, sizeX, sizeY, baseColor, elevationLevels = 3) {
+        const sheets = [];
+        
+        for (let level = 0; level < elevationLevels; level++) {
+          const z = level * 20;
+          const opacity = 1 - (level * 0.15);
+          
+          for (let x = -sizeX/2; x < sizeX/2; x += 100) {
+            for (let y = -sizeY/2; y < sizeY/2; y += 100) {
+              const basesheet = new sheetengine.BaseSheet(
+                {x: centerX + x, y: centerY + y, z: z},
+                {alphaD: 90, betaD: 0, gammaD: 0},
+                {w: 100, h: 100}
+              );
+              
+              // Gradient effect for depth
+              const hsl = baseColor.replace('#', '');
+              const r = parseInt(hsl.substring(0,2), 16);
+              const g = parseInt(hsl.substring(2,4), 16);
+              const b = parseInt(hsl.substring(4,6), 16);
+              
+              basesheet.color = '#' + [r-level*10, g-level*10, b-level*10].map(v => {
+                const hex = Math.max(0, v).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+              }).join('');
+            }
+          }
+        }
+      }
+      
+      // Create islands
+      createIslandBase(0, 0, 400, 400, '#4CAF50', 2);        // Central island (green)
+      createIslandBase(-600, -300, 250, 250, '#8FBC8F', 2);  // West island (lighter green)
+      createIslandBase(600, -300, 250, 250, '#1E90FF', 2);   // East island (blue)
+      createIslandBase(0, 500, 200, 200, '#DAA520', 2);      // South platform (gold)
+      createIslandBase(0, -500, 180, 180, '#C0C0C0', 2);     // North platform (silver)
+
+      // ===== ARCHITECTURE FUNCTIONS =====
+      
+      function createTower(centerp, height, color, segments = 4) {
+        const sheets = [];
+        const segmentHeight = height / segments;
+        
+        for (let i = 0; i < segments; i++) {
+          const z = i * segmentHeight + 20;
+          
+          const sheet = new sheetengine.Sheet(
+            {x: centerp.x, y: centerp.y, z: z},
+            {alphaD: 0, betaD: 0, gammaD: 0},
+            {w: 40, h: 40}
+          );
+          sheet.context.fillStyle = color;
+          sheet.context.fillRect(0, 0, 40, 40);
+          sheet.context.fillStyle = '#000';
+          sheet.context.fillRect(5, 5, 10, 10);
+          sheet.context.fillRect(25, 5, 10, 10);
+          sheet.context.fillRect(5, 25, 10, 10);
+          sheet.context.fillRect(25, 25, 10, 10);
+          sheets.push(sheet);
+        }
+        
+        return sheets;
+      }
+      
+      function createWall(startPos, endPos, height, color) {
+        const sheets = [];
+        const segments = Math.ceil(Math.sqrt(Math.pow(endPos.x - startPos.x, 2) + Math.pow(endPos.y - startPos.y, 2)) / 50);
+        
+        for (let i = 0; i < segments; i++) {
+          const ratio = i / segments;
+          const x = startPos.x + (endPos.x - startPos.x) * ratio;
+          const y = startPos.y + (endPos.y - startPos.y) * ratio;
+          
+          const sheet = new sheetengine.Sheet(
+            {x: x, y: y, z: 20},
+            {alphaD: 0, betaD: 0, gammaD: 0},
+            {w: 50, h: 30}
+          );
+          sheet.context.fillStyle = color;
+          sheet.context.fillRect(0, 0, 50, 30);
+          sheet.context.strokeStyle = '#333';
+          sheet.context.lineWidth = 2;
+          sheet.context.strokeRect(5, 5, 40, 20);
+          sheets.push(sheet);
+        }
+        
+        return sheets;
+      }
+      
+      function createHouse(centerp, roofColor, wallColor) {
+        const sheets = [];
+        
+        // Main wall
+        const wall = new sheetengine.Sheet(
+          {x: centerp.x, y: centerp.y, z: 25},
+          {alphaD: 0, betaD: 0, gammaD: 0},
+          {w: 60, h: 50}
+        );
+        wall.context.fillStyle = wallColor;
+        wall.context.fillRect(0, 0, 60, 50);
+        wall.context.fillStyle = '#8B4513';
+        wall.context.fillRect(10, 10, 15, 15);
+        wall.context.fillRect(35, 10, 15, 15);
+        sheets.push(wall);
+        
+        // Roof front
+        const roof = new sheetengine.Sheet(
+          {x: centerp.x, y: centerp.y - 15, z: 55},
+          {alphaD: 45, betaD: 0, gammaD: 0},
+          {w: 70, h: 40}
+        );
+        roof.context.fillStyle = roofColor;
+        roof.context.fillRect(0, 0, 70, 40);
+        sheets.push(roof);
+        
+        // Roof back
+        const roofBack = new sheetengine.Sheet(
+          {x: centerp.x, y: centerp.y + 15, z: 55},
+          {alphaD: -45, betaD: 0, gammaD: 0},
+          {w: 70, h: 40}
+        );
+        roofBack.context.fillStyle = roofColor;
+        roofBack.context.fillRect(0, 0, 70, 40);
+        sheets.push(roofBack);
+        
+        return sheets;
+      }
+      
+      function createCharacter(centerp, name, color) {
+        const body = new sheetengine.Sheet(
+          {x: 0, y: 0, z: 15},
+          {alphaD: 0, betaD: 0, gammaD: 0},
+          {w: 12, h: 16}
+        );
+        body.context.fillStyle = color;
+        body.context.fillRect(2, 5, 8, 8);
+        body.context.fillStyle = '#FFD700';
+        body.context.fillRect(3, 1, 6, 4);
+        
+        const leg1 = new sheetengine.Sheet(
+          {x: -4, y: 0, z: 4},
+          {alphaD: 0, betaD: 0, gammaD: 0},
+          {w: 6, h: 10}
+        );
+        leg1.context.fillStyle = '#333';
+        leg1.context.fillRect(1, 0, 4, 10);
+        
+        const leg2 = new sheetengine.Sheet(
+          {x: 4, y: 0, z: 4},
+          {alphaD: 0, betaD: 0, gammaD: 0},
+          {w: 6, h: 10}
+        );
+        leg2.context.fillStyle = '#333';
+        leg2.context.fillRect(1, 0, 4, 10);
+        
+        const character = new sheetengine.SheetObject(
+          centerp,
+          {alphaD: 0, betaD: 0, gammaD: 90},
+          [body, leg1, leg2],
+          {w: 80, h: 110, relu: 10, relv: 25}
+        );
+        
+        character.name = name;
+        character.color = color;
+        character.leg1 = leg1;
+        character.leg2 = leg2;
+        
+        return character;
+      }
+      
+      // ===== BUILD THE WORLD =====
+      
+      // Central island structures
+      createTower({x: 0, y: 0, z: 20}, 100, '#CD5C5C', 5);     // Red tower
+      createWall({x: -150, y: -150, z: 20}, {x: -150, y: 150, z: 20}, 30, '#8B7355');
+      createWall({x: -150, y: 150, z: 20}, {x: 150, y: 150, z: 20}, 30, '#8B7355');
+      createWall({x: 150, y: 150, z: 20}, {x: 150, y: -150, z: 20}, 30, '#8B7355');
+      createWall({x: 150, y: -150, z: 20}, {x: -150, y: -150, z: 20}, 30, '#8B7355');
+      
+      // Houses around central tower
+      createHouse({x: -80, y: -80, z: 20}, '#DC143C', '#D2B48C');
+      createHouse({x: 80, y: -80, z: 20}, '#4169E1', '#D2B48C');
+      createHouse({x: -80, y: 80, z: 20}, '#228B22', '#D2B48C');
+      createHouse({x: 80, y: 80, z: 20}, '#FFD700', '#D2B48C');
+      
+      // West island structures
+      createTower({x: -600, y: -300, z: 20}, 60, '#4CAF50', 3);
+      createHouse({x: -650, y: -250, z: 20}, '#8B4513', '#F5DEB3');
+      
+      // East island structures
+      createTower({x: 600, y: -300, z: 20}, 80, '#1E90FF', 4);
+      createHouse({x: 550, y: -300, z: 20}, '#FF6347', '#F5DEB3');
+      
+      // South and North platforms - viewing/docking areas
+      createHouse({x: 0, y: 500, z: 20}, '#FFD700', '#D2B48C');
+      createHouse({x: 0, y: -500, z: 20}, '#C0C0C0', '#F5DEB3');
+
+      // ===== CREATE CHARACTERS =====
+      
+      const player = createCharacter({x: -100, y: -100, z: 0}, 'Player', '#FF1493');
+      const npc1 = createCharacter({x: 80, y: 80, z: 0}, 'NPC1', '#00CED1');
+      const npc2 = createCharacter({x: -600, y: -300, z: 0}, 'NPC2', '#32CD32');
+      const npc3 = createCharacter({x: 600, y: -300, z: 0}, 'NPC3', '#FF8C00');
+
+      // ===== GAME STATE =====
+      
+      let playerTarget = null;
+      let hoveredObject = null;
+      const npcTargets = [npc1, npc2, npc3];
+      
+      // Random waypoints for NPCs
+      const waypoints = [
+        {x: 0, y: 0, z: 0},
+        {x: -600, y: -300, z: 0},
+        {x: 600, y: -300, z: 0},
+        {x: 0, y: 500, z: 0},
+        {x: 0, y: -500, z: 0},
+        {x: -100, y: -100, z: 0}
+      ];
+      
+      npc1.currentWaypoint = 0;
+      npc2.currentWaypoint = 1;
+      npc3.currentWaypoint = 2;
+      
+      function animateCharacter(character) {
+        const state = Math.floor((character.animationState % 8) / 2);
+        const dir = (state == 0 || state == 3) ? 1 : -1;
+        character.rotateSheet(character.leg1, {x:0,y:0,z:8}, {x:1,y:0,z:0}, dir * Math.PI/8);
+        character.rotateSheet(character.leg2, {x:0,y:0,z:8}, {x:1,y:0,z:0}, -dir * Math.PI/8);
+      }
+
+      // Initial draw
+      sheetengine.calc.calculateAllSheets();
+      sheetengine.drawing.drawScene(true);
+
+      // ===== EVENT HANDLING =====
+      
+      canvasElement.onclick = function(event) {
+        const puv = {
+          u: event.clientX - sheetengine.canvas.offsetLeft,
+          v: event.clientY - sheetengine.canvas.offsetTop
+        };
+        
+        // Check for object clicks
+        let objectClicked = false;
+        const objects = [npc1, npc2, npc3];
+        for (let i = 0; i < objects.length; i++) {
+          const obj = objects[i];
+          const ouv = sheetengine.drawing.getPointuv(obj.centerp);
+          if (puv.u > ouv.u - 20 && puv.u < ouv.u + 20 &&
+              puv.v > ouv.v - 25 && puv.v < ouv.v + 25) {
+            // NPC clicked - swap with player or move away
+            const temp = {x: player.centerp.x, y: player.centerp.y};
+            player.centerp = {x: obj.centerp.x, y: obj.centerp.y, z: 0};
+            obj.centerp = {x: temp.x, y: temp.y, z: 0};
+            objectClicked = true;
+            break;
+          }
+        }
+        
+        if (!objectClicked) {
+          // Terrain clicked - set player target
+          const pxy = sheetengine.transforms.inverseTransformPoint({
+            u: puv.u + sheetengine.scene.center.u,
+            v: puv.v + sheetengine.scene.center.v
+          });
+          
+          const angle = -Math.atan2(pxy.y - player.centerp.y, pxy.x - player.centerp.x) + Math.PI/2;
+          player.setOrientation({alpha: 0, beta: 0, gamma: angle});
+          playerTarget = pxy;
+        }
+      };
+      
+      canvasElement.onmousemove = function(event) {
+        const puv = {
+          u: event.clientX - sheetengine.canvas.offsetLeft,
+          v: event.clientY - sheetengine.canvas.offsetTop
+        };
+        
+        let newHover = null;
+        const objects = [npc1, npc2, npc3];
+        for (let i = 0; i < objects.length; i++) {
+          const obj = objects[i];
+          const ouv = sheetengine.drawing.getPointuv(obj.centerp);
+          if (puv.u > ouv.u - 20 && puv.u < ouv.u + 20 &&
+              puv.v > ouv.v - 25 && puv.v < ouv.v + 25) {
+            newHover = obj;
+            break;
+          }
+        }
+        
+        if (newHover !== hoveredObject) {
+          hoveredObject = newHover;
+        }
+      };
+
+      // ===== MAIN GAME LOOP =====
+      
+      function mainloop() {
+        let sceneChanged = false;
+        
+        // Move player towards target
+        if (playerTarget) {
+          const dx = playerTarget.x - player.centerp.x;
+          const dy = playerTarget.y - player.centerp.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist > 5) {
+            const speed = 3;
+            const moveX = (dx / dist) * speed;
+            const moveY = (dy / dist) * speed;
+            player.move({x: moveX, y: moveY, z: 0});
+            animateCharacter(player);
+            player.animationState++;
+            sceneChanged = true;
+          } else {
+            playerTarget = null;
+          }
+        }
+        
+        // Move NPCs to waypoints
+        for (let i = 0; i < npcTargets.length; i++) {
+          const npc = npcTargets[i];
+          const waypoint = waypoints[npc.currentWaypoint];
+          
+          const dx = waypoint.x - npc.centerp.x;
+          const dy = waypoint.y - npc.centerp.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist > 10) {
+            const speed = 2;
+            const angle = -Math.atan2(dy, dx) + Math.PI/2;
+            npc.setOrientation({alpha: 0, beta: 0, gamma: angle});
+            
+            const moveX = (dx / dist) * speed;
+            const moveY = (dy / dist) * speed;
+            npc.move({x: moveX, y: moveY, z: 0});
+            animateCharacter(npc);
+            npc.animationState++;
+            sceneChanged = true;
+          } else {
+            npc.currentWaypoint = (npc.currentWaypoint + 1) % waypoints.length;
+          }
+        }
+        
+        if (sceneChanged) {
+          sheetengine.calc.calculateChangedSheets();
+          sheetengine.drawing.drawScene();
+          
+          // Draw target marker
+          if (playerTarget) {
+            const ctx = sheetengine.context;
+            ctx.save();
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.6;
+            ctx.strokeStyle = '#FFD700';
+            const puv = sheetengine.drawing.getPointuv(playerTarget);
+            ctx.beginPath();
+            ctx.arc(puv.u, puv.v, 8, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+          }
+          
+          // Draw hover indicator
+          if (hoveredObject) {
+            const ctx = sheetengine.context;
+            ctx.save();
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.8;
+            ctx.strokeStyle = '#00FF00';
+            const ouv = sheetengine.drawing.getPointuv(hoveredObject.centerp);
+            ctx.strokeRect(ouv.u - 25, ouv.v - 30, 50, 50);
+            ctx.restore();
+          }
+        }
+      }
+
+      setInterval(mainloop, 30);
+    </script>
+
+  </body>
+</html>
