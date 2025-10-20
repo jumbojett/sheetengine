@@ -271,16 +271,15 @@ function isObjectHovered(puv) {
             // draw an X to target location
             var ctx = sheetengine.context;
             ctx.save();
-            ctx.scale(1, 0.5);
             ctx.lineWidth = 3;
             ctx.globalAlpha = 0.5;
             ctx.strokeStyle = '#FFF';
             var puv = sheetengine.drawing.getPointuv(target);
             ctx.beginPath();
-            ctx.moveTo(puv.u-5, puv.v*2-5);
-            ctx.lineTo(puv.u+5, puv.v*2+5);
-            ctx.moveTo(puv.u+5, puv.v*2-5);
-            ctx.lineTo(puv.u-5, puv.v*2+5);
+            ctx.moveTo(puv.u-5, puv.v-5);
+            ctx.lineTo(puv.u+5, puv.v+5);
+            ctx.moveTo(puv.u+5, puv.v-5);
+            ctx.lineTo(puv.u-5, puv.v+5);
             ctx.stroke();
             ctx.restore();
           }
