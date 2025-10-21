@@ -192,133 +192,189 @@
       }
 
       function createCrystal(centerp, baseSize, height, color) {
-        const totalHeight = height;
-        const halfHeight = totalHeight / 2;
-        const midRadius = baseSize / 2;
+        const halfHeight = height / 2;
+        const radius = baseSize / 2;
         const highlight = shadeColor(color, 0.65);
         const midTone = shadeColor(color, 0.2);
         const shadow = shadeColor(color, -0.3);
+        const sides = 6;
+        const angleStep = (Math.PI * 2) / sides;
+        const geometry = sheetengine.geometry;
 
+        const vertices = Array.from({length: sides}, (_, i) => ({
+          x: radius * Math.sin(i * angleStep),
+          y: radius * Math.cos(i * angleStep),
+          z: 0
+        }));
+
+        const topApex = {x: 0, y: 0, z: halfHeight};
+        const bottomApex = {x: 0, y: 0, z: -halfHeight};
         const parts = [];
-        
-        // Calculate tilt angle so facets converge to a point
-        // tan(tilt) = midRadius / halfHeight
-        const tiltDeg = Math.atan2(midRadius, halfHeight) * (180 / Math.PI);
-        
-        // Calculate slant height for the triangular facets
-        const slantHeight = Math.sqrt(midRadius ** 2 + halfHeight ** 2);
 
-        // Create upper pyramid (6 triangular facets converging to top point)
-        for (let i = 0; i < 6; i++) {
-          const angleDeg = i * 60;
-          const angle = angleDeg * Math.PI / 180;
-          const nextAngle = ((i + 1) * 60) * Math.PI / 180;
-          
-          // Position at the midpoint between two adjacent vertices of the hexagon
-          const midX = (Math.sin(angle) + Math.sin(nextAngle)) * midRadius / 2;
-          const midY = (Math.cos(angle) + Math.cos(nextAngle)) * midRadius / 2;
-          
-          const facetWidth = baseSize * 0.6;
-          
-          parts.push({
-            offset: {x: midX, y: midY, z: halfHeight / 2},
-            rot: {alphaD: -tiltDeg, betaD: 0, gammaD: angleDeg + 30}, // Tilt inward toward apex
-            size: {w: facetWidth, h: slantHeight},
+        const vec = {
+          add: (a, b) => ({x: a.x + b.x, y: a.y + b.y, z: a.z + b.z}),
+          sub: (a, b) => ({x: a.x - b.x, y: a.y - b.y, z: a.z - b.z}),
+          scale: (a, s) => ({x: a.x * s, y: a.y * s, z: a.z * s}),
+          dot: (a, b) => a.x * b.x + a.y * b.y + a.z * b.z,
+          length: a => Math.hypot(a.x, a.y, a.z),
+          normalize(a) {
+            const len = this.length(a);
+            if (len === 0) return {x: 0, y: 0, z: 0};
+            return {x: a.x / len, y: a.y / len, z: a.z / len};
+          },
+          cross(a, b) {
+            return {
+              x: a.y * b.z - a.z * b.y,
+              y: a.z * b.x - a.x * b.z,
+              z: a.x * b.y - a.y * b.x
+            };
+          }
+        };
+
+        const topPaintFactory = part => ctx => {
+          const {w, h} = part.size;
+          ctx.clearRect(0, 0, w, h);
+          ctx.beginPath();
+          ctx.moveTo(w / 2, 0);
+          ctx.lineTo(w, h);
+          ctx.lineTo(0, h);
+          ctx.closePath();
+
+          const gradient = ctx.createLinearGradient(w / 2, h, w / 2, 0);
+          gradient.addColorStop(0, midTone);
+          gradient.addColorStop(0.6, highlight);
+          gradient.addColorStop(1, 'rgba(255,255,255,0.9)');
+
+          ctx.fillStyle = gradient;
+          ctx.globalAlpha = 0.85;
+          ctx.fill();
+
+          ctx.globalAlpha = 1;
+          ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+          ctx.lineWidth = Math.max(1, w * 0.04);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+          ctx.lineWidth = Math.max(0.6, w * 0.02);
+          ctx.beginPath();
+          ctx.moveTo(w / 2, h * 0.18);
+          ctx.lineTo(w / 2, h * 0.95);
+          ctx.stroke();
+        };
+
+        const bottomPaintFactory = part => ctx => {
+          const {w, h} = part.size;
+          ctx.clearRect(0, 0, w, h);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(w, 0);
+          ctx.lineTo(w / 2, h);
+          ctx.closePath();
+
+          const gradient = ctx.createLinearGradient(w / 2, 0, w / 2, h);
+          gradient.addColorStop(0, midTone);
+          gradient.addColorStop(0.45, shadow);
+          gradient.addColorStop(1, shadeColor(color, -0.5));
+
+          ctx.fillStyle = gradient;
+          ctx.globalAlpha = 0.85;
+          ctx.fill();
+
+          ctx.globalAlpha = 1;
+          ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+          ctx.lineWidth = Math.max(1, w * 0.035);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+          ctx.lineWidth = Math.max(0.6, w * 0.02);
+          ctx.beginPath();
+          ctx.moveTo(w / 2, h * 0.05);
+          ctx.lineTo(w / 2, h * 0.85);
+          ctx.stroke();
+        };
+
+        function buildFacet(apex, baseA, baseB, paintFactory) {
+          const edgeVec = vec.sub(baseB, baseA);
+          const edgeLength = vec.length(edgeVec);
+          if (edgeLength < 0.001) return;
+
+          const width = edgeLength;
+          const halfWidth = width / 2;
+
+          const baseMid = vec.scale(vec.add(baseA, baseB), 0.5);
+          const apexDirRaw = vec.sub(apex, baseMid);
+          const apexToBase = vec.sub(baseMid, apex);
+          const heightLength = vec.length(apexToBase);
+          if (heightLength < 0.001) return;
+
+          const edgeDir = vec.normalize(edgeVec);
+
+          // Remove any component along the edge to find a pure vertical direction in the face plane.
+          const projection = vec.dot(apexDirRaw, edgeDir);
+          const apexPlaneComponent = vec.normalize(vec.sub(apexDirRaw, vec.scale(edgeDir, projection)));
+          let upwardDir = apexPlaneComponent;
+          if (vec.dot(upwardDir, apexDirRaw) < 0) {
+            upwardDir = vec.scale(upwardDir, -1);
+          }
+
+          const downwardDir = vec.scale(upwardDir, -1);
+          const normalDir = vec.normalize(vec.cross(edgeDir, downwardDir));
+
+          const rot = geometry.inverseRPY(edgeDir, downwardDir, normalDir);
+
+          const halfHeightLocal = heightLength / 2;
+          const localTop = {x: 0, y: 0, z: halfHeightLocal};
+          const localBottomCenter = {x: 0, y: 0, z: -halfHeightLocal};
+          const localBottomLeft = {x: -halfWidth, y: 0, z: -halfHeightLocal};
+          const localBottomRight = {x: halfWidth, y: 0, z: -halfHeightLocal};
+
+          const rotAlpha = rot.alpha;
+          const rotBeta = rot.beta;
+          const rotGamma = rot.gamma;
+
+          const worldTop = geometry.rotatePoint(localTop, rotAlpha, rotBeta, rotGamma);
+          const worldBottomCenter = geometry.rotatePoint(localBottomCenter, rotAlpha, rotBeta, rotGamma);
+          const worldBottomLeft = geometry.rotatePoint(localBottomLeft, rotAlpha, rotBeta, rotGamma);
+          const worldBottomRight = geometry.rotatePoint(localBottomRight, rotAlpha, rotBeta, rotGamma);
+
+          const centerCandidates = [
+            vec.sub(apex, worldTop),
+            vec.sub(baseMid, worldBottomCenter),
+            vec.sub(baseA, worldBottomLeft),
+            vec.sub(baseB, worldBottomRight)
+          ];
+
+          const centerOffset = centerCandidates.reduce((acc, curr) => vec.add(acc, curr), {x: 0, y: 0, z: 0});
+          centerOffset.x /= centerCandidates.length;
+          centerOffset.y /= centerCandidates.length;
+          centerOffset.z /= centerCandidates.length;
+
+          const part = {
+            offset: centerOffset,
+            rot: {alphaD: rot.alphaD, betaD: rot.betaD, gammaD: rot.gammaD},
+            size: {w: width, h: heightLength},
             transparent: true,
-            paint(ctx) {
-              const w = facetWidth;
-              const h = slantHeight;
-              
-              ctx.clearRect(0, 0, w, h);
-              
-              // Draw triangular facet: wide at bottom (middle of crystal), point at top
-              ctx.beginPath();
-              ctx.moveTo(w * 0.5, 0);      // Top point
-              ctx.lineTo(w * 0.95, h);     // Bottom right
-              ctx.lineTo(w * 0.05, h);     // Bottom left
-              ctx.closePath();
+            paint: null
+          };
 
-              const gradient = ctx.createLinearGradient(0, h, 0, 0);
-              gradient.addColorStop(0, midTone);
-              gradient.addColorStop(0.6, highlight);
-              gradient.addColorStop(1, 'rgba(255,255,255,0.9)');
-              
-              ctx.fillStyle = gradient;
-              ctx.globalAlpha = 0.85;
-              ctx.fill();
-
-              ctx.globalAlpha = 1;
-              ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-              ctx.lineWidth = 1.5;
-              ctx.stroke();
-
-              // Internal reflection line
-              ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-              ctx.lineWidth = 0.8;
-              ctx.beginPath();
-              ctx.moveTo(w * 0.5, h * 0.2);
-              ctx.lineTo(w * 0.5, h * 0.95);
-              ctx.stroke();
-            }
-          });
+          part.paint = paintFactory(part);
+          parts.push(part);
         }
 
-        // Create lower pyramid (6 triangular facets converging to bottom point)
-        for (let i = 0; i < 6; i++) {
-          const angleDeg = i * 60;
-          const angle = angleDeg * Math.PI / 180;
-          const nextAngle = ((i + 1) * 60) * Math.PI / 180;
-          
-          const midX = (Math.sin(angle) + Math.sin(nextAngle)) * midRadius / 2;
-          const midY = (Math.cos(angle) + Math.cos(nextAngle)) * midRadius / 2;
-          
-          const facetWidth = baseSize * 0.6;
-          
-          parts.push({
-            offset: {x: midX, y: midY, z: -halfHeight / 2},
-            rot: {alphaD: 0, betaD: 0, gammaD: angleDeg + 30},
-            size: {w: facetWidth, h: halfHeight},
-            transparent: true,
-            paint(ctx) {
-              const w = facetWidth;
-              const h = halfHeight;
-              
-              ctx.clearRect(0, 0, w, h);
-              
-              // Draw triangular facet: wide at top (middle of crystal), point at bottom
-              ctx.beginPath();
-              ctx.moveTo(w * 0.05, 0);     // Top left
-              ctx.lineTo(w * 0.95, 0);     // Top right
-              ctx.lineTo(w * 0.5, h);      // Bottom point
-              ctx.closePath();
-
-              const gradient = ctx.createLinearGradient(0, 0, 0, h);
-              gradient.addColorStop(0, midTone);
-              gradient.addColorStop(0.4, shadow);
-              gradient.addColorStop(1, shadeColor(color, -0.5));
-              
-              ctx.fillStyle = gradient;
-              ctx.globalAlpha = 0.85;
-              ctx.fill();
-
-              ctx.globalAlpha = 1;
-              ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-              ctx.lineWidth = 1.2;
-              ctx.stroke();
-
-              // Internal reflection line
-              ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-              ctx.lineWidth = 0.8;
-              ctx.beginPath();
-              ctx.moveTo(w * 0.5, h * 0.05);
-              ctx.lineTo(w * 0.5, h * 0.8);
-              ctx.stroke();
-            }
-          });
+        for (let i = 0; i < sides; i++) {
+          const baseA = vertices[i];
+          const baseB = vertices[(i + 1) % sides];
+          buildFacet(topApex, baseA, baseB, topPaintFactory);
         }
 
-        const footprint = Math.ceil(baseSize * 2.2);
-        const canvasHeight = Math.ceil(totalHeight * 1.2);
+        for (let i = 0; i < sides; i++) {
+          const baseA = vertices[(i + 1) % sides];
+          const baseB = vertices[i];
+          buildFacet(bottomApex, baseA, baseB, bottomPaintFactory);
+        }
+
+        const footprint = Math.ceil(baseSize * 2.4);
+        const canvasHeight = Math.ceil(height * 1.4);
         const crystalObj = createObjectFromParts(
           centerp,
           parts,
