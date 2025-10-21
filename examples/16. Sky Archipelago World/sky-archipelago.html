@@ -65,8 +65,8 @@
       var canvasElement = document.getElementById('maincanvas');
       sheetengine.scene.init(canvasElement, {w:1000,h:600});
       
-      // Set a nice sky-themed background
-      sheetengine.backgroundColor = '#87CEEB';
+      // Set a nice sky-themed background with gradient effect
+      sheetengine.backgroundColor = '#B0E0E6'; // Powder blue for depth
 
       // ===== TERRAIN GENERATION =====
       
@@ -124,13 +124,48 @@
           );
           sheet.context.fillStyle = color;
           sheet.context.fillRect(0, 0, 40, 40);
-          sheet.context.fillStyle = '#000';
-          sheet.context.fillRect(5, 5, 10, 10);
-          sheet.context.fillRect(25, 5, 10, 10);
-          sheet.context.fillRect(5, 25, 10, 10);
-          sheet.context.fillRect(25, 25, 10, 10);
+          
+          // Add brickwork pattern
+          sheet.context.strokeStyle = 'rgba(0,0,0,0.15)';
+          sheet.context.lineWidth = 1;
+          for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 4; col++) {
+              sheet.context.strokeRect(col * 10, row * 5, 10, 5);
+            }
+          }
+          
+          // Windows with light effect
+          sheet.context.fillStyle = i % 2 === 0 ? '#FFD700' : '#87CEEB';
+          sheet.context.fillRect(5, 5, 6, 6);
+          sheet.context.fillRect(19, 5, 6, 6);
+          sheet.context.fillRect(5, 19, 6, 6);
+          sheet.context.fillRect(19, 19, 6, 6);
+          
+          // Window frames
+          sheet.context.strokeStyle = '#333';
+          sheet.context.lineWidth = 1;
+          sheet.context.strokeRect(5, 5, 6, 6);
+          sheet.context.strokeRect(19, 5, 6, 6);
+          sheet.context.strokeRect(5, 19, 6, 6);
+          sheet.context.strokeRect(19, 19, 6, 6);
+          
           sheets.push(sheet);
         }
+        
+        // Add flag on top
+        const flagPos = {x: centerp.x, y: centerp.y - 10, z: height + 30};
+        const flag = new sheetengine.Sheet(
+          flagPos,
+          {alphaD: 0, betaD: 0, gammaD: 0},
+          {w: 25, h: 18}
+        );
+        flag.context.fillStyle = '#FF4500';
+        flag.context.fillRect(0, 0, 20, 12);
+        flag.context.fillStyle = '#FFD700';
+        flag.context.fillRect(2, 2, 5, 5);
+        flag.context.fillStyle = '#333';
+        flag.context.fillRect(18, 6, 7, 2);
+        sheets.push(flag);
         
         return sheets;
       }
@@ -151,11 +186,149 @@
           );
           sheet.context.fillStyle = color;
           sheet.context.fillRect(0, 0, 50, 30);
-          sheet.context.strokeStyle = '#333';
-          sheet.context.lineWidth = 2;
-          sheet.context.strokeRect(5, 5, 40, 20);
+          
+          // Brickwork pattern
+          sheet.context.strokeStyle = 'rgba(0,0,0,0.2)';
+          sheet.context.lineWidth = 1;
+          for (let row = 0; row < 6; row++) {
+            for (let col = 0; col < 5; col++) {
+              sheet.context.strokeRect(col * 10, row * 5, 10, 5);
+            }
+          }
+          
+          // Crenellations (battlements)
+          sheet.context.fillStyle = color;
+          sheet.context.fillRect(5, 0, 8, 8);
+          sheet.context.fillRect(18, 0, 8, 8);
+          sheet.context.fillRect(31, 0, 8, 8);
+          
           sheets.push(sheet);
         }
+        
+        return sheets;
+      }
+      
+      function createWatchtower(centerp, height, color) {
+        const sheets = [];
+        
+        // Main tower shaft
+        const shaft = new sheetengine.Sheet(
+          {x: centerp.x, y: centerp.y, z: 20},
+          {alphaD: 0, betaD: 0, gammaD: 0},
+          {w: 30, h: 30}
+        );
+        shaft.context.fillStyle = color;
+        shaft.context.fillRect(0, 0, 30, 30);
+        shaft.context.strokeStyle = '#333';
+        shaft.context.lineWidth = 1;
+        for (let row = 0; row < 6; row++) {
+          for (let col = 0; col < 3; col++) {
+            shaft.context.strokeRect(col * 10, row * 5, 10, 5);
+            shaft.context.fillStyle = '#FFD700';
+            shaft.context.fillRect(col * 10 + 3, row * 5 + 2, 4, 2);
+            shaft.context.fillStyle = color;
+          }
+        }
+        sheets.push(shaft);
+        
+        // Observation deck
+        const deck = new sheetengine.Sheet(
+          {x: centerp.x, y: centerp.y - 8, z: height + 15},
+          {alphaD: 45, betaD: 0, gammaD: 0},
+          {w: 45, h: 25}
+        );
+        deck.context.fillStyle = '#8B4513';
+        deck.context.fillRect(0, 0, 45, 25);
+        deck.context.strokeStyle = '#333';
+        deck.context.lineWidth = 1;
+        deck.context.strokeRect(2, 2, 41, 21);
+        sheets.push(deck);
+        
+        // Spire/beacon on top
+        const spire = new sheetengine.Sheet(
+          {x: centerp.x, y: centerp.y, z: height + 35},
+          {alphaD: 0, betaD: 0, gammaD: 0},
+          {w: 12, h: 12}
+        );
+        spire.context.fillStyle = '#FF4500';
+        spire.context.beginPath();
+        spire.context.moveTo(6, 0);
+        spire.context.lineTo(12, 10);
+        spire.context.lineTo(0, 10);
+        spire.context.closePath();
+        spire.context.fill();
+        sheets.push(spire);
+        
+        return sheets;
+      }
+      
+      function createBridge(startIsland, endIsland, width = 30, color = '#8B7355') {
+        const sheets = [];
+        const segments = 5;
+        
+        for (let i = 0; i < segments; i++) {
+          const ratio = i / (segments - 1);
+          const x = startIsland.x + (endIsland.x - startIsland.x) * ratio;
+          const y = startIsland.y + (endIsland.y - startIsland.y) * ratio;
+          const z = 25;
+          
+          const bridgeSegment = new sheetengine.Sheet(
+            {x: x, y: y, z: z},
+            {alphaD: 0, betaD: 0, gammaD: 0},
+            {w: 40, h: width}
+          );
+          
+          bridgeSegment.context.fillStyle = color;
+          bridgeSegment.context.fillRect(0, 0, 40, width);
+          
+          // Wooden planks effect
+          bridgeSegment.context.strokeStyle = 'rgba(0,0,0,0.2)';
+          bridgeSegment.context.lineWidth = 1;
+          for (let j = 0; j < width; j += 5) {
+            bridgeSegment.context.strokeRect(0, j, 40, 5);
+          }
+          
+          // Support posts
+          bridgeSegment.context.fillStyle = '#654321';
+          bridgeSegment.context.fillRect(2, 2, 4, width - 4);
+          bridgeSegment.context.fillRect(34, 2, 4, width - 4);
+          
+          sheets.push(bridgeSegment);
+        }
+        
+        return sheets;
+      }
+      
+      function createMarketStall(centerp, canopyColor) {
+        const sheets = [];
+        
+        // Frame
+        const frame = new sheetengine.Sheet(
+          {x: centerp.x, y: centerp.y, z: 15},
+          {alphaD: 0, betaD: 0, gammaD: 0},
+          {w: 40, h: 35}
+        );
+        frame.context.fillStyle = '#8B4513';
+        frame.context.fillRect(0, 0, 40, 30);
+        frame.context.fillStyle = '#D2B48C';
+        frame.context.fillRect(3, 3, 34, 8);
+        frame.context.fillStyle = '#FFD700';
+        frame.context.fillRect(8, 8, 8, 8);
+        frame.context.fillRect(24, 8, 8, 8);
+        sheets.push(frame);
+        
+        // Canopy top
+        const canopy = new sheetengine.Sheet(
+          {x: centerp.x, y: centerp.y - 10, z: 40},
+          {alphaD: 45, betaD: 0, gammaD: 0},
+          {w: 50, h: 30}
+        );
+        canopy.context.fillStyle = canopyColor;
+        canopy.context.fillRect(0, 0, 50, 30);
+        canopy.context.strokeStyle = '#333';
+        canopy.context.lineWidth = 2;
+        canopy.context.strokeRect(0, 0, 50, 30);
+        sheets.push(canopy);
         
         return sheets;
       }
@@ -171,9 +344,28 @@
         );
         wall.context.fillStyle = wallColor;
         wall.context.fillRect(0, 0, 60, 50);
+        
+        // Windows with frames
+        wall.context.fillStyle = '#87CEEB';
+        wall.context.fillRect(8, 8, 12, 12);
+        wall.context.fillRect(40, 8, 12, 12);
+        wall.context.fillRect(8, 28, 12, 12);
+        wall.context.fillRect(40, 28, 12, 12);
+        
+        // Window panes
+        wall.context.strokeStyle = '#333';
+        wall.context.lineWidth = 1;
+        wall.context.strokeRect(8, 8, 12, 12);
+        wall.context.strokeRect(40, 8, 12, 12);
+        wall.context.strokeRect(8, 28, 12, 12);
+        wall.context.strokeRect(40, 28, 12, 12);
+        
+        // Door
         wall.context.fillStyle = '#8B4513';
-        wall.context.fillRect(10, 10, 15, 15);
-        wall.context.fillRect(35, 10, 15, 15);
+        wall.context.fillRect(24, 32, 12, 18);
+        wall.context.fillStyle = '#FFD700';
+        wall.context.fillRect(32, 40, 3, 3);
+        
         sheets.push(wall);
         
         // Roof front
@@ -184,6 +376,15 @@
         );
         roof.context.fillStyle = roofColor;
         roof.context.fillRect(0, 0, 70, 40);
+        
+        // Roof shingles pattern
+        roof.context.fillStyle = 'rgba(0,0,0,0.1)';
+        for (let i = 0; i < 7; i++) {
+          roof.context.fillRect(i * 10, 8, 8, 4);
+          roof.context.fillRect(i * 10, 16, 8, 4);
+          roof.context.fillRect(i * 10, 24, 8, 4);
+        }
+        
         sheets.push(roof);
         
         // Roof back
@@ -194,6 +395,15 @@
         );
         roofBack.context.fillStyle = roofColor;
         roofBack.context.fillRect(0, 0, 70, 40);
+        
+        // Roof shingles pattern
+        roofBack.context.fillStyle = 'rgba(0,0,0,0.1)';
+        for (let i = 0; i < 7; i++) {
+          roofBack.context.fillRect(i * 10, 8, 8, 4);
+          roofBack.context.fillRect(i * 10, 16, 8, 4);
+          roofBack.context.fillRect(i * 10, 24, 8, 4);
+        }
+        
         sheets.push(roofBack);
         
         return sheets;
@@ -209,6 +419,10 @@
         body.context.fillRect(2, 5, 8, 8);
         body.context.fillStyle = '#FFD700';
         body.context.fillRect(3, 1, 6, 4);
+        // Add eyes
+        body.context.fillStyle = '#000';
+        body.context.fillRect(5, 2, 2, 1);
+        body.context.fillRect(8, 2, 2, 1);
         
         const leg1 = new sheetengine.Sheet(
           {x: -4, y: 0, z: 4},
@@ -241,6 +455,54 @@
         return character;
       }
       
+      function createCollectible(centerp, type, color) {
+        const collectible = new sheetengine.Sheet(
+          {x: centerp.x, y: centerp.y, z: centerp.z + 30},
+          {alphaD: 0, betaD: 0, gammaD: 0},
+          {w: 16, h: 16}
+        );
+        
+        collectible.context.fillStyle = color;
+        if (type === 'gem') {
+          collectible.context.beginPath();
+          collectible.context.moveTo(8, 2);
+          collectible.context.lineTo(14, 6);
+          collectible.context.lineTo(14, 10);
+          collectible.context.lineTo(8, 14);
+          collectible.context.lineTo(2, 10);
+          collectible.context.lineTo(2, 6);
+          collectible.context.closePath();
+          collectible.context.fill();
+          collectible.context.strokeStyle = '#FFD700';
+          collectible.context.lineWidth = 1;
+          collectible.context.stroke();
+        } else if (type === 'coin') {
+          collectible.context.beginPath();
+          collectible.context.arc(8, 8, 6, 0, Math.PI * 2);
+          collectible.context.fill();
+          collectible.context.fillStyle = '#FFD700';
+          collectible.context.beginPath();
+          collectible.context.arc(8, 8, 4, 0, Math.PI * 2);
+          collectible.context.fill();
+        } else if (type === 'star') {
+          collectible.context.beginPath();
+          collectible.context.moveTo(8, 2);
+          for (let i = 0; i < 10; i++) {
+            const radius = i % 2 === 0 ? 6 : 3;
+            const angle = (i * Math.PI) / 5 - Math.PI / 2;
+            const x = 8 + radius * Math.cos(angle);
+            const y = 8 + radius * Math.sin(angle);
+            if (i === 0) collectible.context.moveTo(x, y);
+            else collectible.context.lineTo(x, y);
+          }
+          collectible.context.closePath();
+          collectible.context.fill();
+        }
+        
+        collectible.collected = false;
+        return collectible;
+      }
+      
       // ===== BUILD THE WORLD =====
       
       // Central island structures
@@ -256,17 +518,66 @@
       createHouse({x: -80, y: 80, z: 20}, '#228B22', '#D2B48C');
       createHouse({x: 80, y: 80, z: 20}, '#FFD700', '#D2B48C');
       
+      // Market stalls around town square
+      createMarketStall({x: -30, y: -30, z: 20}, '#FF6347');
+      createMarketStall({x: 30, y: -30, z: 20}, '#1E90FF');
+      createMarketStall({x: -30, y: 30, z: 20}, '#FFD700');
+      createMarketStall({x: 30, y: 30, z: 20}, '#98FB98');
+      
+      // Watchtowers at corners
+      createWatchtower({x: -120, y: -120, z: 0}, 50, '#696969');
+      createWatchtower({x: 120, y: -120, z: 0}, 50, '#696969');
+      createWatchtower({x: -120, y: 120, z: 0}, 50, '#696969');
+      createWatchtower({x: 120, y: 120, z: 0}, 50, '#696969');
+      
       // West island structures
       createTower({x: -600, y: -300, z: 20}, 60, '#4CAF50', 3);
       createHouse({x: -650, y: -250, z: 20}, '#8B4513', '#F5DEB3');
+      createMarketStall({x: -600, y: -250, z: 20}, '#FFB6C1');
+      createWatchtower({x: -650, y: -350, z: 0}, 40, '#696969');
       
       // East island structures
       createTower({x: 600, y: -300, z: 20}, 80, '#1E90FF', 4);
       createHouse({x: 550, y: -300, z: 20}, '#FF6347', '#F5DEB3');
+      createMarketStall({x: 600, y: -250, z: 20}, '#9370DB');
+      createWatchtower({x: 650, y: -350, z: 0}, 40, '#696969');
       
-      // South and North platforms - viewing/docking areas
+      // South platform - sky port
       createHouse({x: 0, y: 500, z: 20}, '#FFD700', '#D2B48C');
-      createHouse({x: 0, y: -500, z: 20}, '#C0C0C0', '#F5DEB3');
+      createMarketStall({x: -50, y: 500, z: 20}, '#FF4500');
+      createMarketStall({x: 50, y: 500, z: 20}, '#20B2AA');
+      
+      // North platform - observatory
+      createTower({x: 0, y: -500, z: 20}, 70, '#C0C0C0', 3);
+      createHouse({x: -40, y: -480, z: 20}, '#DDA0DD', '#F5DEB3');
+      createHouse({x: 40, y: -480, z: 20}, '#87CEEB', '#F5DEB3');
+      
+      // ===== ADD BRIDGES CONNECTING ISLANDS =====
+      createBridge({x: 0, y: 0}, {x: -600, y: -300}, 25, '#8B7355');      // Central to West
+      createBridge({x: 0, y: 0}, {x: 600, y: -300}, 25, '#8B7355');       // Central to East
+      createBridge({x: 0, y: 0}, {x: 0, y: 500}, 25, '#8B7355');          // Central to South
+      createBridge({x: 0, y: 0}, {x: 0, y: -500}, 25, '#8B7355');         // Central to North
+      
+      // ===== CREATE COLLECTIBLES =====
+      
+      const collectibles = [];
+      collectibles.push(createCollectible({x: -100, y: -100, z: 0}, 'gem', '#FF69B4'));
+      collectibles.push(createCollectible({x: 50, y: 50, z: 0}, 'coin', '#FFD700'));
+      collectibles.push(createCollectible({x: -80, y: 100, z: 0}, 'star', '#FFD700'));
+      collectibles.push(createCollectible({x: 100, y: -80, z: 0}, 'gem', '#00FF00'));
+      collectibles.push(createCollectible({x: 0, y: 0, z: 0}, 'coin', '#FFD700'));
+      collectibles.push(createCollectible({x: -600, y: -300, z: 0}, 'star', '#FF6347'));
+      collectibles.push(createCollectible({x: 600, y: -300, z: 0}, 'gem', '#1E90FF'));
+      collectibles.push(createCollectible({x: 0, y: 500, z: 0}, 'coin', '#FFD700'));
+      collectibles.push(createCollectible({x: 0, y: -500, z: 0}, 'star', '#C0C0C0'));
+      
+      // Important structure locations for lighting effects
+      const lightSources = [
+        {pos: {x: 0, y: 0}, color: '#FF6347', radius: 60},      // Central tower
+        {pos: {x: -600, y: -300}, color: '#FFD700', radius: 40}, // West tower
+        {pos: {x: 600, y: -300}, color: '#87CEEB', radius: 40},  // East tower
+        {pos: {x: 0, y: -500}, color: '#C0C0C0', radius: 35}     // North obs
+      ];
 
       // ===== CREATE CHARACTERS =====
       
@@ -274,12 +585,18 @@
       const npc1 = createCharacter({x: 80, y: 80, z: 0}, 'NPC1', '#00CED1');
       const npc2 = createCharacter({x: -600, y: -300, z: 0}, 'NPC2', '#32CD32');
       const npc3 = createCharacter({x: 600, y: -300, z: 0}, 'NPC3', '#FF8C00');
+      const npc4 = createCharacter({x: 0, y: 0, z: 0}, 'Guard', '#4169E1');
+      const npc5 = createCharacter({x: -80, y: -80, z: 0}, 'Merchant', '#FFD700');
+      const npc6 = createCharacter({x: 80, y: 80, z: 0}, 'Scholar', '#DDA0DD');
+      const npc7 = createCharacter({x: 0, y: 500, z: 0}, 'Pilot', '#20B2AA');
 
       // ===== GAME STATE =====
       
       let playerTarget = null;
       let hoveredObject = null;
-      const npcTargets = [npc1, npc2, npc3];
+      let score = 0;
+      let collectedCount = 0;
+      const npcTargets = [npc1, npc2, npc3, npc4, npc5, npc6, npc7];
       
       // Random waypoints for NPCs
       const waypoints = [
@@ -288,18 +605,50 @@
         {x: 600, y: -300, z: 0},
         {x: 0, y: 500, z: 0},
         {x: 0, y: -500, z: 0},
-        {x: -100, y: -100, z: 0}
+        {x: -100, y: -100, z: 0},
+        {x: -80, y: 80, z: 0},
+        {x: 80, y: -80, z: 0},
+        {x: 120, y: 120, z: 0},
+        {x: -120, y: -120, z: 0}
       ];
       
       npc1.currentWaypoint = 0;
       npc2.currentWaypoint = 1;
       npc3.currentWaypoint = 2;
+      npc4.currentWaypoint = 3;
+      npc5.currentWaypoint = 4;
+      npc6.currentWaypoint = 5;
+      npc7.currentWaypoint = 6;
       
       function animateCharacter(character) {
         const state = Math.floor((character.animationState % 8) / 2);
         const dir = (state == 0 || state == 3) ? 1 : -1;
         character.rotateSheet(character.leg1, {x:0,y:0,z:8}, {x:1,y:0,z:0}, dir * Math.PI/8);
         character.rotateSheet(character.leg2, {x:0,y:0,z:8}, {x:1,y:0,z:0}, -dir * Math.PI/8);
+      }
+      
+      function drawGlowEffect(ctx, x, y, radius, color, opacity = 0.3) {
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        
+        // Multiple rings for glow
+        for (let i = 3; i > 0; i--) {
+          ctx.fillStyle = color;
+          ctx.globalAlpha = opacity / (4 - i);
+          ctx.beginPath();
+          ctx.arc(x, y, radius + (3 - i) * 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        ctx.restore();
+      }
+      
+      function drawShadow(ctx, x, y, width, height, opacity = 0.2) {
+        ctx.save();
+        ctx.fillStyle = '#000';
+        ctx.globalAlpha = opacity;
+        ctx.fillRect(x - width/2, y, width, height/3);
+        ctx.restore();
       }
 
       // Initial draw
@@ -391,6 +740,24 @@
           }
         }
         
+        // Check collectible collection
+        for (let i = collectibles.length - 1; i >= 0; i--) {
+          const collectible = collectibles[i];
+          if (!collectible.collected) {
+            const dx = collectible.centerp.x - player.centerp.x;
+            const dy = collectible.centerp.y - player.centerp.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < 30) {
+              collectible.collected = true;
+              score += 10;
+              collectedCount++;
+              collectibles.splice(i, 1);
+              sceneChanged = true;
+            }
+          }
+        }
+        
         // Move NPCs to waypoints
         for (let i = 0; i < npcTargets.length; i++) {
           const npc = npcTargets[i];
@@ -420,30 +787,172 @@
           sheetengine.calc.calculateChangedSheets();
           sheetengine.drawing.drawScene();
           
-          // Draw target marker
-          if (playerTarget) {
-            const ctx = sheetengine.context;
+          const ctx = sheetengine.context;
+          
+          // Draw light source effects on key structures (before other overlays)
+          for (let i = 0; i < lightSources.length; i++) {
+            const light = lightSources[i];
+            const puv = sheetengine.drawing.getPointuv(light.pos);
+            // Pulsing glow
+            const pulse = 0.5 + Math.sin(Date.now() / 1000 + i) * 0.3;
+            drawGlowEffect(ctx, puv.u, puv.v, light.radius * pulse, light.color, 0.15 * pulse);
+          }
+          
+          // Draw shadows for characters
+          for (let i = 0; i < npcTargets.length; i++) {
+            const npc = npcTargets[i];
+            const puv = sheetengine.drawing.getPointuv(npc.centerp);
+            drawShadow(ctx, puv.u, puv.v + 25, 30, 12, 0.25);
+          }
+          const playeruv = sheetengine.drawing.getPointuv(player.centerp);
+          drawShadow(ctx, playeruv.u, playeruv.v + 25, 30, 12, 0.25);
+          
+          // Draw collectibles with glow and rotation
+          for (let i = 0; i < collectibles.length; i++) {
+            const collectible = collectibles[i];
+            const puv = sheetengine.drawing.getPointuv(collectible.centerp);
+            
+            // Draw glow
+            if (i % 3 === 0) drawGlowEffect(ctx, puv.u, puv.v, 12, '#FF69B4', 0.4);
+            else if (i % 3 === 1) drawGlowEffect(ctx, puv.u, puv.v, 12, '#FFD700', 0.4);
+            else drawGlowEffect(ctx, puv.u, puv.v, 12, '#00FF00', 0.4);
+            
             ctx.save();
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.6;
+            
+            // Spinning animation with floating effect
+            const rotation = (Date.now() / 20 + i * 20) % 360;
+            const float = Math.sin(Date.now() / 1000 + i) * 3;
+            ctx.translate(puv.u, puv.v + float);
+            ctx.rotate((rotation * Math.PI) / 180);
+            ctx.fillStyle = collectible.context.fillStyle;
+            ctx.fillRect(-6, -6, 12, 12);
+            ctx.restore();
+          }
+          
+          // Draw target marker with enhanced animation
+          if (playerTarget) {
+            ctx.save();
+            ctx.lineWidth = 3;
+            ctx.globalAlpha = 0.8;
             ctx.strokeStyle = '#FFD700';
             const puv = sheetengine.drawing.getPointuv(playerTarget);
+            
+            // Outer rotating circle
+            ctx.save();
+            ctx.translate(puv.u, puv.v);
+            ctx.rotate((Date.now() / 1000) * Math.PI);
+            ctx.strokeRect(-10, -10, 20, 20);
+            ctx.restore();
+            
+            // Inner pulsing circle
+            ctx.lineWidth = 1;
+            const pulseSize = 4 + Math.sin(Date.now() / 300) * 3;
             ctx.beginPath();
-            ctx.arc(puv.u, puv.v, 8, 0, Math.PI * 2);
+            ctx.arc(puv.u, puv.v, pulseSize, 0, Math.PI * 2);
             ctx.stroke();
             ctx.restore();
           }
           
-          // Draw hover indicator
+          // Draw hover indicator with enhanced effect
           if (hoveredObject) {
-            const ctx = sheetengine.context;
             ctx.save();
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.8;
+            ctx.lineWidth = 3;
+            ctx.globalAlpha = 0.9;
             ctx.strokeStyle = '#00FF00';
             const ouv = sheetengine.drawing.getPointuv(hoveredObject.centerp);
             ctx.strokeRect(ouv.u - 25, ouv.v - 30, 50, 50);
+            ctx.fillStyle = '#00FF00';
+            ctx.globalAlpha = 0.15;
+            ctx.fillRect(ouv.u - 25, ouv.v - 30, 50, 50);
+            
+            // Draw name above NPC
+            ctx.globalAlpha = 0.9;
+            ctx.fillStyle = '#00FF00';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(hoveredObject.name, ouv.u, ouv.v - 35);
             ctx.restore();
+          }
+          
+          // Draw UI - Score and collectibles with enhanced styling
+          ctx.save();
+          ctx.font = 'bold 18px sans-serif';
+          ctx.fillStyle = '#000';
+          ctx.globalAlpha = 0.9;
+          ctx.fillRect(8, 8, 280, 75);
+          
+          // Glow effect for UI background
+          ctx.strokeStyle = '#FFD700';
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.3;
+          ctx.strokeRect(8, 8, 280, 75);
+          
+          // Main text with shadow
+          ctx.globalAlpha = 0.95;
+          ctx.fillStyle = '#FFD700';
+          ctx.shadowColor = 'rgba(0,0,0,0.7)';
+          ctx.shadowBlur = 4;
+          ctx.shadowOffsetX = 2;
+          ctx.shadowOffsetY = 2;
+          ctx.font = 'bold 16px sans-serif';
+          ctx.fillText(`⭐ Score: ${score}  |  💎 Treasures: ${collectedCount}/9`, 20, 32);
+          
+          // Draw progress bar
+          const progressWidth = ((collectedCount / 9) * 240);
+          ctx.fillStyle = 'rgba(255,215,0,0.3)';
+          ctx.fillRect(20, 48, 240, 14);
+          
+          // Rainbow progress effect
+          const gradient = ctx.createLinearGradient(20, 48, 260, 48);
+          gradient.addColorStop(0, '#FF6347');
+          gradient.addColorStop(0.5, '#FFD700');
+          gradient.addColorStop(1, '#00FF00');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(20, 48, progressWidth, 14);
+          
+          ctx.strokeStyle = '#FFD700';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(20, 48, 240, 14);
+          ctx.restore();
+          
+          // Draw ambient particles with parallax effect
+          ctx.save();
+          ctx.globalAlpha = 0.25;
+          for (let i = 0; i < 6; i++) {
+            const x = Math.sin(Date.now() / (1000 + i * 200) + i) * 100 + 500;
+            const y = Math.cos(Date.now() / (800 + i * 150) + i) * 80 + 300;
+            ctx.fillStyle = i % 2 === 0 ? '#FFD700' : '#87CEEB';
+            ctx.beginPath();
+            ctx.arc(x, y, 1 + (i % 3), 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+          
+          // Draw wind particles from movement
+          if (playerTarget) {
+            const distance = Math.sqrt(
+              Math.pow(playerTarget.x - player.centerp.x, 2) + 
+              Math.pow(playerTarget.y - player.centerp.y, 2)
+            );
+            if (distance > 5) {
+              for (let i = 0; i < 3; i++) {
+                const angle = Math.atan2(
+                  playerTarget.y - player.centerp.y,
+                  playerTarget.x - player.centerp.x
+                );
+                const particleX = player.centerp.x + Math.cos(angle + i * (Math.PI / 1.5)) * 15;
+                const particleY = player.centerp.y + Math.sin(angle + i * (Math.PI / 1.5)) * 15;
+                const puv = sheetengine.drawing.getPointuv({x: particleX, y: particleY, z: 5});
+                
+                ctx.save();
+                ctx.globalAlpha = 0.5;
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(puv.u, puv.v, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+              }
+            }
           }
         }
       }

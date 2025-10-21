@@ -1,0 +1,421 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <style>
+    .main{width:1000px;margin:50px auto 0 auto;line-height:1.5;font-family:sans-serif;color:#f5f7ff;}
+    .header{font:38px sans-serif;margin-bottom:12px;}
+    .subtitle{font:16px sans-serif;color:#a9b7ff;margin-bottom:20px;}
+    #maincanvas{border:2px solid #1f2a44;background:#05070f;display:block;margin:0 auto;box-shadow:0 0 35px rgba(80,120,255,0.35);}
+    .stats{margin:12px 0;font-size:13px;color:#90a3ff;text-align:center;}
+    .info{background:rgba(14,21,40,0.9);padding:16px 20px;margin:25px auto;border-left:4px solid #5dd4ff;max-width:880px;}
+    .info ul{margin:6px 0 0 18px;padding:0;}
+    .info li{margin:4px 0;}
+    .content{margin:25px auto 60px;max-width:900px;color:#d7dffc;}
+    body{background:#02030a;margin:0;padding:0;}
+  </style>
+  <body>
+    <script src="/dist/sheetengine.js"></script>
+
+    <div class="main">
+      <div class="header">💎 Prismatic Canyon Observatory</div>
+      <div class="subtitle">A subterranean world of hovering terraces, crystalline engines, and luminous waterways</div>
+      <canvas id="maincanvas" width="1000" height="560"></canvas>
+  <div class="stats"><strong>Experience:</strong> Watch the crystals rotate | Observe levitating cubes pulsing over the canyon | Let the observatory breathe on its own rhythm</div>
+      <div class="info">
+        <strong>Scene Highlights</strong>
+        <ul>
+          <li>Tiered canyon carved from stacked base sheets with subtle mineral gradients</li>
+          <li>Crystal engines built from individual sheets that rotate and breathe with the cavern</li>
+          <li>Suspended bridges and levitating research pods, each assembled from four-sheet cubes</li>
+          <li>Luminescent pools casting soft radial glows across the rock faces</li>
+        </ul>
+      </div>
+      <div class="content">
+        <p>
+          The Prismatic Canyon Observatory showcases how SheetEngine can compose rich scenes from layered base sheets
+          and bespoke sheet objects. Terraced rock platforms cut into the abyss form the stage for humming crystal cores
+          that drive the observatory. Each crystal assembly is a true volume, constructed from four radiant side sheets
+          and a shimmering cap. Around them, research pods and signal pylons levitate using animated sheet objects that
+          glide and spin gently above the canyon floor.
+        </p>
+        <p>
+          Lighting variants, height changes, and motion are all crafted with lightweight calculations so this expansive
+          underground sanctuary performs smoothly, leaving headroom for even more interactive elements.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const canvasElement = document.getElementById('maincanvas');
+      sheetengine.scene.init(canvasElement, {w:1000, h:560});
+  sheetengine.objectsintersect = true; // ensure all sheets depth-sort correctly across objects
+
+      sheetengine.backgroundColor = '#040612';
+      sheetengine.shadows.lightSource = {x:-1.5, y:1.2, z:4};
+      sheetengine.shadows.lightSourcep1 = {x:0.5, y:0.3, z:0};
+      sheetengine.shadows.lightSourcep2 = {x:-0.1, y:-0.3, z:1};
+
+      const crystals = [];
+      const floaters = [];
+
+      function shadeColor(hex, percent) {
+        const num = parseInt(hex.slice(1), 16);
+        let r = (num >> 16) & 0xff;
+        let g = (num >> 8) & 0xff;
+        let b = num & 0xff;
+        r = Math.min(255, Math.max(0, r + Math.round(255 * percent)));
+        g = Math.min(255, Math.max(0, g + Math.round(255 * percent)));
+        b = Math.min(255, Math.max(0, b + Math.round(255 * percent)));
+        return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+      }
+
+      function createObjectFromParts(centerp, parts, canvasSize, opts = {}) {
+        const sheets = parts.map(part => {
+          const sheet = new sheetengine.Sheet(part.offset, part.rot, part.size);
+          if (part.paint) part.paint(sheet.context, part);
+          if (part.transparent) sheet.transparent = true;
+          return sheet;
+        });
+
+        const object = new sheetengine.SheetObject(
+          centerp,
+          opts.rot || {alphaD: 0, betaD: 0, gammaD: 0},
+          sheets,
+          canvasSize,
+          typeof opts.intersectionsEnabled === 'boolean' ? opts.intersectionsEnabled : true
+        );
+
+        object.sheets.forEach(sheet => sheet.canvasChanged());
+        return object;
+      }
+
+      function createTerrace(centerX, centerY, sizeX, sizeY, z, baseColor, noise = 0.08) {
+        const step = 100;
+        for (let x = -sizeX / 2; x < sizeX / 2; x += step) {
+          for (let y = -sizeY / 2; y < sizeY / 2; y += step) {
+            const variation = ((x + y) / (sizeX + sizeY)) * noise;
+            const tile = new sheetengine.BaseSheet(
+              {x: centerX + x, y: centerY + y, z},
+              {alphaD: 90, betaD: 0, gammaD: 0},
+              {w: step, h: step}
+            );
+            tile.color = shadeColor(baseColor, variation);
+          }
+        }
+      }
+
+      function createWaterPlane(centerX, centerY, sizeX, sizeY, z, color) {
+        const step = 120;
+        for (let x = -sizeX / 2; x < sizeX / 2; x += step) {
+          for (let y = -sizeY / 2; y < sizeY / 2; y += step) {
+            const water = new sheetengine.BaseSheet(
+              {x: centerX + x, y: centerY + y, z},
+              {alphaD: 90, betaD: 0, gammaD: 0},
+              {w: step, h: step}
+            );
+            water.color = color;
+          }
+        }
+      }
+
+      function createGlowDisk(centerp, radius, colors) {
+        const glow = new sheetengine.Sheet(
+          centerp,
+          {alphaD: 90, betaD: 0, gammaD: 0},
+          {w: radius * 2, h: radius * 2}
+        );
+        const ctx = glow.context;
+        const gradient = ctx.createRadialGradient(radius, radius, 0, radius, radius, radius);
+        gradient.addColorStop(0, colors[0]);
+        gradient.addColorStop(0.55, colors[1]);
+        gradient.addColorStop(1, colors[2]);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, radius * 2, radius * 2);
+        glow.transparent = true;
+        glow.canvasChanged();
+        return glow;
+      }
+
+      function createCube(centerp, size, color) {
+        const half = size / 2;
+        const palette = {
+          front: shadeColor(color, -0.08),
+          right: shadeColor(color, 0.06),
+          back: shadeColor(color, -0.14),
+          left: shadeColor(color, 0.02),
+          top: shadeColor(color, 0.18)
+        };
+        const parts = [
+          {offset: {x: 0, y: half, z: 0}, rot: {alphaD: 0, betaD: 0, gammaD: 0}, tone: palette.front},
+          {offset: {x: half, y: 0, z: 0}, rot: {alphaD: 0, betaD: 0, gammaD: 90}, tone: palette.right},
+          {offset: {x: 0, y: -half, z: 0}, rot: {alphaD: 0, betaD: 0, gammaD: 180}, tone: palette.back},
+          {offset: {x: -half, y: 0, z: 0}, rot: {alphaD: 0, betaD: 0, gammaD: 270}, tone: palette.left}
+        ].map(side => ({
+          offset: side.offset,
+          rot: side.rot,
+          size: {w: size, h: size},
+          paint(ctx) {
+            const grad = ctx.createLinearGradient(0, 0, size, size);
+            grad.addColorStop(0, shadeColor(side.tone, 0.12));
+            grad.addColorStop(1, shadeColor(side.tone, -0.15));
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, size, size);
+            ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+            ctx.strokeRect(1, 1, size - 2, size - 2);
+          }
+        }));
+
+        parts.push({
+          offset: {x: 0, y: 0, z: half},
+          rot: {alphaD: 90, betaD: 0, gammaD: 0},
+          size: {w: size, h: size},
+          paint(ctx) {
+            const topGrad = ctx.createLinearGradient(0, 0, size, size);
+            topGrad.addColorStop(0, palette.top);
+            topGrad.addColorStop(1, shadeColor(palette.top, -0.25));
+            ctx.fillStyle = topGrad;
+            ctx.fillRect(0, 0, size, size);
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.strokeRect(1, 1, size - 2, size - 2);
+          }
+        });
+
+        const footprint = Math.ceil(size * 2);
+        const rel = Math.ceil(footprint / 2);
+        const cube = createObjectFromParts(
+          centerp,
+          parts,
+          {w: footprint, h: footprint, relu: rel, relv: rel},
+          {intersectionsEnabled: true}
+        );
+        cube.basePosition = {x: centerp.x, y: centerp.y, z: centerp.z};
+        return cube;
+      }
+
+      function createCrystal(centerp, baseSize, height, color) {
+        const totalHeight = height;
+        const halfHeight = totalHeight / 2;
+        const midRadius = baseSize / 2;
+        const highlight = shadeColor(color, 0.65);
+        const midTone = shadeColor(color, 0.2);
+        const shadow = shadeColor(color, -0.3);
+
+        const parts = [];
+        
+        // Calculate tilt angle so facets converge to a point
+        // tan(tilt) = midRadius / halfHeight
+        const tiltDeg = Math.atan2(midRadius, halfHeight) * (180 / Math.PI);
+        
+        // Calculate slant height for the triangular facets
+        const slantHeight = Math.sqrt(midRadius ** 2 + halfHeight ** 2);
+
+        // Create upper pyramid (6 triangular facets converging to top point)
+        for (let i = 0; i < 6; i++) {
+          const angleDeg = i * 60;
+          const angle = angleDeg * Math.PI / 180;
+          const nextAngle = ((i + 1) * 60) * Math.PI / 180;
+          
+          // Position at the midpoint between two adjacent vertices of the hexagon
+          const midX = (Math.sin(angle) + Math.sin(nextAngle)) * midRadius / 2;
+          const midY = (Math.cos(angle) + Math.cos(nextAngle)) * midRadius / 2;
+          
+          const facetWidth = baseSize * 0.6;
+          
+          parts.push({
+            offset: {x: midX, y: midY, z: halfHeight / 2},
+            rot: {alphaD: -tiltDeg, betaD: 0, gammaD: angleDeg + 30}, // Tilt inward toward apex
+            size: {w: facetWidth, h: slantHeight},
+            transparent: true,
+            paint(ctx) {
+              const w = facetWidth;
+              const h = slantHeight;
+              
+              ctx.clearRect(0, 0, w, h);
+              
+              // Draw triangular facet: wide at bottom (middle of crystal), point at top
+              ctx.beginPath();
+              ctx.moveTo(w * 0.5, 0);      // Top point
+              ctx.lineTo(w * 0.95, h);     // Bottom right
+              ctx.lineTo(w * 0.05, h);     // Bottom left
+              ctx.closePath();
+
+              const gradient = ctx.createLinearGradient(0, h, 0, 0);
+              gradient.addColorStop(0, midTone);
+              gradient.addColorStop(0.6, highlight);
+              gradient.addColorStop(1, 'rgba(255,255,255,0.9)');
+              
+              ctx.fillStyle = gradient;
+              ctx.globalAlpha = 0.85;
+              ctx.fill();
+
+              ctx.globalAlpha = 1;
+              ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+
+              // Internal reflection line
+              ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+              ctx.lineWidth = 0.8;
+              ctx.beginPath();
+              ctx.moveTo(w * 0.5, h * 0.2);
+              ctx.lineTo(w * 0.5, h * 0.95);
+              ctx.stroke();
+            }
+          });
+        }
+
+        // Create lower pyramid (6 triangular facets converging to bottom point)
+        for (let i = 0; i < 6; i++) {
+          const angleDeg = i * 60;
+          const angle = angleDeg * Math.PI / 180;
+          const nextAngle = ((i + 1) * 60) * Math.PI / 180;
+          
+          const midX = (Math.sin(angle) + Math.sin(nextAngle)) * midRadius / 2;
+          const midY = (Math.cos(angle) + Math.cos(nextAngle)) * midRadius / 2;
+          
+          const facetWidth = baseSize * 0.6;
+          
+          parts.push({
+            offset: {x: midX, y: midY, z: -halfHeight / 2},
+            rot: {alphaD: 0, betaD: 0, gammaD: angleDeg + 30},
+            size: {w: facetWidth, h: halfHeight},
+            transparent: true,
+            paint(ctx) {
+              const w = facetWidth;
+              const h = halfHeight;
+              
+              ctx.clearRect(0, 0, w, h);
+              
+              // Draw triangular facet: wide at top (middle of crystal), point at bottom
+              ctx.beginPath();
+              ctx.moveTo(w * 0.05, 0);     // Top left
+              ctx.lineTo(w * 0.95, 0);     // Top right
+              ctx.lineTo(w * 0.5, h);      // Bottom point
+              ctx.closePath();
+
+              const gradient = ctx.createLinearGradient(0, 0, 0, h);
+              gradient.addColorStop(0, midTone);
+              gradient.addColorStop(0.4, shadow);
+              gradient.addColorStop(1, shadeColor(color, -0.5));
+              
+              ctx.fillStyle = gradient;
+              ctx.globalAlpha = 0.85;
+              ctx.fill();
+
+              ctx.globalAlpha = 1;
+              ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+              ctx.lineWidth = 1.2;
+              ctx.stroke();
+
+              // Internal reflection line
+              ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+              ctx.lineWidth = 0.8;
+              ctx.beginPath();
+              ctx.moveTo(w * 0.5, h * 0.05);
+              ctx.lineTo(w * 0.5, h * 0.8);
+              ctx.stroke();
+            }
+          });
+        }
+
+        const footprint = Math.ceil(baseSize * 2.2);
+        const canvasHeight = Math.ceil(totalHeight * 1.2);
+        const crystalObj = createObjectFromParts(
+          centerp,
+          parts,
+          {w: footprint, h: canvasHeight, relu: Math.ceil(footprint / 2), relv: Math.ceil(canvasHeight / 2)},
+          {intersectionsEnabled: true}
+        );
+        crystalObj.basePosition = {x: centerp.x, y: centerp.y, z: centerp.z};
+        crystals.push({object: crystalObj, speed: 0.01 + Math.random() * 0.01, amplitude: 5 + Math.random() * 4, phase: Math.random() * Math.PI * 2});
+        return crystalObj;
+      }
+
+      function addFloatingCube(centerp, size, color, motion) {
+        const cube = createCube(centerp, size, color);
+        floaters.push({
+          object: cube,
+          speed: motion.speed,
+          amplitude: motion.amplitude,
+          phase: motion.phase,
+          spin: motion.spin,
+          base: {x: centerp.x, y: centerp.y, z: centerp.z}
+        });
+        return cube;
+      }
+
+      function createSuspendedBridge(start, segments, length, width, z, color) {
+        for (let i = 0; i < segments; i++) {
+          const sheet = new sheetengine.BaseSheet(
+            {x: start.x + i * length, y: start.y, z},
+            {alphaD: 90, betaD: 0, gammaD: 0},
+            {w: length, h: width}
+          );
+          sheet.color = shadeColor(color, (i % 2 === 0 ? 0.08 : -0.06));
+        }
+      }
+
+      // Cavern floor and terraces
+      createWaterPlane(0, 0, 1400, 1200, -120, '#04283f');
+      createTerrace(0, 0, 1100, 900, -80, '#121f36', 0.06);
+      createTerrace(0, 0, 820, 660, -40, '#1a2b4b', 0.05);
+      createTerrace(0, 0, 540, 460, 0, '#24375d', 0.04);
+      createTerrace(0, 0, 360, 320, 40, '#304571', 0.035);
+      createTerrace(-420, 260, 280, 280, 20, '#1f2f4a', 0.05);
+      createTerrace(420, -240, 260, 260, 25, '#203456', 0.05);
+
+      // Suspended bridges
+      createSuspendedBridge({x: -300, y: 180}, 6, 70, 60, 70, '#444f78');
+      createSuspendedBridge({x: -300, y: 120}, 6, 70, 28, 86, '#5865a2');
+      createSuspendedBridge({x: -300, y: 60}, 6, 70, 20, 102, '#3c4c7a');
+
+      // Glow pools
+      createGlowDisk({x: 0, y: 0, z: -118}, 190, ['rgba(40,140,255,0.55)', 'rgba(12,90,160,0.25)', 'rgba(4,40,80,0)']);
+      createGlowDisk({x: -420, y: 260, z: 18}, 120, ['rgba(255,120,40,0.45)', 'rgba(140,60,20,0.18)', 'rgba(0,0,0,0)']);
+      createGlowDisk({x: 420, y: -240, z: 22}, 110, ['rgba(120,255,220,0.55)', 'rgba(60,150,150,0.22)', 'rgba(0,0,0,0)']);
+
+      // Crystal engines
+      createCrystal({x: 0, y: 0, z: 60}, 60, 160, '#49d3ff');
+      createCrystal({x: -180, y: 140, z: 55}, 48, 140, '#ff7fd1');
+      createCrystal({x: 180, y: -160, z: 58}, 48, 150, '#7affc8');
+      createCrystal({x: 0, y: -260, z: 52}, 42, 120, '#8cb2ff');
+      createCrystal({x: 260, y: 120, z: 54}, 46, 135, '#ffd66b');
+
+      // Research cubes and pylons
+      addFloatingCube({x: -240, y: -40, z: 90}, 42, '#5e7cff', {speed: 0.04, amplitude: 14, phase: 0, spin: 0.02});
+      addFloatingCube({x: -80, y: 220, z: 88}, 52, '#ff9f6b', {speed: 0.035, amplitude: 10, phase: Math.PI / 2, spin: 0.016});
+      addFloatingCube({x: 220, y: 200, z: 92}, 44, '#64ffe3', {speed: 0.05, amplitude: 12, phase: Math.PI, spin: 0.018});
+      addFloatingCube({x: 360, y: -80, z: 95}, 48, '#7c8dff', {speed: 0.043, amplitude: 9, phase: Math.PI * 1.5, spin: 0.017});
+
+      // Static cubic pylons built from individual sheets
+      createCube({x: -420, y: 260, z: 60}, 60, '#ff8142');
+      createCube({x: 420, y: -240, z: 62}, 58, '#7cfdd1');
+      createCube({x: 0, y: 300, z: 55}, 64, '#5d6eff');
+
+      sheetengine.calc.calculateAllSheets();
+      sheetengine.drawing.drawScene(true);
+
+      let tick = 0;
+      function mainloop() {
+        tick += 1;
+
+        crystals.forEach((entry, index) => {
+          const {object, speed, amplitude, phase} = entry;
+          const bob = Math.sin((tick * 0.03) + phase) * amplitude;
+          object.rotate({x: 0, y: 0, z: 1}, speed);
+          object.setPosition({x: object.basePosition.x, y: object.basePosition.y, z: object.basePosition.z + bob});
+        });
+
+        floaters.forEach(entry => {
+          const offset = Math.sin((tick * entry.speed) + entry.phase) * entry.amplitude;
+          entry.object.setPosition({x: entry.base.x, y: entry.base.y, z: entry.base.z + offset});
+          entry.object.rotate({x: 0, y: 0, z: 1}, entry.spin);
+        });
+
+        sheetengine.calc.calculateChangedSheets();
+        sheetengine.drawing.drawScene();
+      }
+
+      setInterval(mainloop, 30);
+    </script>
+  </body>
+</html>
