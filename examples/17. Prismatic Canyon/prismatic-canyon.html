@@ -293,7 +293,7 @@
           ctx.stroke();
         };
 
-        function buildFacet(apex, baseA, baseB, paintFactory) {
+        function buildFacet(apex, baseA, baseB, paintFactory, apexAtPositiveZ = true) {
           const edgeVec = vec.sub(baseB, baseA);
           const edgeLength = vec.length(edgeVec);
           if (edgeLength < 0.001) return;
@@ -307,7 +307,10 @@
           const heightLength = vec.length(apexToBase);
           if (heightLength < 0.001) return;
 
-          const edgeDir = vec.normalize(edgeVec);
+          let edgeDir = vec.normalize(edgeVec);
+          if (!apexAtPositiveZ) {
+            edgeDir = vec.scale(edgeDir, -1);
+          }
 
           // Remove any component along the edge to find a pure vertical direction in the face plane.
           const projection = vec.dot(apexDirRaw, edgeDir);
@@ -323,25 +326,25 @@
           const rot = geometry.inverseRPY(edgeDir, downwardDir, normalDir);
 
           const halfHeightLocal = heightLength / 2;
-          const localTop = {x: 0, y: 0, z: halfHeightLocal};
-          const localBottomCenter = {x: 0, y: 0, z: -halfHeightLocal};
-          const localBottomLeft = {x: -halfWidth, y: 0, z: -halfHeightLocal};
-          const localBottomRight = {x: halfWidth, y: 0, z: -halfHeightLocal};
+          const apexLocal = {x: 0, y: 0, z: apexAtPositiveZ ? halfHeightLocal : -halfHeightLocal};
+          const baseCenterLocal = {x: 0, y: 0, z: apexAtPositiveZ ? -halfHeightLocal : halfHeightLocal};
+          const baseLeftLocal = {x: -halfWidth, y: 0, z: baseCenterLocal.z};
+          const baseRightLocal = {x: halfWidth, y: 0, z: baseCenterLocal.z};
 
           const rotAlpha = rot.alpha;
           const rotBeta = rot.beta;
           const rotGamma = rot.gamma;
 
-          const worldTop = geometry.rotatePoint(localTop, rotAlpha, rotBeta, rotGamma);
-          const worldBottomCenter = geometry.rotatePoint(localBottomCenter, rotAlpha, rotBeta, rotGamma);
-          const worldBottomLeft = geometry.rotatePoint(localBottomLeft, rotAlpha, rotBeta, rotGamma);
-          const worldBottomRight = geometry.rotatePoint(localBottomRight, rotAlpha, rotBeta, rotGamma);
+          const worldApex = geometry.rotatePoint(apexLocal, rotAlpha, rotBeta, rotGamma);
+          const worldBaseCenter = geometry.rotatePoint(baseCenterLocal, rotAlpha, rotBeta, rotGamma);
+          const worldBaseLeft = geometry.rotatePoint(baseLeftLocal, rotAlpha, rotBeta, rotGamma);
+          const worldBaseRight = geometry.rotatePoint(baseRightLocal, rotAlpha, rotBeta, rotGamma);
 
           const centerCandidates = [
-            vec.sub(apex, worldTop),
-            vec.sub(baseMid, worldBottomCenter),
-            vec.sub(baseA, worldBottomLeft),
-            vec.sub(baseB, worldBottomRight)
+            vec.sub(apex, worldApex),
+            vec.sub(baseMid, worldBaseCenter),
+            vec.sub(baseA, worldBaseLeft),
+            vec.sub(baseB, worldBaseRight)
           ];
 
           const centerOffset = centerCandidates.reduce((acc, curr) => vec.add(acc, curr), {x: 0, y: 0, z: 0});
@@ -368,9 +371,9 @@
         }
 
         for (let i = 0; i < sides; i++) {
-          const baseA = vertices[(i + 1) % sides];
-          const baseB = vertices[i];
-          buildFacet(bottomApex, baseA, baseB, bottomPaintFactory);
+          const baseA = vertices[i];
+          const baseB = vertices[(i + 1) % sides];
+          buildFacet(bottomApex, baseA, baseB, bottomPaintFactory, false);
         }
 
         const footprint = Math.ceil(baseSize * 2.4);
